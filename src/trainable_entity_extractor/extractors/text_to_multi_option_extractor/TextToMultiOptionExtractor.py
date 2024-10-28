@@ -6,6 +6,7 @@ from typing import Type
 
 from trainable_entity_extractor.config import config_logger
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
+from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.data.Option import Option
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.data.Suggestion import Suggestion
@@ -63,12 +64,8 @@ class TextToMultiOptionExtractor(ExtractorBase):
         TextSingleLabelSetFitMultilingual,
     ]
 
-    def __init__(self, extraction_identifier):
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
         super().__init__(extraction_identifier)
-
-        self.base_path = join(self.extraction_identifier.get_path(), "text_to_multi_option")
-        self.multi_value_path = Path(self.base_path, "multi_value.json")
-        self.method_name_path = Path(self.base_path, "method_name.json")
 
         self.options: list[Option] = list()
         self.multi_value = False
@@ -92,9 +89,9 @@ class TextToMultiOptionExtractor(ExtractorBase):
         return suggestions
 
     def get_predictions_method(self):
-        self.options = self.load_options()
-        self.multi_value = self.load_multi_value()
-        method_name = json.loads(self.method_name_path.read_text())
+        self.options = self.extraction_identifier.get_options()
+        self.multi_value = self.extraction_identifier.get_multi_value()
+        method_name = self.extraction_identifier.get_method_used()
         for method in self.METHODS:
             method_instance = method(self.extraction_identifier, self.options, self.multi_value)
             if method_instance.get_name() == method_name:
@@ -102,31 +99,16 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
         return self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
 
-    def load_options(self, options: list[Option] = None) -> list[Option]:
-        if options:
-            self.extraction_identifier.get_options_path().write_text(json.dumps([x.model_dump() for x in options]))
-            return options
-
-        if not exists(self.extraction_identifier.get_options_path()):
-            return []
-
-        return [Option(**x) for x in json.loads(self.extraction_identifier.get_options_path().read_text())]
-
-    def load_multi_value(self) -> bool:
-        if not self.multi_value_path.exists():
-            return False
-
-        return json.loads(self.multi_value_path.read_text())
-
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        self.options = self.load_options(extraction_data.options)
+        self.extraction_identifier.save_options(extraction_data.options)
+        self.options = extraction_data.options
         self.multi_value = extraction_data.multi_value
 
         best_method_instance = self.get_best_method(extraction_data)
         best_method_instance.train(extraction_data)
 
-        self.save_json(str(self.multi_value_path), extraction_data.multi_value)
-        self.save_json(str(self.method_name_path), best_method_instance.get_name())
+        self.extraction_identifier.save_multi_value(extraction_data.multi_value)
+        self.extraction_identifier.save_method_used(best_method_instance.get_name())
         return True, ""
 
     def get_best_method(self, extraction_data: ExtractionData):
@@ -172,7 +154,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
             return False
 
         for sample in extraction_data.samples:
-            if sample.labeled_data and sample.labeled_data.source_text:
+            if sample.labeled_data or sample.labeled_data.source_text:
                 return True
 
         return False

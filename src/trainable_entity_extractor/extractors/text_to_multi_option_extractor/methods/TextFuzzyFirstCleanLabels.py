@@ -17,8 +17,8 @@ class TextFuzzyFirstCleanLabels(TextToMultiOptionMethod):
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         return True
 
-    def get_appearance(self, texts: list[str], options: list[str]) -> list[str]:
-        all_text = " ".join([self.remove_accents(text) for text in texts]).lower()
+    def get_appearance(self, text: str, options: list[str]) -> list[str]:
+        all_text = self.remove_accents(text).lower()
         max_words = max([len(option.split()) for option in options])
         words = all_text.split()
         window_texts = [" ".join(words[i : i + max_words]) for i in range(len(words) - max_words + 1)]
@@ -37,7 +37,7 @@ class TextFuzzyFirstCleanLabels(TextToMultiOptionMethod):
         predictions: list[list[Option]] = list()
         option_labels = self.get_cleaned_labels(self.options)
         for sample in predictions_samples:
-            values = self.get_appearance(sample.tags_texts, option_labels)
+            values = self.get_appearance(sample.source_text, option_labels)
 
             if values:
                 predictions.append([self.options[option_labels.index(values[0])]])

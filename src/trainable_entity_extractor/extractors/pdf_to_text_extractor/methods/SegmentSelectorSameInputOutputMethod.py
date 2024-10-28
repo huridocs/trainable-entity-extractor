@@ -35,7 +35,7 @@ class SegmentSelectorSameInputOutputMethod(ToTextExtractorMethod):
         segment_selector.set_extraction_segments([x.pdf_data for x in predictions_samples])
 
         for sample in predictions_samples:
-            sample.tags_texts = self.get_predicted_texts(sample.pdf_data)
+            sample.segment_selector_texts = self.get_predicted_texts(sample.pdf_data)
 
         semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
         return semantic_metadata_extraction.predict(predictions_samples)

@@ -8,7 +8,7 @@ from trainable_entity_extractor.data.PdfData import PdfData
 class TrainingSample:
     pdf_data: PdfData = None
     labeled_data: LabeledData = None
-    tags_texts: list[str] = None
+    segment_selector_texts: list[str] = None
 
     def get_text(self):
         texts = list()

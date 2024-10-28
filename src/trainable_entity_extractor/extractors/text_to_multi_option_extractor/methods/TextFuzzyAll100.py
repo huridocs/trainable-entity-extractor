@@ -17,15 +17,15 @@ class TextFuzzyAll100(TextToMultiOptionMethod):
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         return True
 
-    def get_appearances(self, texts: list[str], options: list[str]) -> list[str]:
+    def get_appearances(self, text: str, options: list[str]) -> list[str]:
         appearances = []
-        for text in texts:
-            for option in options:
-                if len(text) < math.ceil(len(option) * 0.85):
-                    continue
 
-                if fuzz.partial_ratio(option, text.lower()) >= self.threshold:
-                    appearances.append(option)
+        for option in options:
+            if len(text) < math.ceil(len(option) * 0.85):
+                continue
+
+            if fuzz.partial_ratio(option, text.lower()) >= self.threshold:
+                appearances.append(option)
 
         return list(set(appearances))
 
@@ -33,7 +33,7 @@ class TextFuzzyAll100(TextToMultiOptionMethod):
         predictions: list[list[Option]] = list()
         option_labels = [option.label.lower() for option in self.options]
         for sample in predictions_samples:
-            values = self.get_appearances(sample.tags_texts, option_labels)
+            values = self.get_appearances(sample.source_text, option_labels)
             predictions.append([option for option in self.options if option.label in values])
 
         return predictions

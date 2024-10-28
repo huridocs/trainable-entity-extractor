@@ -39,7 +39,7 @@ def get_extraction_data(filter_by: list[str] = None):
             values = [Option(id=x, label=x) for x in text_value["values"]]
             language_iso = "es" if "cejil" in task_name else "en"
             labeled_data = LabeledData(values=values, entity_name=str(i), language_iso=language_iso)
-            extraction_sample = TrainingSample(tags_texts=[text_value["text"]], labeled_data=labeled_data)
+            extraction_sample = TrainingSample(segment_selector_texts=[text_value["text"]], labeled_data=labeled_data)
             samples.append(extraction_sample)
 
         multi_value: bool = len([sample for sample in samples if len(sample.labeled_data.values) > 1]) > 0
@@ -77,8 +77,8 @@ def get_benchmark():
         truth_one_hot = PdfMultiOptionMethod.one_hot_to_options_list(values_list, extraction_data.options)
         extractor.create_model(train_set)
 
-        tags_texts = [x.tags_texts for x in test_set.samples]
-        test_data = [PredictionSample(tags_texts=tag_text, entity_name=str(i)) for i, tag_text in enumerate(tags_texts)]
+        tags_texts = [x.segment_selector_texts for x in test_set.samples]
+        test_data = [PredictionSample(segment_selector_texts=tag_text, entity_name=str(i)) for i, tag_text in enumerate(tags_texts)]
         suggestions = extractor.get_suggestions(test_data)
         values_list = [x.values for x in suggestions]
         predictions_one_hot = PdfMultiOptionMethod.one_hot_to_options_list(values_list, extraction_data.options)
@@ -109,12 +109,12 @@ def check_results():
         extractor = TextToMultiOptionExtractor(extraction_identifier=extraction_data.extraction_identifier)
         train_set, test_set = ExtractorBase.get_train_test_sets(extraction_data, limit_samples=False)
         test_data = [
-            PredictionSample(tags_texts=x.tags_texts, entity_name=x.labeled_data.entity_name) for x in test_set.samples
+            PredictionSample(segment_selector_texts=x.segment_selector_texts, entity_name=x.labeled_data.entity_name) for x in test_set.samples
         ]
         suggestions = extractor.get_suggestions(test_data)
         for suggestion, sample in zip(suggestions, test_set.samples):
             print()
-            print(" ".join([x for x in sample.tags_texts]).replace("\n", " "))
+            print(" ".join([x for x in sample.segment_selector_texts]).replace("\n", " "))
             print([x.label for x in sample.labeled_data.values])
             print([x.label for x in suggestion.values])
 

@@ -71,7 +71,7 @@ class ToTextExtractorMethod:
         self.train(performance_train_set)
         samples = performance_test_set.samples
         predictions = self.predict(
-            [PredictionSample(pdf_data=deepcopy(x.pdf_data), tags_texts=x.tags_texts) for x in samples]
+            [PredictionSample(pdf_data=deepcopy(x.pdf_data), segment_selector_texts=x.segment_selector_texts) for x in samples]
         )
 
         correct = [
@@ -92,7 +92,7 @@ class ToTextExtractorMethod:
             document_text = " ".join([x.text_content for x in segments])
             message += f"\nprediction            : {prediction[:70].strip()}\n"
             message += f"truth                 : {training_sample.labeled_data.label_text[:70].strip()}\n"
-            message += f"segment selector text : {' '.join(training_sample.tags_texts)[:70].strip()}\n"
+            message += f"segment selector text : {' '.join(training_sample.segment_selector_texts)[:70].strip()}\n"
             message += f"document text         : {document_text[:70].strip()}\n"
 
         config_logger.info(message)

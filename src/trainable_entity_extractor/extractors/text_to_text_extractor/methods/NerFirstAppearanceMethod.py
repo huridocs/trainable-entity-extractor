@@ -13,7 +13,7 @@ tagger = Classifier.load("ner-ontonotes-large")
 
 class NerFirstAppearanceMethod(ToTextExtractorMethod):
     def train(self, extraction_data: ExtractionData):
-        texts = [self.clean_text(" ".join(sample.tags_texts)) for sample in extraction_data.samples]
+        texts = [self.clean_text(" ".join(sample.segment_selector_texts)) for sample in extraction_data.samples]
         labels = [self.clean_text(sample.labeled_data.label_text).lower() for sample in extraction_data.samples]
 
         types = list()
@@ -32,7 +32,7 @@ class NerFirstAppearanceMethod(ToTextExtractorMethod):
         if not tag_type:
             return [""] * len(predictions_samples)
 
-        texts = [self.clean_text(" ".join(sample.tags_texts)) for sample in predictions_samples]
+        texts = [self.clean_text(" ".join(sample.segment_selector_texts)) for sample in predictions_samples]
         predictions = [""] * len(texts)
         for i, text in enumerate(texts):
             sentence = Sentence(text)

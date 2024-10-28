@@ -42,7 +42,7 @@ class DateParserMethod(ToTextExtractorMethod):
     def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
         languages = self.load_json("languages.json")
         predictions_dates = [
-            self.get_date(prediction_sample.tags_texts, languages) for prediction_sample in predictions_samples
+            self.get_date(prediction_sample.segment_selector_texts, languages) for prediction_sample in predictions_samples
         ]
         predictions = [date.strftime("%Y-%m-%d") if date else "" for date in predictions_dates]
         return predictions

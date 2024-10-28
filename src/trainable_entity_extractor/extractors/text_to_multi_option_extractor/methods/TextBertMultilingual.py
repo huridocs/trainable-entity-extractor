@@ -56,21 +56,8 @@ class TextBertMultilingual(TextToMultiOptionMethod):
 
         return str(model_path)
 
-    @staticmethod
-    def get_text(texts: list[str]):
-        words = list()
-        for text in texts:
-            text_words = text.split()
-            for word in text_words:
-                clean_word = "".join([x for x in word if x.isalpha() or x.isdigit()])
-
-                if clean_word:
-                    words.append(clean_word)
-
-        return " ".join(words)
-
     def create_dataset(self, multi_option_data: ExtractionData, name: str):
-        texts = [self.get_text(sample.tags_texts) for sample in multi_option_data.samples]
+        texts = [self.get_text(sample.labeled_data.source_text) for sample in multi_option_data.samples]
         labels = self.get_one_hot_encoding(multi_option_data)
         return self.save_dataset(texts, labels, name)
 
@@ -138,7 +125,7 @@ class TextBertMultilingual(TextToMultiOptionMethod):
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
         labels_number = len(self.options)
 
-        texts = [self.get_text(sample.tags_texts) for sample in predictions_samples]
+        texts = [self.get_text(sample.source_text) for sample in predictions_samples]
         labels = [[0] * len(self.options) for _ in predictions_samples]
 
         predict_path = self.save_dataset(texts, labels, "predict")

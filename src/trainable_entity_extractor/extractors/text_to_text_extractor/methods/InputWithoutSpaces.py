@@ -14,4 +14,4 @@ class InputWithoutSpaces(ToTextExtractorMethod):
         return "".join(text.split())
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
-        return [self.trim_text(x.tags_texts) for x in predictions_samples]
+        return [self.trim_text(x.segment_selector_texts) for x in predictions_samples]

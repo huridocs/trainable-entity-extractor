@@ -57,7 +57,7 @@ class TextToMultiOptionMethod:
 
         self.train(performance_train_set)
 
-        prediction_samples = [PredictionSample(tags_texts=x.tags_texts) for x in performance_test_set.samples]
+        prediction_samples = [PredictionSample(segment_selector_texts=x.segment_selector_texts) for x in performance_test_set.samples]
         predictions = self.predict(prediction_samples)
 
         self.remove_model()
@@ -90,6 +90,18 @@ class TextToMultiOptionMethod:
             return [self.options[best_score_index]] if prediction_scores[best_score_index] > 0.5 else []
 
         return [self.options[i] for i, value in enumerate(prediction_scores) if value > 0.5]
+
+    @staticmethod
+    def get_text(text: str):
+        words = list()
+
+        for word in text.split():
+            clean_word = "".join([x for x in word if x.isalpha() or x.isdigit()])
+
+            if clean_word:
+                words.append(clean_word)
+
+        return " ".join(words)
 
     @abstractmethod
     def can_be_used(self, extraction_data: ExtractionData) -> bool:

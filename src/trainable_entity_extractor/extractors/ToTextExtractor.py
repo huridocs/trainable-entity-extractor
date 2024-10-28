@@ -61,7 +61,7 @@ class ToTextExtractor(ExtractorBase):
         return self.METHODS[0](self.extraction_identifier)
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        if not extraction_data.samples:
+        if not extraction_data or extraction_data.samples:
             return False, "No samples to create model"
 
         performance_train_set, performance_test_set = self.get_train_test_sets(extraction_data)

@@ -63,21 +63,8 @@ class TextSingleLabelBert(TextToMultiOptionMethod):
 
         return str(model_path)
 
-    @staticmethod
-    def get_text(texts: list[str]):
-        words = list()
-        for text in texts:
-            text_words = text.split()
-            for word in text_words:
-                clean_word = "".join([x for x in word if x.isalpha() or x.isdigit()])
-
-                if clean_word:
-                    words.append(clean_word)
-
-        return " ".join(words)
-
     def create_dataset(self, extraction_data: ExtractionData, name: str):
-        texts = [self.get_text(sample.tags_texts) for sample in extraction_data.samples]
+        texts = [self.get_text(sample.labeled_data.source_text) for sample in extraction_data.samples]
         labels = self.get_one_hot_encoding(extraction_data)
         self.save_dataset(texts, labels, name)
 
@@ -104,7 +91,7 @@ class TextSingleLabelBert(TextToMultiOptionMethod):
         return clf_metrics.compute(predictions=predictions_list, references=labels)
 
     def preprocess_function(self, sample: TrainingSample):
-        text = self.get_text(sample.tags_texts)
+        text = self.get_text(sample.labeled_data.source_text)
         if sample.labeled_data.values:
             labels = self.options.index(sample.labeled_data.values[0])
         else:
@@ -170,7 +157,7 @@ class TextSingleLabelBert(TextToMultiOptionMethod):
         return odds
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
-        texts = [self.get_text(sample.tags_texts) for sample in predictions_samples]
+        texts = [self.get_text(sample.source_text) for sample in predictions_samples]
         labels = [[0] * len(self.options) for _ in predictions_samples]
 
         self.save_dataset(texts, labels, "predict")

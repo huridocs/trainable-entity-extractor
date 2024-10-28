@@ -8,8 +8,12 @@ from trainable_entity_extractor.extractors.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.extractors.NaiveExtractor import NaiveExtractor
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.PdfToTextExtractor import PdfToTextExtractor
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
-from trainable_entity_extractor.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import PdfToMultiOptionExtractor
-from trainable_entity_extractor.extractors.text_to_multi_option_extractor.TextToMultiOptionExtractor import TextToMultiOptionExtractor
+from trainable_entity_extractor.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
+    PdfToMultiOptionExtractor,
+)
+from trainable_entity_extractor.extractors.text_to_multi_option_extractor.TextToMultiOptionExtractor import (
+    TextToMultiOptionExtractor,
+)
 from trainable_entity_extractor.extractors.text_to_text_extractor.TextToTextExtractor import TextToTextExtractor
 from trainable_entity_extractor.send_logs import send_logs
 
@@ -43,7 +47,7 @@ class TrainableEntityExtractor:
 
             send_logs(self.extraction_identifier, f"Using extractor {extractor_instance.get_name()}")
             send_logs(self.extraction_identifier, f"Creating models with {len(extraction_data.samples)} samples")
-            self.extraction_identifier.get_extractor_used_path().write_text(extractor_instance.get_name())
+            self.extraction_identifier.save_extractor_used(extractor_instance.get_name())
             return extractor_instance.create_model(extraction_data)
 
         send_logs(self.extraction_identifier, "Error creating extractor", Severity.error)
@@ -51,11 +55,11 @@ class TrainableEntityExtractor:
         return False, "Error creating extractor"
 
     def predict(self, prediction_samples: list[PredictionSample]) -> list[Suggestion]:
-        if not self.extraction_identifier.get_extractor_used_path().exists():
+        extractor_name = self.extraction_identifier.get_extractor_used()
+        if not extractor_name:
             send_logs(self.extraction_identifier, f"No extractor available", Severity.error)
             return []
 
-        extractor_name = self.extraction_identifier.get_extractor_used_path().read_text()
         for extractor in self.EXTRACTORS:
             extractor_instance = extractor(self.extraction_identifier)
             if extractor_instance.get_name() != extractor_name:

@@ -15,8 +15,8 @@ class TextFuzzyFirst(TextToMultiOptionMethod):
         return True
 
     @staticmethod
-    def get_appearance(texts: list[str], options: list[str]) -> list[str]:
-        all_text = " ".join(texts).lower()
+    def get_appearance(text: str, options: list[str]) -> list[str]:
+        all_text = text.lower()
         max_words = max([len(option.split()) for option in options])
         words = all_text.split()
         window_texts = [" ".join(words[i : i + max_words]) for i in range(len(words) - max_words + 1)]
@@ -35,7 +35,7 @@ class TextFuzzyFirst(TextToMultiOptionMethod):
         predictions: list[list[Option]] = list()
         option_labels = [option.label.lower() for option in self.options]
         for sample in predictions_samples:
-            values = self.get_appearance(sample.tags_texts, option_labels)
+            values = self.get_appearance(sample.source_text, option_labels)
             predictions.append([option for option in self.options if option.label in values])
 
         return predictions

@@ -46,7 +46,7 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
 
     def get_max_input_length(self, extraction_data: ExtractionData):
         tokenizer = AutoTokenizer.from_pretrained("HURIDOCS/mt5-small-spanish-es", cache_dir=self.get_cache_dir())
-        texts = [self.extraction_identifier.run_name + ": " + " ".join(x.tags_texts) for x in extraction_data.samples]
+        texts = [self.extraction_identifier.run_name + ": " + " ".join(x.segment_selector_texts) for x in extraction_data.samples]
         tokens_number = [len(tokenizer(text)["input_ids"]) for text in texts]
         input_length = min(int((max(tokens_number) + 5) * 1.5), 512)
         config_logger.info(f"Max input length: {str(input_length)}")
@@ -54,7 +54,7 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
 
     def get_max_output_length(self, extraction_data: ExtractionData):
         tokenizer = AutoTokenizer.from_pretrained("HURIDOCS/mt5-small-spanish-es", cache_dir=self.get_cache_dir())
-        tokens_number = [len(tokenizer(" ".join(x.tags_texts))["input_ids"]) for x in extraction_data.samples]
+        tokens_number = [len(tokenizer(" ".join(x.segment_selector_texts))["input_ids"]) for x in extraction_data.samples]
         output_length = min(int((max(tokens_number) + 5) * 1.5), 256)
         config_logger.info(f"Max output length: {str(output_length)}")
         return output_length
@@ -65,7 +65,7 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
         if exists(data_path):
             os.remove(data_path)
 
-        text_inputs = [" ".join(sample.tags_texts) for sample in extraction_data.samples]
+        text_inputs = [" ".join(sample.segment_selector_texts) for sample in extraction_data.samples]
         text_target = [sample.labeled_data.label_text if sample.labeled_data else "" for sample in extraction_data.samples]
 
         data = [
@@ -140,12 +140,12 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
         return exists(self.get_model_path())
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
-        texts = [" ".join(x.tags_texts) for x in predictions_samples]
+        texts = [" ".join(x.segment_selector_texts) for x in predictions_samples]
 
         if not self.exists_model():
             return texts
 
-        samples = [TrainingSample(tags_texts=sample.tags_texts) for sample in predictions_samples]
+        samples = [TrainingSample(segment_selector_texts=sample.segment_selector_texts) for sample in predictions_samples]
         predict_data_path = self.prepare_dataset(ExtractionData(samples=samples))
 
         if not predict_data_path:

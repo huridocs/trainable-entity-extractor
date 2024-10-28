@@ -37,9 +37,9 @@ class TestTextToMultiOptionExtraction(TestCase):
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
 
         samples = [
-            TrainingSample(tags_texts=["point 1"], labeled_data=LabeledData(values=[options[0]])),
-            TrainingSample(tags_texts=["point 2"], labeled_data=LabeledData(values=[options[1]])),
-            TrainingSample(tags_texts=["point 3  point 2"], labeled_data=LabeledData(values=[options[2]])),
+            TrainingSample(segment_selector_texts=["point 1"], labeled_data=LabeledData(values=[options[0]])),
+            TrainingSample(segment_selector_texts=["point 2"], labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(segment_selector_texts=["point 3  point 2"], labeled_data=LabeledData(values=[options[2]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -49,8 +49,8 @@ class TestTextToMultiOptionExtraction(TestCase):
         multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
         multi_option_extraction.create_model(multi_option_data)
 
-        prediction_sample_1 = PredictionSample(tags_texts=["point 1"], entity_name="entity_name_1")
-        prediction_sample_3 = PredictionSample(tags_texts=["point 3 point 2"], entity_name="entity_name_3")
+        prediction_sample_1 = PredictionSample(segment_selector_texts=["point 1"], entity_name="entity_name_1")
+        prediction_sample_3 = PredictionSample(segment_selector_texts=["point 3 point 2"], entity_name="entity_name_3")
         suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_3])
 
         self.assertEqual(2, len(suggestions))
@@ -64,9 +64,9 @@ class TestTextToMultiOptionExtraction(TestCase):
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
 
         samples = [
-            TrainingSample(tags_texts=["point 1 point 2"], labeled_data=LabeledData(values=[options[0], options[1]])),
-            TrainingSample(tags_texts=["point 2"], labeled_data=LabeledData(values=[options[1]])),
-            TrainingSample(tags_texts=["point 3 point 1"], labeled_data=LabeledData(values=[options[2], options[0]])),
+            TrainingSample(segment_selector_texts=["point 1 point 2"], labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(segment_selector_texts=["point 2"], labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(segment_selector_texts=["point 3 point 1"], labeled_data=LabeledData(values=[options[2], options[0]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -76,8 +76,8 @@ class TestTextToMultiOptionExtraction(TestCase):
         multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
         multi_option_extraction.create_model(multi_option_data)
 
-        prediction_sample_1 = PredictionSample(tags_texts=["point 1 point 2"], entity_name="entity_name_1")
-        prediction_sample_3 = PredictionSample(tags_texts=["point 3 point 1"], entity_name="entity_name_3")
+        prediction_sample_1 = PredictionSample(segment_selector_texts=["point 1 point 2"], entity_name="entity_name_1")
+        prediction_sample_3 = PredictionSample(segment_selector_texts=["point 3 point 1"], entity_name="entity_name_3")
         suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_3])
 
         self.assertEqual(2, len(suggestions))
@@ -96,9 +96,9 @@ class TestTextToMultiOptionExtraction(TestCase):
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
 
         samples = [
-            TrainingSample(tags_texts=["point one point two"], labeled_data=LabeledData(values=[options[0], options[1]])),
-            TrainingSample(tags_texts=["point two"], labeled_data=LabeledData(values=[options[1]])),
-            TrainingSample(tags_texts=["point three point one"], labeled_data=LabeledData(values=[options[2], options[0]])),
+            TrainingSample(segment_selector_texts=["point one point two"], labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(segment_selector_texts=["point two"], labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(segment_selector_texts=["point three point one"], labeled_data=LabeledData(values=[options[2], options[0]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -108,8 +108,8 @@ class TestTextToMultiOptionExtraction(TestCase):
         multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
         multi_option_extraction.create_model(multi_option_data)
 
-        prediction_sample_1 = PredictionSample(tags_texts=["point one point two"], entity_name="entity_name_1")
-        prediction_sample_3 = PredictionSample(tags_texts=["point three point one"], entity_name="entity_name_3")
+        prediction_sample_1 = PredictionSample(segment_selector_texts=["point one point two"], entity_name="entity_name_1")
+        prediction_sample_3 = PredictionSample(segment_selector_texts=["point three point one"], entity_name="entity_name_3")
         suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_3])
 
         self.assertEqual(2, len(suggestions))
@@ -125,7 +125,7 @@ class TestTextToMultiOptionExtraction(TestCase):
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
 
         samples = [
-            TrainingSample(tags_texts=["1 2"], labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(segment_selector_texts=["1 2"], labeled_data=LabeledData(values=[options[0], options[1]])),
         ]
 
         multi_option_data = ExtractionData(

@@ -16,7 +16,7 @@ class TestNerMethod(TestCase):
     def test_ner(self):
         sample = TrainingSample(
             labeled_data=LabeledData(label_text="Huridocs", language_iso="en"),
-            tags_texts=["This repository belongs to Huridocs"],
+            segment_selector_texts=["This repository belongs to Huridocs"],
         )
 
         extraction_data = ExtractionData(samples=[sample], extraction_identifier=extraction_identifier)
@@ -29,7 +29,7 @@ class TestNerMethod(TestCase):
 
     def test_not_found_tag(self):
         sample = TrainingSample(
-            labeled_data=LabeledData(label_text="Huridocs", language_iso="en"), tags_texts=["This repository belongs to me"]
+            labeled_data=LabeledData(label_text="Huridocs", language_iso="en"), segment_selector_texts=["This repository belongs to me"]
         )
 
         extraction_data = ExtractionData(samples=[sample], extraction_identifier=extraction_identifier)
@@ -43,7 +43,7 @@ class TestNerMethod(TestCase):
     def test_different_case(self):
         sample = TrainingSample(
             labeled_data=LabeledData(label_text="Human Rights Council", language_iso="en"),
-            tags_texts=["This repository belongs the human rights council"],
+            segment_selector_texts=["This repository belongs the human rights council"],
         )
 
         extraction_data = ExtractionData(samples=[sample], extraction_identifier=extraction_identifier)

@@ -1,4 +1,7 @@
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
+from trainable_entity_extractor.data.PredictionSample import PredictionSample
+from trainable_entity_extractor.data.Suggestion import Suggestion
+from trainable_entity_extractor.data.TrainingSample import TrainingSample
 from trainable_entity_extractor.extractors.ToTextExtractor import ToTextExtractor
 from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.DateParserMethod import DateParserMethod
@@ -41,7 +44,24 @@ class TextToTextExtractor(ToTextExtractor):
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         for sample in extraction_data.samples:
-            if sample.tags_texts:
+            if sample.segment_selector_texts or sample.labeled_data.source_text:
                 return True
 
         return False
+
+    def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
+        if not extraction_data or extraction_data.samples:
+            return super().create_model(extraction_data)
+
+        for sample in extraction_data.samples:
+            if not sample.segment_selector_texts and sample.labeled_data.source_text:
+                sample.segment_selector_texts = [sample.labeled_data.source_text]
+
+        return super().create_model(extraction_data)
+
+    def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
+        for sample in predictions_samples:
+            if not sample.segment_selector_texts and sample.source_text:
+                sample.segment_selector_texts = [sample.source_text]
+
+        return super().get_suggestions(predictions_samples)

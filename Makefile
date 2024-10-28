@@ -16,7 +16,7 @@ check_format:
 	. .venv/bin/activate; command black --line-length 125 . --check
 
 test:
-	. .venv/bin/activate; command cd src; command python -m pytest ; command python -m pytest trainable_entity_extractor
+	. .venv/bin/activate; command cd src; command python -m pytest trainable_entity_extractor
 
 gpu:
 	. .venv/bin/activate; command cd src; python is_gpu_available.py

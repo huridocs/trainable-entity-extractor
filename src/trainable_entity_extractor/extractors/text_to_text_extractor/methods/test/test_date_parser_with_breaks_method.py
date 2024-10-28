@@ -15,7 +15,7 @@ class TestDateParserWithBreaksMethod(TestCase):
         extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="test")
 
         sample = TrainingSample(
-            labeled_data=LabeledData(label_text="1982-06-05", language_iso="en"), tags_texts=["5 Jun 1982"]
+            labeled_data=LabeledData(label_text="1982-06-05", language_iso="en"), segment_selector_texts=["5 Jun 1982"]
         )
 
         extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)

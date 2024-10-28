@@ -29,8 +29,8 @@ class TestMT5(TestCase):
         print(torch.cuda.is_available())
         extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="test")
 
-        samples_1 = [TrainingSample(labeled_data=LabeledData(label_text="foo"), tags_texts=["1/ foo end"])] * 5
-        samples_2 = [TrainingSample(labeled_data=LabeledData(label_text="var"), tags_texts=["2/ var end"])] * 5
+        samples_1 = [TrainingSample(labeled_data=LabeledData(label_text="foo"), segment_selector_texts=["1/ foo end"])] * 5
+        samples_2 = [TrainingSample(labeled_data=LabeledData(label_text="var"), segment_selector_texts=["2/ var end"])] * 5
 
         extraction_data = ExtractionData(samples=samples_1 + samples_2, extraction_identifier=extraction_identifier)
         mt5_true_case_english_spanish = MT5TrueCaseEnglishSpanishMethod(extraction_identifier)

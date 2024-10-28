@@ -42,7 +42,7 @@ class TextFastTextMethod(TextToMultiOptionMethod):
         return join(model_folder_path, "fast.model")
 
     def prepare_data(self, multi_option_data: ExtractionData):
-        texts = [" ".join(sample.tags_texts) for sample in multi_option_data.samples]
+        texts = [sample.labeled_data.source_text for sample in multi_option_data.samples]
         texts = [text.replace("\n", " ") for text in texts]
         labels = [
             "__label__" + " __label__".join(self.clean_labels(sample.labeled_data.values))
@@ -68,7 +68,7 @@ class TextFastTextMethod(TextToMultiOptionMethod):
         model.save_model(self.get_model_path())
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
-        texts = [" ".join(sample.tags_texts) for sample in predictions_samples]
+        texts = [sample.source_text for sample in predictions_samples]
         texts = [text.replace("\n", " ") for text in texts]
 
         model = fasttext.load_model(self.get_model_path())

@@ -56,22 +56,9 @@ class TextSingleLabelSetFit(TextToMultiOptionMethod):
         example["label"] = eval(example["label"])
         return example
 
-    @staticmethod
-    def get_text(texts: list[str]):
-        words = list()
-        for text in texts:
-            text_words = text.split()
-            for word in text_words:
-                clean_word = "".join([x for x in word if x.isalpha() or x.isdigit()])
-
-                if clean_word:
-                    words.append(clean_word)
-
-        return " ".join(words)
-
     def get_dataset_from_data(self, extraction_data: ExtractionData):
         data = list()
-        texts = [self.get_text(sample.tags_texts) for sample in extraction_data.samples]
+        texts = [self.get_text(sample.labeled_data.source_text) for sample in extraction_data.samples]
         labels = list()
 
         for sample in extraction_data.samples:
@@ -124,7 +111,7 @@ class TextSingleLabelSetFit(TextToMultiOptionMethod):
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
         model = SetFitModel.from_pretrained(self.get_model_path())
-        texts = [self.get_text(sample.tags_texts) for sample in predictions_samples]
+        texts = [self.get_text(sample.source_text) for sample in predictions_samples]
         predictions = model.predict(texts)
 
         return [[option for option in self.options if option.label == prediction] for prediction in predictions]
