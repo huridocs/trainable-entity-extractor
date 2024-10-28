@@ -1,0 +1,21 @@
+Task                  Method name                                 Time(m) Score
+Extractor             cejil_descriptors[SetfitMultilingual]           8.3 51.72%
+Extractor             cejil_descriptors[Setfit]                      14.9 27.41%
+Extractor             cejil_descriptors[BertMultilingual]            15.5 11.24%
+Extractor             cejil_mechanism [TextTfIdf]                     0.3 100.0%
+Extractor             rightdocs_vote_type[TextTfIdf]                  0.0 93.55%
+Extractor             d4la_document_type [TextSingleLabelSetFit]      6.0  50.0%
+Extractor             cejil_president                                 0.7 90.91%
+Extractor             cejil_secretary                                 1.6  80.0%
+Extractor             cejil_countries                                 5.5 94.12%
+Extractor             cyrilla_keywords [TextSetFit]                   4.0 68.29%
+Extractor             cejil_judge                                     0.0 100.0%
+Extractor             action [TextSingleLabelSetFit]                 10.1  88.3%
+Extractor             issues [Setfit]                                13.0  76.7%
+Extractor             issues [BertBase]                                 -  70.8%
+Extractor             issues [BertLarge]                             98.3  90.2%
+Extractor             themes [Setfit]                                 5.3  66.1%
+Extractor             themes [BertBase]                              36.9  70.7%
+Extractor             themes [BertLarge]                             43.6  69.7%
+
+
