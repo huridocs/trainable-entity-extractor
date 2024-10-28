@@ -3,10 +3,7 @@ import shutil
 from os.path import join
 from unittest import TestCase
 
-import mongomock
-import pymongo
-
-from trainable_entity_extractor.Extractor import TrainableEntityExtractor
+from trainable_entity_extractor.TrainableEntityExtractor import TrainableEntityExtractor
 from trainable_entity_extractor.config import DATA_PATH, APP_PATH
 from trainable_entity_extractor.data.ExtractionTask import ExtractionTask
 from trainable_entity_extractor.data.Option import Option
@@ -16,9 +13,7 @@ from trainable_entity_extractor.data.Suggestion import Suggestion
 
 
 class TestExtractorPdfToMultiOption(TestCase):
-    @mongomock.patch(servers=["mongodb://127.0.0.1:29017"])
     def test_get_pdf_multi_option_suggestions(self):
-        mongo_client = pymongo.MongoClient("mongodb://127.0.0.1:29017")
 
         tenant = "tenant_to_be_removed"
         extraction_id = "extraction_id"
@@ -80,8 +75,6 @@ class TestExtractorPdfToMultiOption(TestCase):
         self.assertEqual(extraction_id, suggestions[0].id)
         self.assertEqual("test.xml", suggestions[0].xml_file_name)
         self.assertEqual([Option(id="id15", label="15")], suggestions[0].values)
-
-        self.assertIsNone(mongo_client.pdf_metadata_extraction.labeled_data.find_one({}))
 
     @mongomock.patch(servers=["mongodb://127.0.0.1:29017"])
     def test_context_multi_option_suggestions(self):
