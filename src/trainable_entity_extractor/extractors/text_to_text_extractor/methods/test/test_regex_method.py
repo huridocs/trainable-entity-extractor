@@ -12,7 +12,9 @@ extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="t
 
 class TestRegexMethod(TestCase):
     def test_performance_100(self):
-        sample = TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"])
+        sample = TrainingSample(
+            labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"]
+        )
 
         extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
         regex_method = RegexMethod(extraction_identifier)
@@ -20,7 +22,9 @@ class TestRegexMethod(TestCase):
         self.assertEqual(100, regex_method.performance(extraction_data, extraction_data))
 
     def test_performance_0(self):
-        sample = TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one two"])
+        sample = TrainingSample(
+            labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one two"]
+        )
 
         extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
         regex_method = RegexMethod(extraction_identifier)
@@ -28,8 +32,14 @@ class TestRegexMethod(TestCase):
         self.assertEqual(0, regex_method.performance(extraction_data, extraction_data))
 
     def test_performance_75(self):
-        sample_1 = [TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"])]
-        sample_2 = [TrainingSample(labeled_data=LabeledData(label_text="no regex", language_iso="en"), segment_selector_texts=["one"])]
+        sample_1 = [
+            TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"])
+        ]
+        sample_2 = [
+            TrainingSample(
+                labeled_data=LabeledData(label_text="no regex", language_iso="en"), segment_selector_texts=["one"]
+            )
+        ]
         extraction_data = ExtractionData(samples=sample_1 * 3 + sample_2, extraction_identifier=extraction_identifier)
 
         regex_method = RegexMethod(extraction_identifier)
@@ -42,15 +52,21 @@ class TestRegexMethod(TestCase):
         self.assertEqual(0, regex_method.performance(extraction_data, extraction_data))
 
     def test_performance_one_sample(self):
-        sample = [TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"])]
+        sample = [
+            TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"])
+        ]
         extraction_data = ExtractionData(samples=sample, extraction_identifier=extraction_identifier)
 
         regex_method = RegexMethod(extraction_identifier)
         self.assertEqual(100, regex_method.performance(extraction_data, extraction_data))
 
     def test_predict(self):
-        sample_1 = [TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=[""])]
-        sample_2 = [TrainingSample(labeled_data=LabeledData(label_text="34", language_iso="en"), segment_selector_texts=[""])]
+        sample_1 = [
+            TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=[""])
+        ]
+        sample_2 = [
+            TrainingSample(labeled_data=LabeledData(label_text="34", language_iso="en"), segment_selector_texts=[""])
+        ]
         extraction_data = ExtractionData(samples=sample_1 + sample_2, extraction_identifier=extraction_identifier)
 
         regex_method = RegexMethod(extraction_identifier)
@@ -64,8 +80,12 @@ class TestRegexMethod(TestCase):
         self.assertEqual("14", predictions[2])
 
     def test_predict_void(self):
-        sample_1 = [TrainingSample(labeled_data=LabeledData(label_text="124", language_iso="en"), segment_selector_texts=[""])]
-        sample_2 = [TrainingSample(labeled_data=LabeledData(label_text="344", language_iso="en"), segment_selector_texts=[""])]
+        sample_1 = [
+            TrainingSample(labeled_data=LabeledData(label_text="124", language_iso="en"), segment_selector_texts=[""])
+        ]
+        sample_2 = [
+            TrainingSample(labeled_data=LabeledData(label_text="344", language_iso="en"), segment_selector_texts=[""])
+        ]
         extraction_data = ExtractionData(samples=sample_1 + sample_2, extraction_identifier=extraction_identifier)
 
         regex_method = RegexMethod(extraction_identifier)
@@ -78,9 +98,15 @@ class TestRegexMethod(TestCase):
         self.assertEqual("", predictions[0])
 
     def test_regex_when_empty_labels(self):
-        sample_1 = [TrainingSample(labeled_data=LabeledData(label_text="123", language_iso="en"), segment_selector_texts=[""])]
-        sample_2 = [TrainingSample(labeled_data=LabeledData(label_text="321", language_iso="en"), segment_selector_texts=[""])]
-        empty_labels = [TrainingSample(labeled_data=LabeledData(label_text="", language_iso="en"), segment_selector_texts=[""])] * 100
+        sample_1 = [
+            TrainingSample(labeled_data=LabeledData(label_text="123", language_iso="en"), segment_selector_texts=[""])
+        ]
+        sample_2 = [
+            TrainingSample(labeled_data=LabeledData(label_text="321", language_iso="en"), segment_selector_texts=[""])
+        ]
+        empty_labels = [
+            TrainingSample(labeled_data=LabeledData(label_text="", language_iso="en"), segment_selector_texts=[""])
+        ] * 100
 
         extraction_data = ExtractionData(
             samples=sample_1 + empty_labels + sample_2, extraction_identifier=extraction_identifier
@@ -102,7 +128,9 @@ class TestRegexMethod(TestCase):
         regex_method = RegexMethod(extraction_identifier)
         regex_method.train(extraction_data)
 
-        sample = [TrainingSample(labeled_data=LabeledData(label_text="111", language_iso="en"), segment_selector_texts=["one 12"])]
+        sample = [
+            TrainingSample(labeled_data=LabeledData(label_text="111", language_iso="en"), segment_selector_texts=["one 12"])
+        ]
         extraction_data = ExtractionData(samples=sample, extraction_identifier=extraction_identifier)
 
         regex_method.train(extraction_data)

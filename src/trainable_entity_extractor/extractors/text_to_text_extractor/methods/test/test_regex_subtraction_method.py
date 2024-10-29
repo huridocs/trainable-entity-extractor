@@ -14,8 +14,12 @@ extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="t
 
 class TestRegexSubtractionMethod(TestCase):
     def test_performance_text_in_front(self):
-        sample_1 = TrainingSample(labeled_data=LabeledData(label_text="two", language_iso="en"), segment_selector_texts=["one two"])
-        sample_2 = TrainingSample(labeled_data=LabeledData(label_text="three", language_iso="en"), segment_selector_texts=["one three"])
+        sample_1 = TrainingSample(
+            labeled_data=LabeledData(label_text="two", language_iso="en"), segment_selector_texts=["one two"]
+        )
+        sample_2 = TrainingSample(
+            labeled_data=LabeledData(label_text="three", language_iso="en"), segment_selector_texts=["one three"]
+        )
 
         extraction_data = ExtractionData(samples=[sample_1, sample_2], extraction_identifier=extraction_identifier)
 
@@ -24,7 +28,9 @@ class TestRegexSubtractionMethod(TestCase):
         self.assertEqual(100, regex_method.performance(extraction_data, extraction_data))
 
     def test_performance_text_in_back(self):
-        sample_1 = TrainingSample(labeled_data=LabeledData(label_text="two", language_iso="en"), segment_selector_texts=["two other"])
+        sample_1 = TrainingSample(
+            labeled_data=LabeledData(label_text="two", language_iso="en"), segment_selector_texts=["two other"]
+        )
         sample_2 = TrainingSample(
             labeled_data=LabeledData(label_text="three", language_iso="en"), segment_selector_texts=["three other"]
         )
@@ -61,7 +67,9 @@ class TestRegexSubtractionMethod(TestCase):
         self.assertEqual(100, regex_method.performance(extraction_data, extraction_data))
 
     def test_performance_text_front_and_back(self):
-        sample_1 = TrainingSample(labeled_data=LabeledData(label_text="two", language_iso="en"), segment_selector_texts=["1/ two final"])
+        sample_1 = TrainingSample(
+            labeled_data=LabeledData(label_text="two", language_iso="en"), segment_selector_texts=["1/ two final"]
+        )
         sample_2 = TrainingSample(
             labeled_data=LabeledData(label_text="three", language_iso="en"), segment_selector_texts=["1/ three final"]
         )
@@ -73,8 +81,12 @@ class TestRegexSubtractionMethod(TestCase):
         self.assertEqual(100, regex_method.performance(extraction_data, extraction_data))
 
     def test_predict(self):
-        sample_1 = TrainingSample(labeled_data=LabeledData(label_text="foo", language_iso="en"), segment_selector_texts=["1/ foo end"])
-        sample_2 = TrainingSample(labeled_data=LabeledData(label_text="var", language_iso="en"), segment_selector_texts=["2/ var end"])
+        sample_1 = TrainingSample(
+            labeled_data=LabeledData(label_text="foo", language_iso="en"), segment_selector_texts=["1/ foo end"]
+        )
+        sample_2 = TrainingSample(
+            labeled_data=LabeledData(label_text="var", language_iso="en"), segment_selector_texts=["2/ var end"]
+        )
 
         extraction_data = ExtractionData(samples=[sample_1, sample_2], extraction_identifier=extraction_identifier)
 

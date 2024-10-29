@@ -57,7 +57,9 @@ class TextToMultiOptionMethod:
 
         self.train(performance_train_set)
 
-        prediction_samples = [PredictionSample(segment_selector_texts=x.segment_selector_texts) for x in performance_test_set.samples]
+        prediction_samples = [
+            PredictionSample(segment_selector_texts=x.segment_selector_texts) for x in performance_test_set.samples
+        ]
         predictions = self.predict(prediction_samples)
 
         self.remove_model()

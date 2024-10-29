@@ -29,7 +29,8 @@ class TestNerMethod(TestCase):
 
     def test_not_found_tag(self):
         sample = TrainingSample(
-            labeled_data=LabeledData(label_text="Huridocs", language_iso="en"), segment_selector_texts=["This repository belongs to me"]
+            labeled_data=LabeledData(label_text="Huridocs", language_iso="en"),
+            segment_selector_texts=["This repository belongs to me"],
         )
 
         extraction_data = ExtractionData(samples=[sample], extraction_identifier=extraction_identifier)

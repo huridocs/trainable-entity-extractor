@@ -78,7 +78,9 @@ def get_benchmark():
         extractor.create_model(train_set)
 
         tags_texts = [x.segment_selector_texts for x in test_set.samples]
-        test_data = [PredictionSample(segment_selector_texts=tag_text, entity_name=str(i)) for i, tag_text in enumerate(tags_texts)]
+        test_data = [
+            PredictionSample(segment_selector_texts=tag_text, entity_name=str(i)) for i, tag_text in enumerate(tags_texts)
+        ]
         suggestions = extractor.get_suggestions(test_data)
         values_list = [x.values for x in suggestions]
         predictions_one_hot = PdfMultiOptionMethod.one_hot_to_options_list(values_list, extraction_data.options)
@@ -109,7 +111,8 @@ def check_results():
         extractor = TextToMultiOptionExtractor(extraction_identifier=extraction_data.extraction_identifier)
         train_set, test_set = ExtractorBase.get_train_test_sets(extraction_data, limit_samples=False)
         test_data = [
-            PredictionSample(segment_selector_texts=x.segment_selector_texts, entity_name=x.labeled_data.entity_name) for x in test_set.samples
+            PredictionSample(segment_selector_texts=x.segment_selector_texts, entity_name=x.labeled_data.entity_name)
+            for x in test_set.samples
         ]
         suggestions = extractor.get_suggestions(test_data)
         for suggestion, sample in zip(suggestions, test_set.samples):

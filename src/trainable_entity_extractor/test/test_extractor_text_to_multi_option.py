@@ -30,10 +30,9 @@ class TestExtractorTextToMultiOption(TestCase):
         labeled_data_2 = LabeledData(language_iso="en", values=values_2, source_text="dfg hij")
 
         sample = [TrainingSample(labeled_data=labeled_data_1), TrainingSample(labeled_data=labeled_data_2)]
-        extraction_data = ExtractionData(samples=sample,
-                                         extraction_identifier=extraction_identifier,
-                                         multi_value=True,
-                                         options=options)
+        extraction_data = ExtractionData(
+            samples=sample, extraction_identifier=extraction_identifier, multi_value=True, options=options
+        )
 
         trainable_entity_extractor = TrainableEntityExtractor(extraction_identifier=extraction_identifier)
         trainable_entity_extractor.train(extraction_data)

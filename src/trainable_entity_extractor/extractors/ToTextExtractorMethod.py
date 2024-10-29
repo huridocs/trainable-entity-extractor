@@ -71,7 +71,10 @@ class ToTextExtractorMethod:
         self.train(performance_train_set)
         samples = performance_test_set.samples
         predictions = self.predict(
-            [PredictionSample(pdf_data=deepcopy(x.pdf_data), segment_selector_texts=x.segment_selector_texts) for x in samples]
+            [
+                PredictionSample(pdf_data=deepcopy(x.pdf_data), segment_selector_texts=x.segment_selector_texts)
+                for x in samples
+            ]
         )
 
         correct = [

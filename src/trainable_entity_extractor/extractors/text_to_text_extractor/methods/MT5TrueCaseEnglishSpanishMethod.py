@@ -46,7 +46,9 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
 
     def get_max_input_length(self, extraction_data: ExtractionData):
         tokenizer = AutoTokenizer.from_pretrained("HURIDOCS/mt5-small-spanish-es", cache_dir=self.get_cache_dir())
-        texts = [self.extraction_identifier.run_name + ": " + " ".join(x.segment_selector_texts) for x in extraction_data.samples]
+        texts = [
+            self.extraction_identifier.run_name + ": " + " ".join(x.segment_selector_texts) for x in extraction_data.samples
+        ]
         tokens_number = [len(tokenizer(text)["input_ids"]) for text in texts]
         input_length = min(int((max(tokens_number) + 5) * 1.5), 512)
         config_logger.info(f"Max input length: {str(input_length)}")

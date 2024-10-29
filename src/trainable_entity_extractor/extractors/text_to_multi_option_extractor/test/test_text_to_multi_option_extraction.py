@@ -64,9 +64,13 @@ class TestTextToMultiOptionExtraction(TestCase):
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
 
         samples = [
-            TrainingSample(segment_selector_texts=["point 1 point 2"], labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(
+                segment_selector_texts=["point 1 point 2"], labeled_data=LabeledData(values=[options[0], options[1]])
+            ),
             TrainingSample(segment_selector_texts=["point 2"], labeled_data=LabeledData(values=[options[1]])),
-            TrainingSample(segment_selector_texts=["point 3 point 1"], labeled_data=LabeledData(values=[options[2], options[0]])),
+            TrainingSample(
+                segment_selector_texts=["point 3 point 1"], labeled_data=LabeledData(values=[options[2], options[0]])
+            ),
         ]
 
         multi_option_data = ExtractionData(
@@ -96,9 +100,13 @@ class TestTextToMultiOptionExtraction(TestCase):
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
 
         samples = [
-            TrainingSample(segment_selector_texts=["point one point two"], labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(
+                segment_selector_texts=["point one point two"], labeled_data=LabeledData(values=[options[0], options[1]])
+            ),
             TrainingSample(segment_selector_texts=["point two"], labeled_data=LabeledData(values=[options[1]])),
-            TrainingSample(segment_selector_texts=["point three point one"], labeled_data=LabeledData(values=[options[2], options[0]])),
+            TrainingSample(
+                segment_selector_texts=["point three point one"], labeled_data=LabeledData(values=[options[2], options[0]])
+            ),
         ]
 
         multi_option_data = ExtractionData(

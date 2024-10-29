@@ -41,7 +41,6 @@ class TestExtractorTextToText(TestCase):
         self.assertEqual("2", suggestions[2].entity_name)
         self.assertEqual("test 2", suggestions[2].text)
 
-
     def test_predictions_from_source_text_in_labeled_data(self):
         samples = [TrainingSample(labeled_data=LabeledData(label_text="1", language_iso="en", source_text="foo 1"))]
         samples += [TrainingSample(labeled_data=LabeledData(label_text="2", language_iso="en", source_text="2 var"))]

@@ -23,14 +23,16 @@ TEST_XML_PATH = f"{APP_PATH}/trainable_entity_extractor/test/test_files"
 
 class TestExtractorPdfToText(TestCase):
     def test_create_model_should_do_nothing_when_no_xml(self):
-        segment_box = SegmentBox(left=125,
-                                 top=247,
-                                 width=319,
-                                 height=29,
-                                 page_width=612,
-                                 page_height=792,
-                                 page_number=1,
-                                 segment_type=TokenType.TEXT)
+        segment_box = SegmentBox(
+            left=125,
+            top=247,
+            width=319,
+            height=29,
+            page_width=612,
+            page_height=792,
+            page_number=1,
+            segment_type=TokenType.TEXT,
+        )
         labeled_data = LabeledData(label_text="text", label_segments_boxes=[segment_box])
 
         pdf_data = PdfData.from_texts(["text"])
@@ -43,19 +45,20 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual(success, True)
 
     def test_create_model_when_blank_document(self):
-        segment_box = SegmentBox(left=123,
-                                 top=48,
-                                 width=83,
-                                 height=12,
-                                 page_width=612,
-                                 page_height=792,
-                                 page_number=1,
-                                 segment_type=TokenType.TEXT)
+        segment_box = SegmentBox(
+            left=123,
+            top=48,
+            width=83,
+            height=12,
+            page_width=612,
+            page_height=792,
+            page_number=1,
+            segment_type=TokenType.TEXT,
+        )
         labeled_data = LabeledData(label_text="some text", label_segments_boxes=[segment_box])
-        segmentation_data = SegmentationData(page_width=612,
-                                             page_height=792,
-                                             xml_segments_boxes=[],
-                                             label_segments_boxes=[segment_box])
+        segmentation_data = SegmentationData(
+            page_width=612, page_height=792, xml_segments_boxes=[], label_segments_boxes=[segment_box]
+        )
 
         blank_xml = join(TEST_XML_PATH, "blank.xml")
         xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=blank_xml)
@@ -81,10 +84,9 @@ class TestExtractorPdfToText(TestCase):
         )
 
         labeled_data = LabeledData(label_text="Original: English", label_segments_boxes=[segment_box])
-        segmentation_data = SegmentationData(page_width=612,
-                                             page_height=792,
-                                             xml_segments_boxes=[],
-                                             label_segments_boxes=[segment_box])
+        segmentation_data = SegmentationData(
+            page_width=612, page_height=792, xml_segments_boxes=[], label_segments_boxes=[segment_box]
+        )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
         xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
@@ -111,15 +113,12 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual(1, suggestion.segments_boxes[0].page_number)
 
     def test_get_semantic_suggestions(self):
-        segment_box = SegmentBox(
-            left=397, top=115, page_width=612, page_height=792, width=74, height=9, page_number=1
-        )
+        segment_box = SegmentBox(left=397, top=115, page_width=612, page_height=792, width=74, height=9, page_number=1)
 
         labeled_data = LabeledData(label_text="English1", language_iso="en", label_segments_boxes=[segment_box])
-        segmentation_data = SegmentationData(page_width=612,
-                                             page_height=792,
-                                             xml_segments_boxes=[],
-                                             label_segments_boxes=[segment_box])
+        segmentation_data = SegmentationData(
+            page_width=612, page_height=792, xml_segments_boxes=[], label_segments_boxes=[segment_box]
+        )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
         xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
@@ -149,15 +148,12 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual(1, suggestion.segments_boxes[0].page_number)
 
     def test_get_semantic_suggestions_numeric(self):
-        segment_box = SegmentBox(
-            left=397, top=91, page_width=612, page_height=792, width=10, height=9, page_number=1
-        )
+        segment_box = SegmentBox(left=397, top=91, page_width=612, page_height=792, width=10, height=9, page_number=1)
 
         labeled_data = LabeledData(label_text="15", language_iso="en", label_segments_boxes=[segment_box])
-        segmentation_data = SegmentationData(page_width=612,
-                                             page_height=792,
-                                             xml_segments_boxes=[],
-                                             label_segments_boxes=[segment_box])
+        segmentation_data = SegmentationData(
+            page_width=612, page_height=792, xml_segments_boxes=[], label_segments_boxes=[segment_box]
+        )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
         xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
@@ -180,15 +176,12 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual("15", suggestion.text)
 
     def test_get_suggestions_blank_document(self):
-        segment_box = SegmentBox(
-            left=397, top=91, page_width=612, page_height=792, width=10, height=9, page_number=1
-        )
+        segment_box = SegmentBox(left=397, top=91, page_width=612, page_height=792, width=10, height=9, page_number=1)
 
         labeled_data = LabeledData(label_text="15", language_iso="en", label_segments_boxes=[segment_box])
-        segmentation_data = SegmentationData(page_width=612,
-                                             page_height=792,
-                                             xml_segments_boxes=[],
-                                             label_segments_boxes=[segment_box])
+        segmentation_data = SegmentationData(
+            page_width=612, page_height=792, xml_segments_boxes=[], label_segments_boxes=[segment_box]
+        )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
         xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
@@ -214,17 +207,13 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual("", suggestion.segment_text)
         self.assertEqual("", suggestion.text)
 
-
     def test_get_suggestions_no_pages_document(self):
-        segment_box = SegmentBox(
-            left=397, top=91, page_width=612, page_height=792, width=10, height=9, page_number=1
-        )
+        segment_box = SegmentBox(left=397, top=91, page_width=612, page_height=792, width=10, height=9, page_number=1)
 
         labeled_data = LabeledData(label_text="15", language_iso="en", label_segments_boxes=[segment_box])
-        segmentation_data = SegmentationData(page_width=612,
-                                             page_height=792,
-                                             xml_segments_boxes=[],
-                                             label_segments_boxes=[segment_box])
+        segmentation_data = SegmentationData(
+            page_width=612, page_height=792, xml_segments_boxes=[], label_segments_boxes=[segment_box]
+        )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
         xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)

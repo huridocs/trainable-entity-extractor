@@ -12,7 +12,9 @@ extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="t
 
 class TestInputWithoutSpaces(TestCase):
     def test_performance_100(self):
-        sample = TrainingSample(labeled_data=LabeledData(label_text="abc", language_iso="en"), segment_selector_texts=["a b c"])
+        sample = TrainingSample(
+            labeled_data=LabeledData(label_text="abc", language_iso="en"), segment_selector_texts=["a b c"]
+        )
 
         extraction_data = ExtractionData(samples=[sample], extraction_identifier=extraction_identifier)
 
@@ -20,8 +22,12 @@ class TestInputWithoutSpaces(TestCase):
         self.assertEqual(100, same_input_output_method.performance(extraction_data, extraction_data))
 
     def test_performance_50(self):
-        sample_1 = TrainingSample(labeled_data=LabeledData(label_text="abc", language_iso="en"), segment_selector_texts=["a b ", "c"])
-        sample_2 = TrainingSample(labeled_data=LabeledData(label_text="2", language_iso="en"), segment_selector_texts=["a", " b c"])
+        sample_1 = TrainingSample(
+            labeled_data=LabeledData(label_text="abc", language_iso="en"), segment_selector_texts=["a b ", "c"]
+        )
+        sample_2 = TrainingSample(
+            labeled_data=LabeledData(label_text="2", language_iso="en"), segment_selector_texts=["a", " b c"]
+        )
 
         extraction_data = ExtractionData(samples=[sample_1] + [sample_2], extraction_identifier=extraction_identifier)
 

@@ -25,7 +25,9 @@ class TestTextToTextExtractor(TestCase):
         shutil.rmtree(join(DATA_PATH, tenant), ignore_errors=True)
 
     def test_predictions_same_input_output(self):
-        sample = [TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en"), segment_selector_texts=["two"])]
+        sample = [
+            TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en"), segment_selector_texts=["two"])
+        ]
         extraction_data = ExtractionData(samples=sample, extraction_identifier=extraction_identifier)
 
         text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier)
@@ -45,8 +47,12 @@ class TestTextToTextExtractor(TestCase):
         self.assertEqual("test 2", suggestions[2].text)
 
     def test_predictions_two_samples(self):
-        sample_1 = [TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en"), segment_selector_texts=["one two"])]
-        sample_2 = [TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en"), segment_selector_texts=["one two"])]
+        sample_1 = [
+            TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en"), segment_selector_texts=["one two"])
+        ]
+        sample_2 = [
+            TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en"), segment_selector_texts=["one two"])
+        ]
         extraction_data = ExtractionData(samples=sample_1 + sample_2, extraction_identifier=extraction_identifier)
 
         text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier)
@@ -63,7 +69,8 @@ class TestTextToTextExtractor(TestCase):
     def test_predictions_input_without_spaces(self):
         sample = [
             TrainingSample(
-                labeled_data=LabeledData(label_text="onetwothree", language_iso="en"), segment_selector_texts=["one two", "three"]
+                labeled_data=LabeledData(label_text="onetwothree", language_iso="en"),
+                segment_selector_texts=["one two", "three"],
             )
         ]
         extraction_data = ExtractionData(samples=sample * 3, extraction_identifier=extraction_identifier)
