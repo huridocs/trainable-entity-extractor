@@ -11,6 +11,7 @@ PROJECT_NAME = "trainable-entity-extractor"
 
 setup(
     name=PROJECT_NAME,
+    packages=["trainable_entity_extractor"],
     package_dir={"": "src"},
     version="0.1",
     url="https://github.com/huridocs/trainable-entity-extractor",

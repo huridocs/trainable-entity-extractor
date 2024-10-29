@@ -24,6 +24,9 @@ class SegmentSelectorSameInputOutputMethod(ToTextExtractorMethod):
             send_logs(extraction_identifier=self.extraction_identifier, message=error)
             return
 
+        for sample in extraction_data.samples:
+            sample.segment_selector_texts = [x.text_content for x in sample.pdf_data.pdf_data_segments if x.ml_label]
+
         semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
         semantic_metadata_extraction.train(extraction_data_with_samples)
 
@@ -40,7 +43,7 @@ class SegmentSelectorSameInputOutputMethod(ToTextExtractorMethod):
         semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
         return semantic_metadata_extraction.predict(predictions_samples)
 
-    def create_segment_selector_model(self, extraction_data):
+    def create_segment_selector_model(self, extraction_data: ExtractionData):
         segment_selector = SegmentSelector(self.extraction_identifier)
         pdfs_data = [sample.pdf_data for sample in extraction_data.samples]
         return segment_selector.create_model(pdfs_data=pdfs_data)

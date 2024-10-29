@@ -9,7 +9,7 @@ from trainable_entity_extractor.data.Option import Option
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.data.TrainingSample import TrainingSample
 
-extraction_id = "extraction_id"
+extraction_id = "test_extractor_text_to_multi_option"
 extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
 
 

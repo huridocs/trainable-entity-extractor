@@ -103,6 +103,9 @@ class PdfToTextExtractor(ToTextExtractor):
     ]
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
+        if not extraction_data or not extraction_data.samples:
+            return False, "No data to create model"
+
         SegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
         FastSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
         FastAndPositionsSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()

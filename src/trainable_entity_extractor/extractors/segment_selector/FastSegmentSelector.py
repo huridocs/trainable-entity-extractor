@@ -23,11 +23,11 @@ class FastSegmentSelector(SegmentSelectorBase):
         self.previous_words, self.next_words, self.text_segments = [], [], []
 
         if method_name:
-            self.fast_segment_selector_path = Path(
-                self.extraction_identifier.get_path(), method_name, self.__class__.__name__
-            )
+            path = Path(self.extraction_identifier.get_path(), method_name, self.__class__.__name__)
+            self.fast_segment_selector_path = path
         else:
             self.fast_segment_selector_path = Path(self.extraction_identifier.get_path(), self.__class__.__name__)
+
         if not self.fast_segment_selector_path.exists():
             os.makedirs(self.fast_segment_selector_path, exist_ok=True)
 

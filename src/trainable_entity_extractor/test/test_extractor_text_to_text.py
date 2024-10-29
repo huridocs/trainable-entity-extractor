@@ -8,17 +8,16 @@ from trainable_entity_extractor.data.LabeledData import LabeledData
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.data.TrainingSample import TrainingSample
 
-extraction_id = "extraction_id"
+extraction_id = "test_extractor_text_to_text"
 extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
 
 
 class TestExtractorTextToText(TestCase):
+    def setUp(self):
+        shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
 
-    # def setUp(self):
-    #     shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
-    #
-    # def tearDown(self):
-    #     shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
+    def tearDown(self):
+        shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
 
     def test_predictions_same_input_output(self):
         labeled_data = LabeledData(label_text="one", language_iso="en")

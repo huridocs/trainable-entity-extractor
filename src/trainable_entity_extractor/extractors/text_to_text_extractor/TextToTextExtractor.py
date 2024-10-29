@@ -50,7 +50,7 @@ class TextToTextExtractor(ToTextExtractor):
         return False
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        if not extraction_data or extraction_data.samples:
+        if not extraction_data or not extraction_data.samples:
             return super().create_model(extraction_data)
 
         for sample in extraction_data.samples:

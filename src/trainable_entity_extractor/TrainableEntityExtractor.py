@@ -20,8 +20,8 @@ from trainable_entity_extractor.send_logs import send_logs
 
 class TrainableEntityExtractor:
     EXTRACTORS: list[type[ExtractorBase]] = [
-        TextToMultiOptionExtractor,
         PdfToMultiOptionExtractor,
+        TextToMultiOptionExtractor,
         PdfToTextExtractor,
         TextToTextExtractor,
         NaiveExtractor,

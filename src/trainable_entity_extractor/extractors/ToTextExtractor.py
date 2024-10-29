@@ -1,7 +1,3 @@
-import json
-import os
-from pathlib import Path
-
 from trainable_entity_extractor.config import config_logger
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
@@ -20,9 +16,6 @@ class ToTextExtractor(ExtractorBase):
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):
         super().__init__(extraction_identifier)
-        extractor_path = self.extraction_identifier.get_path()
-        self.method_name_path = Path(extractor_path, self.get_name(), "method_name.json")
-        os.makedirs(self.method_name_path.parent, exist_ok=True)
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         pass
@@ -49,10 +42,7 @@ class ToTextExtractor(ExtractorBase):
         return suggestions
 
     def get_predictions_method(self) -> ToTextExtractorMethod:
-        if not self.method_name_path.exists():
-            return self.METHODS[0](self.extraction_identifier)
-
-        method_name = json.loads(self.method_name_path.read_text())
+        method_name = self.extraction_identifier.get_method_used()
         for method in self.METHODS:
             method_instance = method(self.extraction_identifier)
             if method_instance.get_name() == method_name:
@@ -61,7 +51,7 @@ class ToTextExtractor(ExtractorBase):
         return self.METHODS[0](self.extraction_identifier)
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        if not extraction_data or extraction_data.samples:
+        if not extraction_data or not extraction_data.samples:
             return False, "No samples to create model"
 
         performance_train_set, performance_test_set = self.get_train_test_sets(extraction_data)
@@ -77,12 +67,12 @@ class ToTextExtractor(ExtractorBase):
             return True, ""
 
         best_method_instance = self.get_best_method(extraction_data)
-        self.method_name_path.write_text(json.dumps(best_method_instance.get_name()))
+        self.extraction_identifier.save_method_used(best_method_instance.get_name())
 
         if len(extraction_data.samples) < RETRAIN_SAMPLES_THRESHOLD:
             best_method_instance.train(extraction_data)
 
-        self.remove_data_from_methods_not_selected(best_method_instance)
+        # self.remove_data_from_methods_not_selected(best_method_instance)
 
         return True, ""
 
