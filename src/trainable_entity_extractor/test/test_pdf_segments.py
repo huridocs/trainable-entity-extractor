@@ -12,8 +12,8 @@ from pdf_token_type_labels.TokenType import TokenType
 
 
 class TestPdfSegments(TestCase):
-    test_file_path = f"{APP_PATH}/tenant_test/extraction_id/xml_to_train/test.xml"
-    no_pages_file_path = f"{APP_PATH}/tenant_test/extraction_id/xml_to_train/no_pages.xml"
+    test_file_path = f"{APP_PATH}/trainable_entity_extractor/test/test_files/test.xml"
+    no_pages_file_path = f"{APP_PATH}/trainable_entity_extractor/test/test_files/no_pages.xml"
 
     def test_get_pdf_features(self):
         tenant = "tenant_save"
@@ -108,7 +108,6 @@ class TestPdfSegments(TestCase):
         tenant = "tenant_save"
         extraction_id = "property_save"
 
-        shutil.rmtree(join(DATA_PATH, tenant), ignore_errors=True)
         segmentation_data = SegmentationData(
             page_width=1,  # 612
             page_height=2,  # 396

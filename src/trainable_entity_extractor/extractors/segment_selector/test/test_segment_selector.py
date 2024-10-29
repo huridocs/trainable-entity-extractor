@@ -22,7 +22,7 @@ class TestSegmentSelector(TestCase):
     EXTRACTION_IDENTIFIER = ExtractionIdentifier(run_name=TENANT, extraction_name=extraction_id)
     TEST_XML_NAME = "test.xml"
 
-    TEST_XML_PATH = join(APP_PATH, "tenant_test", extraction_id, "xml_to_train", TEST_XML_NAME)
+    TEST_XML_PATH = join(APP_PATH, "trainable_entity_extractor", "test", "test_files", TEST_XML_NAME)
     BASE_PATH = join(DATA_PATH, TENANT, extraction_id)
 
     labels = SegmentBox(
