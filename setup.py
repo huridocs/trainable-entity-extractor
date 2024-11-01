@@ -4,12 +4,12 @@ from setuptools import setup
 requirements_path = Path("requirements.txt")
 requirements = [r for r in requirements_path.read_text().splitlines() if not r.startswith("git+")]
 dependency_links = [r for r in requirements_path.read_text().splitlines() if r.startswith("git+")]
-requirements +=  [
-        "pdf_features @ " + dependency_links[0],
-        "pdf_tokens_type_trainer @ " + dependency_links[0],
-        "pdf_token_type_labels @ " + dependency_links[0],
-        "fast_trainer @ " + dependency_links[0],
-    ]
+dependency_links_egg = [
+    dependency_links[0] + "#egg=pdf_features",
+    dependency_links[0] + "#egg=pdf_tokens_type_trainer",
+    dependency_links[0] + "#egg=pdf_token_type_labels",
+    dependency_links[0] + "#egg=fast_trainer",
+]
 
 PROJECT_NAME = "trainable-entity-extractor"
 
@@ -69,5 +69,6 @@ setup(
     author="HURIDOCS",
     description="This tool is a trainable text/PDF to entity extractor",
     install_requires=requirements,
-    setup_requires=requirements
+    setup_requires=requirements,
+    dependency_links=dependency_links_egg,
 )
