@@ -31,23 +31,25 @@ First install the library:
 
 For Text-to-Text you can use the library as follows:
 
-    extraction_identifier = ExtractionIdentifier(extraction_name="quick_start", output_path="./output")
-    
-    training_samples = [TrainingSample.from_text(source_text="one 1", label_text="1", language_iso="en")]
-    training_samples += [TrainingSample.from_text(source_text="two 2", label_text="2", language_iso="en")]
 
-    extraction_data = ExtractionData(samples=training_samples, extraction_identifier=extraction_identifier)
-    
-    trainable_entity_extractor = TrainableEntityExtractor(extraction_identifier=extraction_identifier)
-    trainable_entity_extractor.train(extraction_data)
-    
-    predictions_samples = [PredictionSample.from_text("test 0")]
-    predictions_samples += [PredictionSample.from_text("test 1")]
-    
-    suggestions = trainable_entity_extractor.predict(predictions_samples)
-    # suggestions[0].text -> "0"
-    # suggestions[1].text ->"1"
+```py
+extraction_identifier = ExtractionIdentifier(extraction_name="quick_start", output_path="./output")
 
+training_samples = [TrainingSample.from_text(source_text="one 1", label_text="1", language_iso="en")]
+training_samples += [TrainingSample.from_text(source_text="two 2", label_text="2", language_iso="en")]
+
+extraction_data = ExtractionData(samples=training_samples, extraction_identifier=extraction_identifier)
+
+trainable_entity_extractor = TrainableEntityExtractor(extraction_identifier=extraction_identifier)
+trainable_entity_extractor.train(extraction_data)
+
+predictions_samples = [PredictionSample.from_text("test 0")]
+predictions_samples += [PredictionSample.from_text("test 1")]
+
+suggestions = trainable_entity_extractor.predict(predictions_samples)
+# suggestions[0].text -> "0"
+# suggestions[1].text ->"1"
+```
 
 For Text-to-Multi-Label you can use the library as follows:
 
