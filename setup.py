@@ -32,7 +32,7 @@ setup(
     name=PROJECT_NAME,
     packages=["trainable_entity_extractor"] + [folder for folder in get_recursive_subfolders(base_path, package_path)],
     package_dir={"": "src"},
-    version="0.5",
+    version="0.6",
     url="https://github.com/huridocs/trainable-entity-extractor",
     author="HURIDOCS",
     description="This tool is a trainable text/PDF to entity extractor",
