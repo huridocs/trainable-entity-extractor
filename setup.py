@@ -64,7 +64,7 @@ setup(
         "trainable_entity_extractor.extractors.pdf_to_text_extractor",
     ],
     package_dir={"": "src"},
-    version="0.12",
+    version="0.13",
     url="https://github.com/huridocs/trainable-entity-extractor",
     author="HURIDOCS",
     description="This tool is a trainable text/PDF to entity extractor",
