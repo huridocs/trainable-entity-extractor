@@ -1,7 +1,7 @@
 from trainable_entity_extractor.config import config_logger
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.data.LogsMessage import Severity
+from trainable_entity_extractor.data.LogSeverity import LogSeverity
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.data.Suggestion import Suggestion
 from trainable_entity_extractor.extractors.ExtractorBase import ExtractorBase
@@ -99,7 +99,7 @@ class ToTextExtractor(ExtractorBase):
                 performance = method_instance.performance(training_set, test_set)
             except Exception as e:
                 message = f"Error checking {method_instance.get_name()}"
-                send_logs(self.extraction_identifier, message, Severity.error, e)
+                send_logs(self.extraction_identifier, message, LogSeverity.error, e)
                 performance = 0
             performance_log += f"{method_instance.get_name()}: {round(performance, 2)}%\n"
             send_logs(self.extraction_identifier, f"Performance {method_instance.get_name()}: {performance}%")

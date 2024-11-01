@@ -2,16 +2,16 @@ import traceback
 
 from trainable_entity_extractor.config import config_logger
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.data.LogsMessage import Severity
+from trainable_entity_extractor.data.LogSeverity import LogSeverity
 
 
 def send_logs(
     extraction_identifier: ExtractionIdentifier,
     message: str,
-    severity: Severity = Severity.info,
+    severity: LogSeverity = LogSeverity.info,
     exception: Exception = None,
 ):
-    if severity != Severity.error:
+    if severity != LogSeverity.error:
         config_logger.info(message + " for " + extraction_identifier.model_dump_json())
         return
 

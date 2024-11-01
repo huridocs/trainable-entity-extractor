@@ -4,7 +4,7 @@ from os.path import join, exists
 from pathlib import Path
 
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.data.LogsMessage import Severity
+from trainable_entity_extractor.data.LogSeverity import LogSeverity
 from trainable_entity_extractor.data.Option import Option
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.data.Suggestion import Suggestion
@@ -221,7 +221,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         try:
             performance = method.get_performance(train_set, test_set)
         except Exception as e:
-            severity = Severity.error if method.REPORT_ERRORS else Severity.info
+            severity = LogSeverity.error if method.REPORT_ERRORS else LogSeverity.info
             send_logs(self.extraction_identifier, f"Error checking {method.get_name()}", severity, e)
             performance = 0
 

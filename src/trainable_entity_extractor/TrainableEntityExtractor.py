@@ -1,7 +1,7 @@
 from time import time
 
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.data.LogsMessage import Severity
+from trainable_entity_extractor.data.LogSeverity import LogSeverity
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.data.Suggestion import Suggestion
 from trainable_entity_extractor.extractors.ExtractorBase import ExtractorBase
@@ -50,14 +50,14 @@ class TrainableEntityExtractor:
             self.extraction_identifier.save_extractor_used(extractor_instance.get_name())
             return extractor_instance.create_model(extraction_data)
 
-        send_logs(self.extraction_identifier, "Error creating extractor", Severity.error)
+        send_logs(self.extraction_identifier, "Error creating extractor", LogSeverity.error)
 
         return False, "Error creating extractor"
 
     def predict(self, prediction_samples: list[PredictionSample]) -> list[Suggestion]:
         extractor_name = self.extraction_identifier.get_extractor_used()
         if not extractor_name:
-            send_logs(self.extraction_identifier, f"No extractor available", Severity.error)
+            send_logs(self.extraction_identifier, f"No extractor available", LogSeverity.error)
             return []
 
         for extractor in self.EXTRACTORS:
@@ -71,5 +71,5 @@ class TrainableEntityExtractor:
             send_logs(self.extraction_identifier, message)
             return suggestions
 
-        send_logs(self.extraction_identifier, f"No extractor available", Severity.error)
+        send_logs(self.extraction_identifier, f"No extractor available", LogSeverity.error)
         return []

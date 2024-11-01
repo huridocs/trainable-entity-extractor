@@ -1,4 +1,4 @@
-git+https://github.com/huridocs/pdf-document-layout-analysis@949014eb06c1e5010f1fa4e89c8c48ad0ebebea4
+git+https://github.com/huridocs/pdf-document-layout-analysis@2f634aa02deb7d1cd53370ec18ee62a325943016
 python-Levenshtein==0.25.1
 tdda==2.0.9
 datasets==2.19.0
