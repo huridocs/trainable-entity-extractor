@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from setuptools import setup
-
+from setuptools import setup, find_packages
 
 requirements_path = Path("requirements.txt")
 requirements = [r for r in requirements_path.read_text().splitlines() if not r.startswith("git+")]
@@ -11,9 +10,9 @@ PROJECT_NAME = "trainable-entity-extractor"
 
 setup(
     name=PROJECT_NAME,
-    packages=["trainable_entity_extractor", "trainable_entity_extractor.*"],
+    packages=find_packages(where="src/trainable_entity_extractor"),
     package_dir={"": "src"},
-    version="0.3",
+    version="0.4",
     url="https://github.com/huridocs/trainable-entity-extractor",
     author="HURIDOCS",
     description="This tool is a trainable text/PDF to entity extractor",
