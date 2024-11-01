@@ -11,9 +11,9 @@ PROJECT_NAME = "trainable-entity-extractor"
 
 setup(
     name=PROJECT_NAME,
-    packages=["trainable_entity_extractor", "trainable_entity_extractor.data", "trainable_entity_extractor.extractors"],
+    packages=["trainable_entity_extractor", "trainable_entity_extractor.*"],
     package_dir={"": "src"},
-    version="0.2",
+    version="0.3",
     url="https://github.com/huridocs/trainable-entity-extractor",
     author="HURIDOCS",
     description="This tool is a trainable text/PDF to entity extractor",

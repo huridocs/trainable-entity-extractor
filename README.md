@@ -53,26 +53,28 @@ suggestions = trainable_entity_extractor.predict(predictions_samples)
 
 For Text-to-Multi-Label you can use the library as follows:
 
-    extraction_identifier = ExtractionIdentifier(extraction_name="quick_start", output_path="./output")
+```py
+extraction_identifier = ExtractionIdentifier(extraction_name="quick_start", output_path="./output")
 
-    options = [Option(id="0", label="0"), Option(id="1", label="1"), Option(id="2", label="2")] 
+options = [Option(id="0", label="0"), Option(id="1", label="1"), Option(id="2", label="2")] 
 
-    training_samples = [TrainingSample(labeled_data=LabeledData(values=[options[1]], language_iso="en", source_text="one 1"))]
-    training_samples += [TrainingSample(labeled_data=LabeledData(values=[options[2]], language_iso="en", source_text="two 2"))]
-    extraction_data = ExtractionData(samples=training_samples, 
-                                        extraction_identifier=extraction_identifier,
-                                        options=options,
-                                        multi_value=True)
-    
-    trainable_entity_extractor = TrainableEntityExtractor(extraction_identifier=extraction_identifier)
-    trainable_entity_extractor.train(extraction_data)
-    
-    predictions_samples = [PredictionSample.from_text("test 0")]
-    predictions_samples += [PredictionSample.from_text("test 1")]
-    
-    suggestions = trainable_entity_extractor.predict(predictions_samples)
-    # suggestions[0].values -> [Option(id="0", label="0")
-    # suggestions[1].values -> [Option(id="1", label="1")
+training_samples = [TrainingSample.from_values(source_text="one 1", values=[options[1]], language_iso="en")]
+training_samples += [TrainingSample.from_values(source_text="one 2", values=[options[2]], language_iso="en")]
+extraction_data = ExtractionData(samples=training_samples, 
+                                    extraction_identifier=extraction_identifier,
+                                    options=options,
+                                    multi_value=True)
+
+trainable_entity_extractor = TrainableEntityExtractor(extraction_identifier=extraction_identifier)
+trainable_entity_extractor.train(extraction_data)
+
+predictions_samples = [PredictionSample.from_text("test 0")]
+predictions_samples += [PredictionSample.from_text("test 1")]
+
+suggestions = trainable_entity_extractor.predict(predictions_samples)
+# suggestions[0].values -> [Option(id="0", label="0")
+# suggestions[1].values -> [Option(id="1", label="1")
+```
 
 
 ### Technical details
@@ -107,7 +109,6 @@ Methods implemented for Text-to-Multi-Label extraction are:
 * TextSingleLabelBert
 * TextSingleLabelSetFit
 * TextSingleLabelSetFitMultilingual
-* TextTfIdf
 
 # Execute tests
 make test
