@@ -30,9 +30,9 @@ base_path = Path(ROOT_PATH, "src")
 
 setup(
     name=PROJECT_NAME,
-    packages=["trainable_entity_extractor"] + [folder for folder in get_recursive_subfolders(base_path, package_path)],
+    packages=["trainable_entity_extractor", "trainable_entity_extractor.extractors", "trainable_entity_extractor.data"],
     package_dir={"": "src"},
-    version="0.6",
+    version="0.7",
     url="https://github.com/huridocs/trainable-entity-extractor",
     author="HURIDOCS",
     description="This tool is a trainable text/PDF to entity extractor",
