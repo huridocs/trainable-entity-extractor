@@ -55,14 +55,19 @@ setup(
         "trainable_entity_extractor.extractors.text_to_multi_option_extractor.methods",
         "trainable_entity_extractor.extractors.text_to_multi_option_extractor",
         "trainable_entity_extractor.extractors.pdf_to_text_extractor.methods",
-        "trainable_entity_extractor.extractors.pdf_to_text_extractor"
+        "trainable_entity_extractor.extractors.pdf_to_text_extractor",
     ],
     package_dir={"": "src"},
-    version="0.10",
+    version="0.11",
     url="https://github.com/huridocs/trainable-entity-extractor",
     author="HURIDOCS",
     description="This tool is a trainable text/PDF to entity extractor",
     install_requires=requirements,
     setup_requires=requirements,
-    dependency_links=dependency_links,
+    dependency_links=[
+        "pdf_features @ " + dependency_links[0],
+        "pdf_tokens_type_trainer @ " + dependency_links[0],
+        "pdf_token_type_labels @ " + dependency_links[0],
+        "fast_trainer @ " + dependency_links[0],
+    ],
 )
