@@ -4,7 +4,7 @@ version = "0.15"
 description = "This tool is a trainable text/PDF to entity extractor"
 url = "https://github.com/huridocs/trainable-entity-extractor"
 license = { file = "LICENSE" }
-authors = ["HURIDOCS"]
+authors = [{ name = "HURIDOCS"}]
 
 [project.dependencies]
 requires = { python = ">=3.11" }

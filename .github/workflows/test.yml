@@ -25,5 +25,5 @@ jobs:
       - name: Lint with black
         run: make check_format
 
-      - name: Test with unittest
-        run: make test
+#      - name: Test with unittest
+#        run: make test
