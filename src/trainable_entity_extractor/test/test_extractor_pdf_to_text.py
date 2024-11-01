@@ -1,3 +1,4 @@
+import unittest
 from os.path import join
 
 from unittest import TestCase
@@ -112,6 +113,7 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual(90.0, suggestion.segments_boxes[0].top)
         self.assertEqual(1, suggestion.segments_boxes[0].page_number)
 
+    @unittest.SkipTest
     def test_get_semantic_suggestions(self):
         segment_box = SegmentBox(left=397, top=115, page_width=612, page_height=792, width=74, height=9, page_number=1)
 

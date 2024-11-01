@@ -56,7 +56,6 @@ class TextToMultiOptionExtractor(ExtractorBase):
         TextFuzzyFirstCleanLabels,
         TextFuzzyLast,
         TextFuzzyLastCleanLabels,
-        TextTfIdf,
         TextFastTextMethod,
         TextSetFit,
         TextSetFitMultilingual,

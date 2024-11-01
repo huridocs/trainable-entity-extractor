@@ -16,3 +16,8 @@ class TrainingSample:
             texts.append(pdf_metadata_segment.text_content)
 
         return " ".join(texts)
+
+    @staticmethod
+    def from_text(source_text: str, label_text: str, language_iso: str = "en"):
+        labeled_data = LabeledData(source_text=source_text, label_text=label_text, language_iso=language_iso)
+        return TrainingSample(labeled_data=labeled_data)

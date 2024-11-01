@@ -18,12 +18,12 @@ EXTRACTOR_USED_FILE_NAME = "extractor_used.json"
 
 class ExtractionIdentifier(BaseModel):
     run_name: str = "default"
+    output_path: str | Path = DATA_PATH
     extraction_name: str
-    model_path: str | Path = DATA_PATH
     metadata: dict[str, str] = dict()
 
     def get_path(self):
-        return join(self.model_path, self.run_name, self.extraction_name)
+        return join(self.output_path, self.run_name, self.extraction_name)
 
     def get_file_content(self, file_name: str, default: Any = None) -> Any:
         path = Path(self.get_path(), file_name)

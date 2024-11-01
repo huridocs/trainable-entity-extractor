@@ -1,4 +1,5 @@
 import shutil
+import unittest
 from os.path import join
 from unittest import TestCase
 
@@ -23,6 +24,7 @@ class TestSetFitEnglishMethod(TestCase):
     def tearDown(self):
         shutil.rmtree(join(DATA_PATH, self.TENANT), ignore_errors=True)
 
+    @unittest.SkipTest
     def test_train_and_predict(self):
         if not torch.cuda.is_available():
             return

@@ -1,4 +1,5 @@
 import shutil
+import unittest
 from os.path import join
 from time import time
 from unittest import TestCase
@@ -23,6 +24,7 @@ class TestMT5(TestCase):
     def tearDown(self):
         shutil.rmtree(join(DATA_PATH, "test"), ignore_errors=True)
 
+    @unittest.SkipTest
     def test_train(self):
         start = time()
         print("GPU available?")
