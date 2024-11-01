@@ -1,6 +1,6 @@
 [project]
 name = "trainable-entity-extractor"
-version = "0.19"
+version = "0.20"
 description = "This tool is a trainable text/PDF to entity extractor"
 license = { file = "LICENSE" }
 authors = [{ name = "HURIDOCS" }]
