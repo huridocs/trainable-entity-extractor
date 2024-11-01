@@ -1,6 +1,6 @@
 [project]
 name = "trainable-entity-extractor"
-version = "0.18"
+version = "0.19"
 description = "This tool is a trainable text/PDF to entity extractor"
 url = "https://github.com/huridocs/trainable-entity-extractor"
 license = { file = "LICENSE" }
