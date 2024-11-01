@@ -2,7 +2,7 @@ git+https://github.com/huridocs/pdf-document-layout-analysis@949014eb06c1e5010f1
 python-Levenshtein==0.25.1
 tdda==2.0.9
 datasets==2.19.0
-evaluate==0.4.1
+evaluate==0.4.3
 pandas==2.2.2
 dateparser==1.2.0
 langcodes==3.4.0
