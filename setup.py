@@ -22,7 +22,7 @@ def get_recursive_subfolders(origin_path, recursive_path: Path):
 
         if sub_path.is_dir():
             yield from get_recursive_subfolders(origin_path, sub_path)
-            yield str(sub_path).replace(str(origin_path) + "/", "")
+            yield str(sub_path).replace(str(origin_path) + "/", "").replace("/", ".")
 
 
 package_path = Path(ROOT_PATH, "src", "trainable_entity_extractor").resolve()
