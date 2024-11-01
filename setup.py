@@ -4,6 +4,12 @@ from setuptools import setup
 requirements_path = Path("requirements.txt")
 requirements = [r for r in requirements_path.read_text().splitlines() if not r.startswith("git+")]
 dependency_links = [r for r in requirements_path.read_text().splitlines() if r.startswith("git+")]
+requirements +=  [
+        "pdf_features @ " + dependency_links[0],
+        "pdf_tokens_type_trainer @ " + dependency_links[0],
+        "pdf_token_type_labels @ " + dependency_links[0],
+        "fast_trainer @ " + dependency_links[0],
+    ]
 
 PROJECT_NAME = "trainable-entity-extractor"
 
@@ -58,16 +64,10 @@ setup(
         "trainable_entity_extractor.extractors.pdf_to_text_extractor",
     ],
     package_dir={"": "src"},
-    version="0.11",
+    version="0.12",
     url="https://github.com/huridocs/trainable-entity-extractor",
     author="HURIDOCS",
     description="This tool is a trainable text/PDF to entity extractor",
     install_requires=requirements,
-    setup_requires=requirements,
-    dependency_links=[
-        "pdf_features @ " + dependency_links[0],
-        "pdf_tokens_type_trainer @ " + dependency_links[0],
-        "pdf_token_type_labels @ " + dependency_links[0],
-        "fast_trainer @ " + dependency_links[0],
-    ],
+    setup_requires=requirements
 )
