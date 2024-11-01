@@ -13,25 +13,6 @@ dependency_links_egg = [
 
 PROJECT_NAME = "trainable-entity-extractor"
 
-
-def get_recursive_subfolders(origin_path, recursive_path: Path):
-    for sub_path in recursive_path.iterdir():
-        avoid_path = False
-        for text in ["test", "__pycache__", "labeled_data", "results"]:
-            if text in str(sub_path):
-                avoid_path = True
-
-        if avoid_path:
-            continue
-
-        if sub_path.is_dir():
-            yield from get_recursive_subfolders(origin_path, sub_path)
-            yield str(sub_path).replace(str(origin_path) + "/", "").replace("/", ".")
-
-
-package_path = Path(Path(__file__), "src", "trainable_entity_extractor").resolve()
-base_path = Path(Path(__file__), "src")
-
 setup(
     name=PROJECT_NAME,
     packages=[
