@@ -1,8 +1,6 @@
 from pathlib import Path
 from setuptools import setup
 
-from trainable_entity_extractor.config import ROOT_PATH
-
 requirements_path = Path("requirements.txt")
 requirements = [r for r in requirements_path.read_text().splitlines() if not r.startswith("git+")]
 dependency_links = [r for r in requirements_path.read_text().splitlines() if r.startswith("git+")]
@@ -25,12 +23,12 @@ def get_recursive_subfolders(origin_path, recursive_path: Path):
             yield str(sub_path).replace(str(origin_path) + "/", "").replace("/", ".")
 
 
-package_path = Path(ROOT_PATH, "src", "trainable_entity_extractor").resolve()
-base_path = Path(ROOT_PATH, "src")
+package_path = Path(Path(__file__), "src", "trainable_entity_extractor").resolve()
+base_path = Path(Path(__file__), "src")
 
 setup(
     name=PROJECT_NAME,
-    packages=["trainable_entity_extractor", "trainable_entity_extractor.extractors", "trainable_entity_extractor.data"],
+    packages=["trainable_entity_extractor"] + [folder for folder in get_recursive_subfolders(base_path, package_path)],
     package_dir={"": "src"},
     version="0.8",
     url="https://github.com/huridocs/trainable-entity-extractor",
