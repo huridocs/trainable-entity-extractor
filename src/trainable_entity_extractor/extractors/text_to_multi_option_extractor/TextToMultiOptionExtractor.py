@@ -49,13 +49,13 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     METHODS: list[Type[TextToMultiOptionMethod]] = [
         NaiveTextToMultiOptionMethod,
-        TextFuzzyAll75,
-        TextFuzzyAll88,
-        TextFuzzyAll100,
         TextFuzzyFirst,
         TextFuzzyFirstCleanLabels,
         TextFuzzyLast,
         TextFuzzyLastCleanLabels,
+        TextFuzzyAll100,
+        TextFuzzyAll88,
+        TextFuzzyAll75,
         TextFastTextMethod,
         TextSetFit,
         TextSetFitMultilingual,
