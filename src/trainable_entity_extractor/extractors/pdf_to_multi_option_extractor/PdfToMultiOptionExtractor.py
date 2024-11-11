@@ -243,7 +243,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
             return False
 
         for sample in extraction_data.samples:
-            if sample.pdf_data:
+            if sample.pdf_data and sample.pdf_data.contains_text():
                 return True
 
         return False

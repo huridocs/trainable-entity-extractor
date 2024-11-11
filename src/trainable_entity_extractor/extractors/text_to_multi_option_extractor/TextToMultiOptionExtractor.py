@@ -49,18 +49,18 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     METHODS: list[Type[TextToMultiOptionMethod]] = [
         NaiveTextToMultiOptionMethod,
-        # TextFuzzyAll75,
-        # TextFuzzyAll88,
+        TextFuzzyAll75,
+        TextFuzzyAll88,
         TextFuzzyAll100,
-        # TextFuzzyFirst,
-        # TextFuzzyFirstCleanLabels,
-        # TextFuzzyLast,
-        # TextFuzzyLastCleanLabels,
-        # TextFastTextMethod,
-        # TextSetFit,
-        # TextSetFitMultilingual,
-        # TextSingleLabelSetFit,
-        # TextSingleLabelSetFitMultilingual,
+        TextFuzzyFirst,
+        TextFuzzyFirstCleanLabels,
+        TextFuzzyLast,
+        TextFuzzyLastCleanLabels,
+        TextFastTextMethod,
+        TextSetFit,
+        TextSetFitMultilingual,
+        TextSingleLabelSetFit,
+        TextSingleLabelSetFitMultilingual,
     ]
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):
