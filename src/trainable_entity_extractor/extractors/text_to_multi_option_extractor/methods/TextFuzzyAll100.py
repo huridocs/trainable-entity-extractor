@@ -8,6 +8,7 @@ from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
+from trainable_entity_extractor.send_logs import send_logs
 
 
 class TextFuzzyAll100(TextToMultiOptionMethod):
@@ -33,6 +34,7 @@ class TextFuzzyAll100(TextToMultiOptionMethod):
         predictions: list[list[Option]] = list()
         option_labels = [option.label.lower() for option in self.options]
         for sample in predictions_samples:
+            send_logs(self.extraction_identifier, f"::::::::::: Sample {sample.source_text}")
             values = self.get_appearances(sample.source_text, option_labels)
             predictions.append([option for option in self.options if option.label in values])
 
