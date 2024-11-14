@@ -8,6 +8,8 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
 
     @staticmethod
     def get_date(tags_texts: list[str]):
+        if not tags_texts:
+            return ""
         text = " ".join(tags_texts)
         try:
             gliner_date_extractor = GlinerDateExtractor()

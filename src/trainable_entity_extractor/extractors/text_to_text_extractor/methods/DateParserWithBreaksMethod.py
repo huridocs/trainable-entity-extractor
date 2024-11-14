@@ -6,6 +6,8 @@ from trainable_entity_extractor.extractors.text_to_text_extractor.methods.DatePa
 class DateParserWithBreaksMethod(DateParserMethod):
     @staticmethod
     def get_date(tags_texts: list[str], languages):
+        if not tags_texts:
+            return ""
         text = " ".join(tags_texts)
         text_with_breaks = "\n".join([text for text in tags_texts])
 

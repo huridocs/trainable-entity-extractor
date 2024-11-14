@@ -239,7 +239,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         return self.METHODS[0]
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
-        if not extraction_data.options and not extraction_data.extraction_identifier.get_options_path().exists():
+        if not extraction_data.options and not extraction_data.extraction_identifier.get_options():
             return False
 
         for sample in extraction_data.samples:

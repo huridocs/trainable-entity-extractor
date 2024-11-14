@@ -113,5 +113,5 @@ class ToTextExtractor(ExtractorBase):
                 best_method_instance = method_instance
 
         send_logs(self.extraction_identifier, performance_log)
-        send_logs(self.extraction_identifier, f"Best method {best_method_instance.get_name()} with {performance}%")
+        send_logs(self.extraction_identifier, f"Best method {best_method_instance.get_name()} with {best_performance}%")
         return best_method_instance

@@ -34,6 +34,8 @@ from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSeg
     FastSegmentSelectorSameInputOutputMethod,
 )
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FirstDateMethod import FirstDateMethod
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.GlinerFirstDateMethod import GlinerFirstDateMethod
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.GlinerLastDateMethod import GlinerLastDateMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.LastDateMethod import LastDateMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextRegexMethod import PdfToTextRegexMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorDateParserMethod import (
@@ -91,6 +93,8 @@ class PdfToTextExtractor(ToTextExtractor):
         SegmentSelectorSameInputOutputMethod,
         FirstDateMethod,
         LastDateMethod,
+        GlinerFirstDateMethod,
+        GlinerLastDateMethod,
         FastSegmentSelectorDateParserMethod,
         FastSegmentSelectorDateParserWithBreaksMethod,
         SegmentSelectorDateParserMethod,

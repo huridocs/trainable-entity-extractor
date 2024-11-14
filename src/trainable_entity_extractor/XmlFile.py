@@ -1,6 +1,6 @@
 import os
-import pathlib
 from os.path import join
+from pathlib import Path
 
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 
@@ -11,19 +11,16 @@ class XmlFile:
         self.to_train = to_train
         self.xml_file_name = xml_file_name
         self.xml_file = None
-        self.xml_folder_path = XmlFile.get_xml_folder_path(extraction_identifier, to_train)
-        self.xml_file_path = os.path.join(self.xml_folder_path, self.xml_file_name)
+        self.xml_folder_path = self.get_xml_folder_path(to_train)
+        self.xml_file_path = join(self.xml_folder_path, self.xml_file_name)
 
     def save(self, file: bytes):
-        if not os.path.exists(self.xml_folder_path):
-            os.makedirs(self.xml_folder_path)
-
-        file_path = pathlib.Path(f"{self.xml_folder_path}/{self.xml_file_name}")
+        os.makedirs(self.xml_folder_path, exist_ok=True)
+        file_path = Path(f"{self.xml_folder_path}/{self.xml_file_name}")
         file_path.write_bytes(file)
 
-    @staticmethod
-    def get_xml_folder_path(extraction_identifier: ExtractionIdentifier, to_train: bool) -> str:
+    def get_xml_folder_path(self, to_train: bool) -> str:
         if to_train:
-            return join(extraction_identifier.get_path(), "xml_to_train")
+            return join(self.extraction_identifier.get_path(), "xml_to_train")
 
-        return join(extraction_identifier.get_path(), "xml_to_predict")
+        return join(self.extraction_identifier.get_path(), "xml_to_predict")

@@ -10,6 +10,8 @@ class InputWithoutSpaces(ToTextExtractorMethod):
 
     @staticmethod
     def trim_text(tag_texts: list[str]) -> str:
+        if not tag_texts:
+            return ""
         text = "".join(tag_texts)
         return "".join(text.split())
 

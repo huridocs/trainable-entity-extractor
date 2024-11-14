@@ -21,6 +21,8 @@ class DateParserMethod(ToTextExtractorMethod):
 
     @staticmethod
     def get_date(tags_texts: list[str], languages):
+        if not tags_texts:
+            return ""
         text = " ".join(tags_texts)
         try:
             dates = search_dates(text, languages=languages)
