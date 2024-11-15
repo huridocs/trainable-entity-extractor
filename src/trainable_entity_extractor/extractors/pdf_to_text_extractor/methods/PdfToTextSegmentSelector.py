@@ -5,13 +5,12 @@ from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.extractors.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from trainable_entity_extractor.extractors.segment_selector.SegmentSelector import SegmentSelector
-from trainable_entity_extractor.extractors.text_to_text_extractor.methods.SameInputOutputMethod import SameInputOutputMethod
 from trainable_entity_extractor.send_logs import send_logs
 
 
-class SegmentSelectorSameInputOutputMethod(ToTextExtractorMethod):
+class PdfToTextSegmentSelector(ToTextExtractorMethod):
 
-    SEMANTIC_METHOD = SameInputOutputMethod
+    SEMANTIC_METHOD: type[ToTextExtractorMethod] = None
 
     def train(self, extraction_data: ExtractionData):
         samples_with_label_segments_boxes = [x for x in extraction_data.samples if x.labeled_data.label_segments_boxes]

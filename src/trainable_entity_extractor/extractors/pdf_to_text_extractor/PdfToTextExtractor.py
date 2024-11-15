@@ -3,108 +3,54 @@ from trainable_entity_extractor.data.TrainingSample import TrainingSample
 from trainable_entity_extractor.extractors.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.extractors.ToTextExtractor import ToTextExtractor
 from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorDateParserMethod import (
-    FastSegmentSelectorDateParserMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorDateParserWithBreaksMethod import (
-    FastSegmentSelectorDateParserWithBreaksMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorGlinerDateParserMethod import (
-    FastSegmentSelectorGlinerDateParserMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorInputWithoutSpaces import (
-    FastSegmentSelectorInputWithoutSpaces,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorMT5TrueCaseEnglishSpanishMethod import (
-    FastSegmentSelectorMT5TrueCaseEnglishSpanishMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorNerFirstAppearanceMethod import (
-    FastSegmentSelectorNerFirstAppearanceMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorNerLastAppearanceMethod import (
-    FastSegmentSelectorNerLastAppearanceMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorRegexMethod import (
-    FastSegmentSelectorRegexMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorRegexSubtractionMethod import (
-    FastSegmentSelectorRegexSubtractionMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FastSegmentSelectorSameInputOutputMethod import (
-    FastSegmentSelectorSameInputOutputMethod,
-)
+
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.FirstDateMethod import FirstDateMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.GlinerFirstDateMethod import GlinerFirstDateMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.GlinerLastDateMethod import GlinerLastDateMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.LastDateMethod import LastDateMethod
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextFastSegmentSelector import (
+    PdfToTextFastSegmentSelector,
+)
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextRegexMethod import PdfToTextRegexMethod
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorDateParserMethod import (
-    SegmentSelectorDateParserMethod,
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextSegmentSelector import (
+    PdfToTextSegmentSelector,
 )
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorDateParserWithBreaksMethod import (
-    SegmentSelectorDateParserWithBreaksMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorGlinerDateParserMethod import (
-    SegmentSelectorGlinerDateParserMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorInputWithoutSpaces import (
-    SegmentSelectorInputWithoutSpaces,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorMT5TrueCaseEnglishSpanishMethod import (
-    SegmentSelectorMT5TrueCaseEnglishSpanishMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorNerFirstAppearanceMethod import (
-    SegmentSelectorNerFirstAppearanceMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorNerLastAppearanceMethod import (
-    SegmentSelectorNerLastAppearanceMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorRegexMethod import (
-    SegmentSelectorRegexMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorRegexSubtractionMethod import (
-    SegmentSelectorRegexSubtractionMethod,
-)
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorSameInputOutputMethod import (
-    SegmentSelectorSameInputOutputMethod,
+
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.pdf_to_text_method_builder import (
+    pdf_to_text_method_builder,
+    text_to_text_methods,
 )
 from trainable_entity_extractor.extractors.segment_selector.FastAndPositionsSegmentSelector import (
     FastAndPositionsSegmentSelector,
 )
 from trainable_entity_extractor.extractors.segment_selector.FastSegmentSelector import FastSegmentSelector
 from trainable_entity_extractor.extractors.segment_selector.SegmentSelector import SegmentSelector
+from trainable_entity_extractor.extractors.text_to_text_extractor.methods.MT5TrueCaseEnglishSpanishMethod import (
+    MT5TrueCaseEnglishSpanishMethod,
+)
 
 
 class PdfToTextExtractor(ToTextExtractor):
-
-    METHODS: list[type[ToTextExtractorMethod]] = [
+    stand_alone_methods = [
         PdfToTextRegexMethod,
-        FastSegmentSelectorSameInputOutputMethod,
-        FastSegmentSelectorInputWithoutSpaces,
-        FastSegmentSelectorRegexMethod,
-        FastSegmentSelectorRegexSubtractionMethod,
-        FastSegmentSelectorGlinerDateParserMethod,
-        FastSegmentSelectorNerFirstAppearanceMethod,
-        FastSegmentSelectorNerLastAppearanceMethod,
-        SegmentSelectorInputWithoutSpaces,
-        SegmentSelectorSameInputOutputMethod,
-        SegmentSelectorRegexMethod,
-        SegmentSelectorRegexSubtractionMethod,
-        SegmentSelectorSameInputOutputMethod,
         FirstDateMethod,
         LastDateMethod,
         GlinerFirstDateMethod,
         GlinerLastDateMethod,
-        FastSegmentSelectorDateParserMethod,
-        FastSegmentSelectorDateParserWithBreaksMethod,
-        SegmentSelectorDateParserMethod,
-        SegmentSelectorDateParserWithBreaksMethod,
-        SegmentSelectorGlinerDateParserMethod,
-        SegmentSelectorNerFirstAppearanceMethod,
-        SegmentSelectorNerLastAppearanceMethod,
-        FastSegmentSelectorMT5TrueCaseEnglishSpanishMethod,
-        SegmentSelectorMT5TrueCaseEnglishSpanishMethod,
     ]
+
+    fast_segment_selector_methods = [
+        pdf_to_text_method_builder(PdfToTextFastSegmentSelector, x) for x in text_to_text_methods
+    ]
+    segment_selector_methods = [pdf_to_text_method_builder(PdfToTextSegmentSelector, x) for x in text_to_text_methods]
+    t5_methods = [
+        pdf_to_text_method_builder(PdfToTextFastSegmentSelector, MT5TrueCaseEnglishSpanishMethod),
+        pdf_to_text_method_builder(PdfToTextSegmentSelector, MT5TrueCaseEnglishSpanishMethod),
+    ]
+
+    METHODS: list[type[ToTextExtractorMethod]] = (
+        stand_alone_methods + fast_segment_selector_methods + segment_selector_methods + t5_methods
+    )
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
         if not extraction_data or not extraction_data.samples:

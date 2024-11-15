@@ -1,17 +1,18 @@
 from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.SegmentSelectorSameInputOutputMethod import (
-    SegmentSelectorSameInputOutputMethod,
+from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextSegmentSelector import (
+    PdfToTextSegmentSelector,
 )
+
 from trainable_entity_extractor.extractors.segment_selector.FastAndPositionsSegmentSelector import (
     FastAndPositionsSegmentSelector,
 )
-from trainable_entity_extractor.extractors.text_to_text_extractor.methods.InputWithoutSpaces import InputWithoutSpaces
 
 
-class FastSegmentSelectorInputWithoutSpaces(SegmentSelectorSameInputOutputMethod):
+class PdfToTextFastSegmentSelector(PdfToTextSegmentSelector):
 
-    SEMANTIC_METHOD = InputWithoutSpaces
+    SEMANTIC_METHOD: type[ToTextExtractorMethod] = None
 
     def create_segment_selector_model(self, extraction_data):
         segments = list()

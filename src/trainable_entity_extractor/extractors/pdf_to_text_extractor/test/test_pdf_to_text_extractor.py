@@ -9,7 +9,7 @@ from trainable_entity_extractor.extractors.pdf_to_text_extractor.PdfToTextExtrac
 
 
 class TestPdfToTextExtractor(TestCase):
-    TENANT = "multi_option_extraction_test"
+    TENANT = "TestPdfToTextExtractor"
     extraction_id = "extraction_id"
     extraction_identifier = ExtractionIdentifier(run_name=TENANT, extraction_name=extraction_id)
 
