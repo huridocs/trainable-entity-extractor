@@ -33,10 +33,10 @@ from trainable_entity_extractor.extractors.text_to_text_extractor.methods.MT5Tru
 class PdfToTextExtractor(ToTextExtractor):
     stand_alone_methods = [
         PdfToTextRegexMethod,
-        FirstDateMethod,
-        LastDateMethod,
         GlinerFirstDateMethod,
         GlinerLastDateMethod,
+        FirstDateMethod,
+        LastDateMethod,
     ]
 
     fast_segment_selector_methods = [

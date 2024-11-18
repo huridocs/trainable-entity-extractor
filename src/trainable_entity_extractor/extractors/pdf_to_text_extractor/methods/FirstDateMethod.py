@@ -18,7 +18,7 @@ class FirstDateMethod(ToTextExtractorMethod):
             segments = prediction_sample.pdf_data.pdf_data_segments
 
             if predictions[index] or not prediction_sample.pdf_data or not segments:
-                break
+                continue
 
             predictions[index] = self.get_date_from_segments(segments, languages)
 
