@@ -6,7 +6,7 @@ from trainable_entity_extractor.extractors.pdf_to_multi_option_extractor.multi_l
 
 
 class SingleLabelSetFitMultilingualMethod(SingleLabelSetFitEnglishMethod):
-    model_name = "Alibaba-NLP/gte-multilingual-reranker-base"
+    model_name = "sentence-transformers/multi-qa-distilbert-dot-v1"
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if extraction_data.multi_value:
