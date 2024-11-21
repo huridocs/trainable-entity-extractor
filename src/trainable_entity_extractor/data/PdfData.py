@@ -1,6 +1,7 @@
 from typing import Optional
 
 from pdf_features.PdfToken import PdfToken
+from pdf_token_type_labels.TokenType import TokenType
 
 from trainable_entity_extractor.data.SegmentationData import SegmentationData
 from pdf_features.PdfFeatures import PdfFeatures
@@ -103,6 +104,20 @@ class PdfData:
         tokens_no_super_scripts = []
 
         for token in tokens:
+            if token == tokens[0]:
+                tokens_no_super_scripts.append(token)
+                continue
+
+            if token.token_type in [
+                TokenType.FORMULA,
+                TokenType.FOOTNOTE,
+                TokenType.TABLE,
+                TokenType.PICTURE,
+                TokenType.PAGE_FOOTER,
+            ]:
+                tokens_no_super_scripts.append(token)
+                continue
+
             if token.font.font_size == min_font_size and token.content.isnumeric() and float(token.content) < 999:
                 continue
 
