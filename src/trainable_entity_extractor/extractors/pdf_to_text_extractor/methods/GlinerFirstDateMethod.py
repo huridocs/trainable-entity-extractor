@@ -27,7 +27,7 @@ class GlinerFirstDateMethod(FirstDateMethod):
         return ""
 
     def merge_segments_for_dates(self, segments):
-        min_words = 25
+        min_words = 35
         merge_segments: list[list[PdfDataSegment]] = list()
         for segment in segments:
             if not merge_segments:
@@ -39,7 +39,9 @@ class GlinerFirstDateMethod(FirstDateMethod):
             if words_previous_segment < min_words:
                 merge_segments[-1].append(segment)
 
+
             merge_segments.append([segment])
+
         segments_for_dates = [PdfDataSegment.from_list_to_merge(segments) for segments in merge_segments]
         return segments_for_dates
 
