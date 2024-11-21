@@ -59,6 +59,10 @@ class PdfDataSegment:
         )
 
     @staticmethod
+    def from_token_list_to_merge(tokens: list[PdfToken]):
+        return PdfDataSegment.from_list_to_merge([PdfDataSegment.from_pdf_token(token) for token in tokens])
+
+    @staticmethod
     def from_texts(texts: list[str]):
         return [PdfDataSegment(i + 1, Rectangle(0, 0, 0, 0), text) for i, text in enumerate(texts)]
 

@@ -10,7 +10,7 @@ from trainable_entity_extractor.extractors.text_to_text_extractor.methods.Gliner
 class SpaceFixerGlinerFirstDateMethod(FirstDateMethod):
     @staticmethod
     def contains_year(text: str):
-        year_pattern = re.compile(r'(1[0-9]{3}|20[0-9]{2})')
+        year_pattern = re.compile(r"(1[0-9]{3}|20[0-9]{2})")
         return bool(year_pattern.search(text.replace(" ", "")))
 
     def get_date_from_segments(self, segments: list[PdfDataSegment], languages: list[str]) -> str:

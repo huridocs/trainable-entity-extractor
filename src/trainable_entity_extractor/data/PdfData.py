@@ -1,5 +1,7 @@
 from typing import Optional
 
+from pdf_features.PdfToken import PdfToken
+
 from trainable_entity_extractor.data.SegmentationData import SegmentationData
 from pdf_features.PdfFeatures import PdfFeatures
 
@@ -20,32 +22,24 @@ class PdfData:
         self.pdf_data_segments: list[PdfDataSegment] = list()
 
     def set_segments_from_segmentation_data(self, segmentation_data: SegmentationData):
-        pdf_segments_to_merge = dict()
-        pdf_segments_from_segmentation = [
+        segments_tokens: dict[PdfDataSegment, list[PdfToken]] = dict()
+        segmentation_regions: list[PdfDataSegment] = [
             segment_box.to_pdf_segment() for segment_box in segmentation_data.xml_segments_boxes
         ]
         for page, token in self.pdf_features.loop_tokens():
-            segment_from_tag: PdfDataSegment = PdfDataSegment.from_pdf_token(token)
-
-            intersects_segmentation = [
-                segmentation_segment
-                for segmentation_segment in pdf_segments_from_segmentation
-                if segmentation_segment.intersects(segment_from_tag)
-            ]
+            segment_from_token: PdfDataSegment = PdfDataSegment.from_pdf_token(token)
+            intersects_segmentation = [region for region in segmentation_regions if region.intersects(segment_from_token)]
 
             if not intersects_segmentation:
-                self.pdf_data_segments.append(segment_from_tag)
+                self.pdf_data_segments.append(segment_from_token)
                 continue
 
-            segment_from_tag.segment_type = intersects_segmentation[0].segment_type
-            pdf_segments_to_merge.setdefault(intersects_segmentation[0], []).append(segment_from_tag)
+            segment_from_token.segment_type = intersects_segmentation[0].segment_type
+            segments_tokens.setdefault(intersects_segmentation[0], []).append(token)
 
-        self.pdf_data_segments.extend(
-            [
-                PdfDataSegment.from_list_to_merge(each_pdf_segments_to_merge)
-                for each_pdf_segments_to_merge in pdf_segments_to_merge.values()
-            ]
-        )
+        segments_tokens = {segment: self.remove_super_scripts(tokens) for segment, tokens in segments_tokens.items()}
+        segments = [PdfDataSegment.from_token_list_to_merge(tokens) for tokens in segments_tokens.values()]
+        self.pdf_data_segments.extend(segments)
         self.pdf_data_segments.sort(key=lambda x: (x.page_number, x.bounding_box.top, x.bounding_box.left))
 
     def set_ml_label_from_segmentation_data(self, segmentation_data: SegmentationData):
@@ -98,3 +92,20 @@ class PdfData:
 
     def contains_text(self):
         return "" != self.get_text()
+
+    @staticmethod
+    def remove_super_scripts(tokens: list[PdfToken]) -> list[PdfToken]:
+        fonts_sizes = [token.font.font_size for token in tokens]
+        if max(fonts_sizes) - min(fonts_sizes) < 1.5:
+            return tokens
+
+        min_font_size = min(fonts_sizes)
+        tokens_no_super_scripts = []
+
+        for token in tokens:
+            if token.font.font_size == min_font_size and token.content.isnumeric() and float(token.content) < 999:
+                continue
+
+            tokens_no_super_scripts.append(token)
+
+        return tokens_no_super_scripts
