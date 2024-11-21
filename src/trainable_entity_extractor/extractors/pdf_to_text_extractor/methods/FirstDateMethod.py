@@ -1,4 +1,5 @@
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
+from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 
@@ -24,7 +25,7 @@ class FirstDateMethod(ToTextExtractorMethod):
 
         return predictions
 
-    def get_date_from_segments(self, segments, languages):
+    def get_date_from_segments(self, segments: list[PdfDataSegment], languages: list[str]) -> str:
         for segment in self.loop_segments(segments):
             date = DateParserMethod.get_date([segment.text_content], languages)
             if date:
@@ -34,6 +35,6 @@ class FirstDateMethod(ToTextExtractorMethod):
         return ""
 
     @staticmethod
-    def loop_segments(segments):
+    def loop_segments(segments: list[PdfDataSegment]):
         for segment in segments:
             yield segment
