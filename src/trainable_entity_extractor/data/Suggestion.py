@@ -81,7 +81,7 @@ class Suggestion(BaseModel):
         self.page_number = context_segments[0].page_number
         pages = pdf_data.pdf_features.pages if pdf_data.pdf_features else []
         self.segments_boxes = [SegmentBox.from_pdf_segment(pdf_segment, pages) for pdf_segment in context_segments]
-        self.segment_text = " .. ".join([pdf_segment.text_content for pdf_segment in context_segments])
+        self.segment_text = " ________ ".join([pdf_segment.text_content for pdf_segment in context_segments])
 
     def scale_up(self):
         for segment_box in self.segments_boxes:
