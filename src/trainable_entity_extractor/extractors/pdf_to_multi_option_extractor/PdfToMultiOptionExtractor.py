@@ -102,7 +102,6 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         PreviousWordsTokenSelectorFuzzy75(),
         NextWordsTokenSelectorFuzzy75(),
         PreviousWordsSentenceSelectorFuzzyCommas(),
-        SentenceSelectorFuzzyCommas(),
         FastSegmentSelectorFuzzy95(),
         FastSegmentSelectorFuzzyCommas(),
         FuzzySegmentSelector(),
