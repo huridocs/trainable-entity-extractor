@@ -11,7 +11,7 @@ Extractor             cejil_countries                                 5.5 94.12%
 Extractor             cyrilla_keywords [TextSetFit]                   4.0 68.29%
 Extractor             cejil_judge                                     0.0 100.0%
 Extractor             action [TextSingleLabelSetFit]                 10.1  88.3%
-Extractor             issues [Setfit]                                13.0  76.7%
+Extractor             issues [Setfit]                                27.7  78.3%
 Extractor             issues [BertBase]                                 -  70.8%
 Extractor             issues [BertLarge]                             98.3  90.2%
 Extractor             themes [Setfit]                                 5.3  66.1%
