@@ -152,7 +152,11 @@ class FastSegmentSelector(SegmentSelectorBase):
         model = lgb.Booster(model_file=self.model_path)
         predictions = model.predict(x)
 
-        return [segment for i, segment in enumerate(segments) if predictions[i] > 0.5]
+        return self.predictions_scores_to_segments(segments, predictions)
+
+    @staticmethod
+    def predictions_scores_to_segments(segments: list[PdfDataSegment], prediction_scores: list[float]):
+        return [segment for i, segment in enumerate(segments) if prediction_scores[i] > 0.5]
 
     def load_repeated_words(self):
         self.previous_words = []

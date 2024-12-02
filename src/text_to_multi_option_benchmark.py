@@ -5,7 +5,9 @@ from pathlib import Path
 from time import time
 
 import rich
+from fastfit import FastFit
 from sklearn.metrics import f1_score
+from transformers import AutoTokenizer, pipeline
 
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
@@ -73,7 +75,7 @@ def get_benchmark():
     # action
     # themes
     # issues
-    extractions_data: list[ExtractionData] = get_extraction_data(filter_by=["issues"])
+    extractions_data: list[ExtractionData] = get_extraction_data(filter_by=["action"])
     for extraction_data in extractions_data:
         start = time()
         extractor = TextToMultiOptionExtractor(extraction_identifier=extraction_data.extraction_identifier)
@@ -131,3 +133,7 @@ def check_results():
 if __name__ == "__main__":
     get_benchmark()
     # check_results()
+    # model = FastFit.from_pretrained("/home/gabo/ssd/projects/trainable-entity-extractor/models_data/text_benchmark/action/TextFastFit/fast_fit_model")
+    # tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/paraphrase-mpnet-base-v2")
+    # classifier = pipeline("text-classification", model=model, tokenizer=tokenizer, trust_remote_code=True)
+    # print('oh!')

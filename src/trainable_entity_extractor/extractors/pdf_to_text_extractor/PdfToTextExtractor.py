@@ -11,6 +11,9 @@ from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.LastDat
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextFastSegmentSelector import (
     PdfToTextFastSegmentSelector,
 )
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextNearFastSegmentSelector import (
+    PdfToTextNearFastSegmentSelector,
+)
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextRegexMethod import PdfToTextRegexMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextSegmentSelector import (
     PdfToTextSegmentSelector,
@@ -42,15 +45,22 @@ class PdfToTextExtractor(ToTextExtractor):
     fast_segment_selector_methods = [
         pdf_to_text_method_builder(PdfToTextFastSegmentSelector, x) for x in text_to_text_methods
     ]
+
+    near_fast_segment_selector_methods = [
+        pdf_to_text_method_builder(PdfToTextNearFastSegmentSelector, x) for x in text_to_text_methods
+    ]
     segment_selector_methods = [pdf_to_text_method_builder(PdfToTextSegmentSelector, x) for x in text_to_text_methods]
     t5_methods = [
         pdf_to_text_method_builder(PdfToTextFastSegmentSelector, MT5TrueCaseEnglishSpanishMethod),
         pdf_to_text_method_builder(PdfToTextSegmentSelector, MT5TrueCaseEnglishSpanishMethod),
     ]
 
-    METHODS: list[type[ToTextExtractorMethod]] = (
-        stand_alone_methods + fast_segment_selector_methods + segment_selector_methods + t5_methods
-    )
+    METHODS: list[type[ToTextExtractorMethod]] = list()
+    METHODS += stand_alone_methods
+    METHODS += fast_segment_selector_methods
+    METHODS += near_fast_segment_selector_methods
+    METHODS += segment_selector_methods
+    METHODS += t5_methods
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
         if not extraction_data or not extraction_data.samples:
@@ -65,32 +75,34 @@ class PdfToTextExtractor(ToTextExtractor):
     def get_train_test_sets(extraction_data: ExtractionData) -> (ExtractionData, ExtractionData):
         samples_with_label_segments_boxes = [x for x in extraction_data.samples if x.labeled_data.label_segments_boxes]
 
-        if len(samples_with_label_segments_boxes) < 2 and len(extraction_data.samples) > 10:
+        if len(extraction_data.samples) <= 10:
+            return extraction_data, extraction_data
+
+        if len(samples_with_label_segments_boxes) < 2:
             return PdfToTextExtractor.split_80_20(extraction_data)
 
         if len(samples_with_label_segments_boxes) < 10:
-            test_extraction_data = ExtractorBase.get_extraction_data_from_samples(
+            train_extraction_data = ExtractorBase.get_extraction_data_from_samples(
                 extraction_data, samples_with_label_segments_boxes
             )
-            return extraction_data, test_extraction_data
+            return train_extraction_data, extraction_data
 
         samples_without_label_segments_boxes = [
             x for x in extraction_data.samples if not x.labeled_data.label_segments_boxes
         ]
 
-        train_size = int(len(samples_with_label_segments_boxes) * 0.8)
-        train_set: list[TrainingSample] = (
-            samples_with_label_segments_boxes[:train_size] + samples_without_label_segments_boxes
-        )
+        train_size = int(len(extraction_data.samples) * 0.7)
 
-        if len(extraction_data.samples) < 15:
-            test_set: list[TrainingSample] = samples_with_label_segments_boxes[-10:]
-        else:
-            test_set = samples_with_label_segments_boxes[train_size:]
+        if len(samples_with_label_segments_boxes) >= train_size:
+            train_extraction_data = ExtractorBase.get_extraction_data_from_samples(
+                extraction_data, samples_with_label_segments_boxes[:train_size]
+            )
+            test_extraction_data = ExtractorBase.get_extraction_data_from_samples(
+                extraction_data, samples_with_label_segments_boxes[train_size:] + samples_without_label_segments_boxes
+            )
+            return train_extraction_data, test_extraction_data
 
-        train_extraction_data = ExtractorBase.get_extraction_data_from_samples(extraction_data, train_set)
-        test_extraction_data = ExtractorBase.get_extraction_data_from_samples(extraction_data, test_set)
-        return train_extraction_data, test_extraction_data
+        return PdfToTextExtractor.split_80_20(extraction_data)
 
     @staticmethod
     def split_80_20(extraction_data):

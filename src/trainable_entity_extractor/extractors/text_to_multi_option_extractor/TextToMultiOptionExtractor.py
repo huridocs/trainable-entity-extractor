@@ -1,7 +1,4 @@
-import json
 import os
-from os.path import join, exists
-from pathlib import Path
 from typing import Type
 
 from trainable_entity_extractor.config import config_logger
@@ -41,7 +38,6 @@ from trainable_entity_extractor.extractors.text_to_multi_option_extractor.method
 from trainable_entity_extractor.extractors.text_to_multi_option_extractor.methods.TextSingleLabelSetFitMultilingual import (
     TextSingleLabelSetFitMultilingual,
 )
-from trainable_entity_extractor.extractors.text_to_multi_option_extractor.methods.TextTfIdf import TextTfIdf
 
 
 class TextToMultiOptionExtractor(ExtractorBase):
@@ -139,6 +135,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         try:
             performance = method_instance.performance(extraction_data)
         except:
+            config_logger.info("ERROR", exc_info=True)
             performance = 0
         config_logger.info(f"\nPerformance {method_instance.get_name()}: {performance}%")
         return performance

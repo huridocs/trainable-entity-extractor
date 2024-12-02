@@ -42,8 +42,8 @@ class TestPdfToTextExtractor(TestCase):
 
         self.assertEqual(train_set.extraction_identifier, self.extraction_identifier)
         self.assertEqual(test_set.extraction_identifier, self.extraction_identifier)
-        self.assertEqual(len(train_set.samples), 9)
-        self.assertEqual(len(test_set.samples), 4)
+        self.assertEqual(9, len(train_set.samples))
+        self.assertEqual(9, len(test_set.samples))
 
     def test_get_train_test_without_enough_labeled_segments(self):
         pdf_to_text_extractor = PdfToTextExtractor(self.extraction_identifier)
@@ -55,8 +55,8 @@ class TestPdfToTextExtractor(TestCase):
 
         train_set, test_set = pdf_to_text_extractor.get_train_test_sets(extraction_data)
 
-        self.assertEqual(len(train_set.samples), 20)
-        self.assertEqual(len(test_set.samples), 9)
+        self.assertEqual(9, len(train_set.samples))
+        self.assertEqual(20, len(test_set.samples))
 
     def test_get_train_test_without_labeled_segments(self):
         pdf_to_text_extractor = PdfToTextExtractor(self.extraction_identifier)
@@ -68,8 +68,8 @@ class TestPdfToTextExtractor(TestCase):
 
         train_set, test_set = pdf_to_text_extractor.get_train_test_sets(extraction_data)
 
-        self.assertEqual(len(train_set.samples), 80)
-        self.assertEqual(len(test_set.samples), 20)
+        self.assertEqual(80, len(train_set.samples))
+        self.assertEqual(20, len(test_set.samples))
 
     def test_get_train_test_without_enough_data(self):
         pdf_to_text_extractor = PdfToTextExtractor(self.extraction_identifier)
@@ -81,8 +81,8 @@ class TestPdfToTextExtractor(TestCase):
 
         train_set, test_set = pdf_to_text_extractor.get_train_test_sets(extraction_data)
 
-        self.assertEqual(len(train_set.samples), 180)
-        self.assertEqual(len(test_set.samples), 20)
+        self.assertEqual(160, len(train_set.samples))
+        self.assertEqual(40, len(test_set.samples))
 
     def test_get_train_test_only_labels_with_segments(self):
         pdf_to_text_extractor = PdfToTextExtractor(self.extraction_identifier)
@@ -94,5 +94,5 @@ class TestPdfToTextExtractor(TestCase):
 
         train_set, test_set = pdf_to_text_extractor.get_train_test_sets(extraction_data)
 
-        self.assertEqual(len(train_set.samples), 160)
-        self.assertEqual(len(test_set.samples), 40)
+        self.assertEqual(140, len(train_set.samples))
+        self.assertEqual(60, len(test_set.samples))
