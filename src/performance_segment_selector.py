@@ -4,6 +4,7 @@ from sklearn.metrics import precision_score, recall_score
 from py_markdown_table.markdown_table import markdown_table
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.extractors.segment_selector.FastSegmentSelector import FastSegmentSelector
+from trainable_entity_extractor.extractors.segment_selector.NearFastSegmentSelector import NearFastSegmentSelector
 from trainable_entity_extractor.extractors.segment_selector.SegmentSelector import SegmentSelector
 from trainable_entity_extractor.extractors.segment_selector.SegmentSelectorBase import SegmentSelectorBase
 from trainable_entity_extractor.extractors.segment_selector.SegmentSelectorResults import SegmentSelectorResults
@@ -11,7 +12,11 @@ from trainable_entity_extractor.extractors.segment_selector.get_data_for_perform
 
 extraction_identifier = ExtractionIdentifier(run_name="benchmark", extraction_name="segment_selector")
 
-METHODS: list[SegmentSelectorBase] = [FastSegmentSelector(extraction_identifier), SegmentSelector(extraction_identifier)]
+METHODS: list[SegmentSelectorBase] = [
+    FastSegmentSelector(extraction_identifier),
+    NearFastSegmentSelector(extraction_identifier),
+    SegmentSelector(extraction_identifier),
+]
 
 
 def get_train_test(pdfs_data):

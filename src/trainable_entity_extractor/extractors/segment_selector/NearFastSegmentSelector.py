@@ -13,7 +13,7 @@ class NearFastSegmentSelector(FastAndPositionsSegmentSelector):
                 predicted_segments.append(segment)
                 continue
 
-            if len(prediction_scores) >= i + 1 and prediction_scores[i + 1] > 0.5:
+            if len(prediction_scores) > i + 1 and prediction_scores[i + 1] > 0.5:
                 predicted_segments.append(segment)
                 continue
 
