@@ -8,11 +8,13 @@ from typing import Any
 from pydantic import BaseModel
 
 from trainable_entity_extractor.config import DATA_PATH
+from trainable_entity_extractor.data.ExtractionStatus import ExtractionStatus
 from trainable_entity_extractor.data.Option import Option
 
 OPTIONS_FILE_NAME = "options.json"
 MULTI_VALUE_FILE_NAME = "multi_value.json"
 METHOD_USED_FILE_NAME = "method_used.json"
+PROCESSING_FINISHED_FILE_NAME = "processing_finished.json"
 EXTRACTOR_USED_FILE_NAME = "extractor_used.json"
 
 
@@ -74,3 +76,19 @@ class ExtractionIdentifier(BaseModel):
     def is_old(self):
         path = self.get_path()
         return exists(path) and os.path.isdir(path) and os.path.getmtime(path) < (time() - (2 * 24 * 3600))
+
+    def get_status(self) -> ExtractionStatus:
+        method_used = self.get_method_used()
+        if not method_used:
+            return ExtractionStatus.NO_MODEL
+
+        if self.get_file_content(PROCESSING_FINISHED_FILE_NAME, False):
+            return ExtractionStatus.READY
+
+        return ExtractionStatus.PROCESSING
+
+    def set_extractor_to_processing(self):
+        Path(self.get_path(), PROCESSING_FINISHED_FILE_NAME).unlink(missing_ok=True)
+
+    def save_processing_finished(self, success: bool):
+        self.save_content(PROCESSING_FINISHED_FILE_NAME, success)
