@@ -8,7 +8,7 @@ requires-python = ">= 3.10"
 dependencies = [
     "pdf-document-layout-analysis @ git+https://github.com/huridocs/pdf-document-layout-analysis@113f348534c6757ad55be6daa8285946bd514106",
     "python-Levenshtein==0.25.1",
-    "tdda==2.0.9",
+    "tdda==2.2.5",
     "datasets==2.19.0",
     "evaluate==0.4.1",
     "pandas==2.2.2",
