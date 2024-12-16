@@ -96,14 +96,12 @@ class PdfData:
 
     @staticmethod
     def remove_super_scripts(tokens: list[PdfToken]) -> list[PdfToken]:
-        fonts_sizes = [token.font.font_size for token in tokens]
-        if max(fonts_sizes) - min(fonts_sizes) < 1.5:
+        if PdfData.similar_font_sizes([token.font.font_size for token in tokens]):
             return tokens
 
-        min_font_size = min(fonts_sizes)
         tokens_no_super_scripts = []
 
-        for token in tokens:
+        for i, token in enumerate(tokens):
             if token == tokens[0]:
                 tokens_no_super_scripts.append(token)
                 continue
@@ -118,9 +116,20 @@ class PdfData:
                 tokens_no_super_scripts.append(token)
                 continue
 
-            if token.font.font_size == min_font_size and token.content.isnumeric() and float(token.content) < 999:
+            window_size = 3
+            font_sizes = [token.font.font_size for token in tokens[max(i - window_size, 0) : i + window_size]]
+
+            if PdfData.similar_font_sizes(font_sizes):
+                tokens_no_super_scripts.append(token)
+                continue
+
+            if token.font.font_size == min(font_sizes) and token.content.isnumeric() and float(token.content) < 999:
                 continue
 
             tokens_no_super_scripts.append(token)
 
         return tokens_no_super_scripts
+
+    @staticmethod
+    def similar_font_sizes(fonts_sizes: list[float]) -> bool:
+        return max(fonts_sizes) - min(fonts_sizes) < 1.5
