@@ -94,7 +94,7 @@ class TestPdfSegments(TestCase):
         self.assertEqual(612, pdf_segments.pdf_features.pages[0].page_width)
         self.assertEqual(792, pdf_segments.pdf_features.pages[0].page_height)
         self.assertEqual(1, len([segment for segment in pdf_segments.pdf_data_segments if segment.ml_label == 1]))
-        self.assertEqual("A /INF/76/1", pdf_segments.pdf_data_segments[0].text_content)
+        self.assertEqual("A/INF/76/1", pdf_segments.pdf_data_segments[0].text_content)
         self.assertEqual("United Nations", pdf_segments.pdf_data_segments[1].text_content)
         self.assertEqual("General Assembly", pdf_segments.pdf_data_segments[2].text_content)
         self.assertEqual(

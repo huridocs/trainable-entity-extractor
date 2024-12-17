@@ -1,6 +1,7 @@
 from typing import Optional
 
 from pdf_features.PdfToken import PdfToken
+from pdf_features.Rectangle import Rectangle
 from pdf_token_type_labels.TokenType import TokenType
 
 from trainable_entity_extractor.data.SegmentationData import SegmentationData
@@ -39,6 +40,9 @@ class PdfData:
             segments_tokens.setdefault(intersects_segmentation[0], []).append(token)
 
         segments_tokens = {segment: self.remove_super_scripts(tokens) for segment, tokens in segments_tokens.items()}
+        segments_tokens = {
+            segment: self.merge_tokens_that_belongs_to_same_word(tokens) for segment, tokens in segments_tokens.items()
+        }
         segments = [PdfDataSegment.from_token_list_to_merge(tokens) for tokens in segments_tokens.values()]
         self.pdf_data_segments.extend(segments)
         self.pdf_data_segments.sort(key=lambda x: (x.page_number, x.bounding_box.top, x.bounding_box.left))
@@ -128,3 +132,28 @@ class PdfData:
     @staticmethod
     def similar_font_sizes(fonts_sizes: list[float]) -> bool:
         return max(fonts_sizes) - min(fonts_sizes) < 1.5
+
+    @staticmethod
+    def merge_tokens_that_belongs_to_same_word(segment_tokens: list[PdfToken]) -> list[PdfToken]:
+        if not segment_tokens:
+            return []
+
+        merged_tokens: list[PdfToken] = [segment_tokens[0]]
+
+        for token in segment_tokens[1:]:
+            if token.page_number != merged_tokens[-1].page_number:
+                merged_tokens.append(token)
+                continue
+
+            if merged_tokens[-1].bounding_box.get_vertical_intersection(token.bounding_box) < 4:
+                merged_tokens.append(token)
+                continue
+
+            if merged_tokens[-1].bounding_box.get_horizontal_distance(token.bounding_box) > 2:
+                merged_tokens.append(token)
+                continue
+
+            merged_tokens[-1].content += token.content
+            merged_tokens[-1].bounding_box = Rectangle.merge_rectangles([merged_tokens[-1].bounding_box, token.bounding_box])
+
+        return merged_tokens
