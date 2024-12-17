@@ -1,7 +1,6 @@
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.data.Suggestion import Suggestion
-from trainable_entity_extractor.data.TrainingSample import TrainingSample
 from trainable_entity_extractor.extractors.ToTextExtractor import ToTextExtractor
 from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.DateParserMethod import DateParserMethod
@@ -14,12 +13,6 @@ from trainable_entity_extractor.extractors.text_to_text_extractor.methods.Gliner
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.InputWithoutSpaces import InputWithoutSpaces
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.MT5TrueCaseEnglishSpanishMethod import (
     MT5TrueCaseEnglishSpanishMethod,
-)
-from trainable_entity_extractor.extractors.text_to_text_extractor.methods.NerFirstAppearanceMethod import (
-    NerFirstAppearanceMethod,
-)
-from trainable_entity_extractor.extractors.text_to_text_extractor.methods.NerLastAppearanceMethod import (
-    NerLastAppearanceMethod,
 )
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.RegexMethod import RegexMethod
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.RegexSubtractionMethod import (
@@ -37,8 +30,9 @@ class TextToTextExtractor(ToTextExtractor):
         DateParserWithBreaksMethod,
         DateParserMethod,
         GlinerDateParserMethod,
-        NerFirstAppearanceMethod,
-        NerLastAppearanceMethod,
+        # Error downloading the model
+        # NerFirstAppearanceMethod,
+        # NerLastAppearanceMethod,
         MT5TrueCaseEnglishSpanishMethod,
     ]
 

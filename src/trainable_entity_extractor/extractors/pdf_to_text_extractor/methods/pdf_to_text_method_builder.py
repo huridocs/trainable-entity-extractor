@@ -6,12 +6,6 @@ from trainable_entity_extractor.extractors.text_to_text_extractor.methods.DatePa
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.GlinerDateParserMethod import (
     GlinerDateParserMethod,
 )
-from trainable_entity_extractor.extractors.text_to_text_extractor.methods.NerFirstAppearanceMethod import (
-    NerFirstAppearanceMethod,
-)
-from trainable_entity_extractor.extractors.text_to_text_extractor.methods.NerLastAppearanceMethod import (
-    NerLastAppearanceMethod,
-)
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.RegexMethod import RegexMethod
 from trainable_entity_extractor.extractors.text_to_text_extractor.methods.RegexSubtractionMethod import (
     RegexSubtractionMethod,
@@ -25,8 +19,9 @@ text_to_text_methods = [
     GlinerDateParserMethod,
     DateParserWithBreaksMethod,
     DateParserMethod,
-    NerFirstAppearanceMethod,
-    NerLastAppearanceMethod,
+    # Error downloading the model
+    # NerFirstAppearanceMethod,
+    # NerLastAppearanceMethod,
 ]
 
 
