@@ -149,7 +149,7 @@ class PdfData:
                 merged_tokens.append(token)
                 continue
 
-            if merged_tokens[-1].bounding_box.get_horizontal_distance(token.bounding_box) > 2:
+            if 1 < merged_tokens[-1].bounding_box.get_horizontal_distance(token.bounding_box):
                 merged_tokens.append(token)
                 continue
 
