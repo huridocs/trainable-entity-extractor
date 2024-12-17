@@ -32,7 +32,7 @@ class PdfData:
             intersects_segmentation = [region for region in segmentation_regions if region.intersects(segment_from_token)]
 
             if not intersects_segmentation:
-                self.pdf_data_segments.append(segment_from_token)
+                segments_tokens[PdfDataSegment.from_pdf_token(token)] = [token]
                 continue
 
             segment_from_token.segment_type = intersects_segmentation[0].segment_type
@@ -95,14 +95,16 @@ class PdfData:
         return "" != self.get_text()
 
     @staticmethod
-    def remove_super_scripts(tokens: list[PdfToken]) -> list[PdfToken]:
-        if PdfData.similar_font_sizes([token.font.font_size for token in tokens]):
-            return tokens
+    def remove_super_scripts(segment_tokens: list[PdfToken]) -> list[PdfToken]:
+        font_sizes = [token.font.font_size for token in segment_tokens]
+
+        if PdfData.similar_font_sizes(font_sizes):
+            return segment_tokens
 
         tokens_no_super_scripts = []
 
-        for i, token in enumerate(tokens):
-            if token == tokens[0]:
+        for i, token in enumerate(segment_tokens):
+            if token == segment_tokens[0]:
                 tokens_no_super_scripts.append(token)
                 continue
 
@@ -113,13 +115,6 @@ class PdfData:
                 TokenType.PICTURE,
                 TokenType.PAGE_FOOTER,
             ]:
-                tokens_no_super_scripts.append(token)
-                continue
-
-            window_size = 3
-            font_sizes = [token.font.font_size for token in tokens[max(i - window_size, 0) : i + window_size]]
-
-            if PdfData.similar_font_sizes(font_sizes):
                 tokens_no_super_scripts.append(token)
                 continue
 
