@@ -28,4 +28,4 @@ sentence-transformers==3.0.1
 py-markdown-table==1.1.0
 flair==0.14.0
 graypy==2.1.0
-git+https://github.com/huridocs/pdf-document-layout-analysis@a296fcbd4228d30524b3ca4b6b3feab48c967d44
+git+https://github.com/huridocs/pdf-document-layout-analysis@c3ad18b6d43712a41b0bfa8568eb39eb1aba31a6
