@@ -8,7 +8,7 @@ from flair.nn import Classifier
 
 TAG_TYPE_JSON = "types.json"
 
-tagger = Classifier.load("ner-ontonotes-large")
+# tagger = Classifier.load("ner-ontonotes-large")
 
 
 class NerFirstAppearanceMethod(ToTextExtractorMethod):

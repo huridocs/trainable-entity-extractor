@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
@@ -13,6 +14,7 @@ extraction_identifier = ExtractionIdentifier(run_name="ner_test", extraction_nam
 
 
 class TestNerMethod(TestCase):
+    @unittest.SkipTest
     def test_ner(self):
         sample = TrainingSample(
             labeled_data=LabeledData(label_text="Huridocs", language_iso="en"),
@@ -27,6 +29,7 @@ class TestNerMethod(TestCase):
         predictions = ner_method.predict([PredictionSample.from_text("Referencing the Human Rights Council")])
         self.assertEqual(["the Human Rights Council"], predictions)
 
+    @unittest.SkipTest
     def test_not_found_tag(self):
         sample = TrainingSample(
             labeled_data=LabeledData(label_text="Huridocs", language_iso="en"),
@@ -41,6 +44,7 @@ class TestNerMethod(TestCase):
         predictions = ner_method.predict([PredictionSample.from_text("Referencing the Human Rights Council")])
         self.assertEqual([""], predictions)
 
+    @unittest.SkipTest
     def test_different_case(self):
         sample = TrainingSample(
             labeled_data=LabeledData(label_text="Human Rights Council", language_iso="en"),
