@@ -41,7 +41,7 @@ class TrainingSample:
         segmentation_data = SegmentationData(
             page_width=pdf_features.pages[0].page_width if pdf_features.pages else 0,
             page_height=pdf_features.pages[0].page_height if pdf_features.pages else 0,
-            xml_segments_boxes=[],
+            xml_segments_boxes=[SegmentBox(left=0, top=0, width=343434342, height=300, page_number=1)],
             label_segments_boxes=[],
         )
         pdf_data.set_segments_from_segmentation_data(segmentation_data=segmentation_data)

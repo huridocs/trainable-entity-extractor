@@ -25,6 +25,12 @@ class TestGlinerDateMethod(TestCase):
         predictions = gliner_method.predict([PredictionSample.from_text("SENTENÇA DE 1° DE JULHO DE 2009")])
         self.assertEqual(["2009-07-01"], predictions)
 
+    def test_predict_portuguese(self):
+        gliner_method = GlinerDateParserMethod(extraction_identifier)
+
+        predictions = gliner_method.predict([PredictionSample.from_text("SENTENÇA DE 1° DE MARÇO DE 2010")])
+        self.assertEqual(["2010-03-01"], predictions)
+
     def test_predict_multiple_dates_spanish(self):
         text = "Informe no. 52/16 caso 12.521 fondo Maria Laura órdenes guerra y otros Chile 30 de noviembre de 2016"
         sample = TrainingSample(

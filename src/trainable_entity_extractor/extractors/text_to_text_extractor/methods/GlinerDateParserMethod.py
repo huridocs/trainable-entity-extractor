@@ -10,8 +10,7 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
 
     @staticmethod
     def get_alphanumeric_text_with_spaces(text):
-        alphanumeric_pattern = re.compile(r"[A-Za-z0-9 ]+")
-        return "".join(alphanumeric_pattern.findall(text))
+        return "".join([letter for letter in text if letter.isalnum() or letter.isspace()])
 
     @staticmethod
     def get_date(tags_texts: list[str]):
@@ -36,3 +35,7 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
         ]
         predictions = [date.strftime("%Y-%m-%d") if date else "" for date in predictions_dates]
         return predictions
+
+
+if __name__ == "__main__":
+    print(GlinerDateParserMethod.get_alphanumeric_text_with_spaces("21 DE MARÇO DE 2023"))
