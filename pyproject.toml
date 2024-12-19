@@ -10,7 +10,7 @@ dependencies = [
     "python-Levenshtein==0.25.1",
     "tdda==2.0.9",
     "datasets==2.19.0",
-    "evaluate==0.4.1",
+    "evaluate==0.4.3",
     "pandas==2.2.2",
     "dateparser==1.2.0",
     "langcodes==3.4.0",
