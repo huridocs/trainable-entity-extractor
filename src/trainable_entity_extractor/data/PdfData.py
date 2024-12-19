@@ -100,6 +100,9 @@ class PdfData:
 
     @staticmethod
     def remove_super_scripts(segment_tokens: list[PdfToken]) -> list[PdfToken]:
+        if not segment_tokens:
+            return []
+
         font_sizes = [token.font.font_size for token in segment_tokens]
 
         if PdfData.similar_font_sizes(font_sizes):
@@ -107,8 +110,10 @@ class PdfData:
 
         tokens_no_super_scripts = []
 
+        min_left = min([token.bounding_box.left for token in segment_tokens])
+
         for i, token in enumerate(segment_tokens):
-            if token == segment_tokens[0]:
+            if token.bounding_box.left == min_left:
                 tokens_no_super_scripts.append(token)
                 continue
 

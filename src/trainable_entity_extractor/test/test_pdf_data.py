@@ -10,9 +10,9 @@ from trainable_entity_extractor.data.PdfData import PdfData
 
 class TestPDFData(TestCase):
     @staticmethod
-    def create_token(content: str, font_size: int):
+    def create_token(content: str, font_size: int, left: int = 0):
         font_12 = PdfFont(font_id="1", font_size=font_size, bold=False, italics=False, color="black")
-        bounding_box = Rectangle.from_width_height(0, 0, 0, 0)
+        bounding_box = Rectangle.from_width_height(left, 0, 0, 0)
         token = PdfToken(
             page_number=1,
             tag_id="tag",
@@ -25,16 +25,16 @@ class TestPDFData(TestCase):
         return token
 
     def test_no_remove_super_scripts(self):
-        token_1 = self.create_token("bu", 12)
-        token_2 = self.create_token("1", 12)
-        token_3 = self.create_token("2", 12)
+        token_1 = self.create_token("bu", 12, left=1)
+        token_2 = self.create_token("1", 12, left=2)
+        token_3 = self.create_token("2", 12, left=3)
         tokens = PdfData.remove_super_scripts([token_1, token_2, token_3])
 
         self.assertEqual(3, len(tokens))
 
     def test_remove_super_scripts(self):
         token_1 = self.create_token("first", 12)
-        token_2 = self.create_token("1", 10)
+        token_2 = self.create_token("1", 10, left=1)
 
         tokens = PdfData.remove_super_scripts([token_1, token_2])
 
@@ -42,9 +42,10 @@ class TestPDFData(TestCase):
         self.assertEqual("first", tokens[0].content)
 
     def test_no_remove_super_scripts_when_bigger(self):
-        token_1 = self.create_token("1", 12)
-        token_2 = self.create_token("first", 10)
+        token_1 = self.create_token("foo", 12)
+        token_2 = self.create_token("1", 12, left=1)
+        token_3 = self.create_token("first", 10, left=2)
 
-        tokens = PdfData.remove_super_scripts([token_1, token_2])
+        tokens = PdfData.remove_super_scripts([token_1, token_2, token_3])
 
-        self.assertEqual(2, len(tokens))
+        self.assertEqual(3, len(tokens))
