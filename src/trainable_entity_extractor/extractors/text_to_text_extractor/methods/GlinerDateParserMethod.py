@@ -1,3 +1,5 @@
+import re
+
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
@@ -7,10 +9,15 @@ from trainable_entity_extractor.extractors.GlinerDateExtractor import GlinerDate
 class GlinerDateParserMethod(ToTextExtractorMethod):
 
     @staticmethod
+    def get_alphanumeric_text_with_spaces(text):
+        alphanumeric_pattern = re.compile(r"[A-Za-z0-9 ]+")
+        return "".join(alphanumeric_pattern.findall(text))
+
+    @staticmethod
     def get_date(tags_texts: list[str]):
         if not tags_texts:
             return ""
-        text = " ".join(tags_texts)
+        text = GlinerDateParserMethod.get_alphanumeric_text_with_spaces(" ".join(tags_texts))
         try:
             gliner_date_extractor = GlinerDateExtractor()
             dates = gliner_date_extractor.extract_dates(text)
