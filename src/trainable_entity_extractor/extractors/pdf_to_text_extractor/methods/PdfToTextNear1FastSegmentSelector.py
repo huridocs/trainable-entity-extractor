@@ -1,20 +1,13 @@
-from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
-from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextFastSegmentSelector import (
     PdfToTextFastSegmentSelector,
 )
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextSegmentSelector import (
-    PdfToTextSegmentSelector,
-)
-
-from trainable_entity_extractor.extractors.segment_selector.FastAndPositionsSegmentSelector import (
-    FastAndPositionsSegmentSelector,
-)
-from trainable_entity_extractor.extractors.segment_selector.NearFastSegmentSelector import NearFastSegmentSelector
+from trainable_entity_extractor.extractors.segment_selector.Near1FastSegmentSelector import Near1FastSegmentSelector
 
 
-class PdfToTextNearFastSegmentSelector(PdfToTextFastSegmentSelector):
+class PdfToTextNear1FastSegmentSelector(PdfToTextFastSegmentSelector):
+
+    SEGMENT_SELECTOR = Near1FastSegmentSelector
 
     def create_segment_selector_model(self, extraction_data):
         segments = list()
@@ -22,7 +15,7 @@ class PdfToTextNearFastSegmentSelector(PdfToTextFastSegmentSelector):
         for sample in extraction_data.samples:
             segments.extend(sample.pdf_data.pdf_data_segments)
 
-        fast_segment_selector = NearFastSegmentSelector(self.extraction_identifier)
+        fast_segment_selector = self.SEGMENT_SELECTOR(self.extraction_identifier)
         fast_segment_selector.create_model(segments=segments)
         return True, ""
 
@@ -30,7 +23,7 @@ class PdfToTextNearFastSegmentSelector(PdfToTextFastSegmentSelector):
         if not predictions_samples:
             return [""] * len(predictions_samples)
 
-        fast_segment_selector = NearFastSegmentSelector(self.extraction_identifier)
+        fast_segment_selector = self.SEGMENT_SELECTOR(self.extraction_identifier)
 
         for sample in predictions_samples:
             selected_segments = fast_segment_selector.predict(sample.pdf_data.pdf_data_segments)

@@ -154,8 +154,7 @@ class FastSegmentSelector(SegmentSelectorBase):
 
         return self.predictions_scores_to_segments(segments, predictions)
 
-    @staticmethod
-    def predictions_scores_to_segments(segments: list[PdfDataSegment], prediction_scores: list[float]):
+    def predictions_scores_to_segments(self, segments: list[PdfDataSegment], prediction_scores: list[float]):
         return [segment for i, segment in enumerate(segments) if prediction_scores[i] > 0.5]
 
     def load_repeated_words(self):

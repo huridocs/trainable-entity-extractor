@@ -11,8 +11,12 @@ from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.LastDat
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextFastSegmentSelector import (
     PdfToTextFastSegmentSelector,
 )
-from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextNearFastSegmentSelector import (
-    PdfToTextNearFastSegmentSelector,
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextNear1FastSegmentSelector import (
+    PdfToTextNear1FastSegmentSelector,
+)
+
+from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextNear4FastSegmentSelector import (
+    PdfToTextNear4FastSegmentSelector,
 )
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextRegexMethod import PdfToTextRegexMethod
 from trainable_entity_extractor.extractors.pdf_to_text_extractor.methods.PdfToTextSegmentSelector import (
@@ -46,9 +50,14 @@ class PdfToTextExtractor(ToTextExtractor):
         pdf_to_text_method_builder(PdfToTextFastSegmentSelector, x) for x in text_to_text_methods
     ]
 
-    near_fast_segment_selector_methods = [
-        pdf_to_text_method_builder(PdfToTextNearFastSegmentSelector, x) for x in text_to_text_methods
+    near_1_fast_segment_selector_methods = [
+        pdf_to_text_method_builder(PdfToTextNear1FastSegmentSelector, x) for x in text_to_text_methods
     ]
+
+    near_4_fast_segment_selector_methods = [
+        pdf_to_text_method_builder(PdfToTextNear4FastSegmentSelector, x) for x in text_to_text_methods
+    ]
+
     segment_selector_methods = [pdf_to_text_method_builder(PdfToTextSegmentSelector, x) for x in text_to_text_methods]
     t5_methods = [
         pdf_to_text_method_builder(PdfToTextFastSegmentSelector, MT5TrueCaseEnglishSpanishMethod),
@@ -58,7 +67,8 @@ class PdfToTextExtractor(ToTextExtractor):
     METHODS: list[type[ToTextExtractorMethod]] = list()
     METHODS += stand_alone_methods
     METHODS += fast_segment_selector_methods
-    METHODS += near_fast_segment_selector_methods
+    METHODS += near_1_fast_segment_selector_methods
+    METHODS += near_4_fast_segment_selector_methods
     METHODS += segment_selector_methods
     METHODS += t5_methods
 
