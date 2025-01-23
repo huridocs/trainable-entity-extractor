@@ -1,5 +1,3 @@
-import re
-
 from trainable_entity_extractor.data.ExtractionData import ExtractionData
 from trainable_entity_extractor.data.PredictionSample import PredictionSample
 from trainable_entity_extractor.extractors.ToTextExtractorMethod import ToTextExtractorMethod
