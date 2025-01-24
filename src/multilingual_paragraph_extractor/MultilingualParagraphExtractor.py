@@ -14,21 +14,23 @@ class MultilingualParagraphExtractor:
         if not segments_from_languages:
             return []
 
-        segments_from_languages = [self.remove_headers_footers(x) for x in segments_from_languages]
+        segments_from_languages = [self.remove_no_text_content(x) for x in segments_from_languages]
         segments_from_languages = [self.merge_segments_spanning_two_pages(x) for x in segments_from_languages]
 
-        multilingual_paragraphs: list[MultilingualParagraph] = []
-
         main_language, other_languages = self.get_main_and_other_languages(segments_from_languages)
+        multilingual_paragraphs = self.get_main_language_paragraphs(main_language)
+
+        for language_segments in other_languages:
+            self.append_language(multilingual_paragraphs, language_segments)
+
+        return multilingual_paragraphs
+
+    @staticmethod
+    def get_main_language_paragraphs(main_language):
+        multilingual_paragraphs: list[MultilingualParagraph] = []
         for data_segment in main_language.segments:
             paragraph = MultilingualParagraph(languages=[main_language.language], texts=[data_segment.text_content])
             multilingual_paragraphs.append(paragraph)
-
-        for language_segments in other_languages:
-            for i, data_segment in enumerate(language_segments.segments):
-                multilingual_paragraphs[i].texts.append(data_segment.text_content)
-                multilingual_paragraphs[i].languages.append(language_segments.language)
-
         return multilingual_paragraphs
 
     @staticmethod
@@ -43,42 +45,46 @@ class MultilingualParagraphExtractor:
         other_languages = [x for x in segments_from_languages if x != main_language]
         return main_language, other_languages
 
-    def remove_headers_footers(self, segments_from_language: SegmentsFromLanguage) -> SegmentsFromLanguage:
-        segments = [x for x in segments_from_language.segments if not self.is_header_or_footer(x)]
+    @staticmethod
+    def remove_no_text_content(segments_from_language: SegmentsFromLanguage) -> SegmentsFromLanguage:
+        text_content_types = [
+            TokenType.FORMULA,
+            TokenType.LIST_ITEM,
+            TokenType.TITLE,
+            TokenType.TEXT,
+            TokenType.SECTION_HEADER,
+        ]
+        segments = [x for x in segments_from_language.segments if x.segment_type in text_content_types]
         segments_from_language.segments = segments
         return segments_from_language
 
-    @staticmethod
-    def is_header_or_footer(pdf_data_segment: PdfDataSegment) -> bool:
-        return pdf_data_segment.segment_type in [TokenType.PAGE_HEADER, TokenType.PAGE_FOOTER, TokenType.FOOTNOTE]
-
     def merge_segments_spanning_two_pages(self, segments_from_language: SegmentsFromLanguage) -> SegmentsFromLanguage:
         fixed_segments = []
-        last_merged_segment = None
-        for segment, next_segment in zip(segments_from_language.segments, segments_from_language.segments[1:]):
-            if segment == last_merged_segment:
-                continue
+        segments = segments_from_language.segments
+        index = 0
 
-            if self.are_same_segment(segment, next_segment):
-                fixed_segments.append(PdfDataSegment.from_list_to_merge([segment, next_segment]))
-                last_merged_segment = next_segment
-                continue
-
-            fixed_segments.append(segment)
-
-        last_segment = segments_from_language.segments[-1]
-        if last_segment != last_merged_segment:
-            fixed_segments.append(last_segment)
+        while index < len(segments):
+            segment = segments[index]
+            if index + 1 < len(segments) and self.are_same_segment_from_same_language(segment, segments[index + 1]):
+                merged_segment = PdfDataSegment.from_list_to_merge([segment, segments[index + 1]])
+                fixed_segments.append(merged_segment)
+                index += 2
+            else:
+                fixed_segments.append(segment)
+                index += 1
 
         segments_from_language.segments = fixed_segments
         return segments_from_language
 
     @staticmethod
-    def are_same_segment(segment: PdfDataSegment, next_segment: PdfDataSegment) -> bool:
+    def are_same_segment_from_same_language(segment: PdfDataSegment, next_segment: PdfDataSegment) -> bool:
         if segment.page_number == next_segment.page_number:
             return False
 
         if int(segment.page_number - next_segment.page_number) > 1:
+            return False
+
+        if segment.segment_type != next_segment.segment_type:
             return False
 
         if segment.text_content[-1] in [".", "!", "?", ";"]:
@@ -90,7 +96,21 @@ class MultilingualParagraphExtractor:
         if next_segment.text_content[0].isdigit():
             return False
 
-        if segment.segment_type != next_segment.segment_type:
-            return False
-
         return True
+
+    def append_language(self, multilingual_paragraphs: list[MultilingualParagraph], language_segments: SegmentsFromLanguage):
+        for index, multilingual_paragraph in enumerate(multilingual_paragraphs):
+            segment = None if index < len(language_segments.segments) else language_segments.segments[index]
+            next_segment = None if index + 1 >= len(language_segments.segments) else language_segments.segments[index + 1]
+
+            original_text = multilingual_paragraph.texts[0]
+
+            if self.are_same_paragraph(segment.text_content, original_text):
+                multilingual_paragraph.texts.append(language_segments.segments[index].text_content)
+                multilingual_paragraph.languages.append(language_segments.language)
+            else:
+                multilingual_paragraph.texts.append("")
+                multilingual_paragraph.languages.append(language_segments.language)
+
+    def are_same_paragraph(self, text_content, original_text):
+        pass

@@ -9,10 +9,11 @@ from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdent
 from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
 
 
-class TestMergeParagraphsSpanningTwoPages(TestCase):
+class TestMergeSegmentsSpanningTwoPages(TestCase):
     extraction_identifier = ExtractionIdentifier(extraction_name="paragraph_extraction")
 
-    def get_segments(self):
+    @staticmethod
+    def get_segments():
         regular_segment_1 = PdfDataSegment(1, Rectangle(0, 0, 0, 0), "Text.")
         beginning_segments = PdfDataSegment(1, Rectangle(0, 100, 100, 200), "Text to be continued")
         end_segments = PdfDataSegment(2, Rectangle(0, 0, 0, 0), "here")
@@ -20,7 +21,7 @@ class TestMergeParagraphsSpanningTwoPages(TestCase):
 
         return regular_segment_1, beginning_segments, end_segments, regular_segment_2
 
-    def test_merge_paragraphs_spanning_two_pages(self):
+    def test_merge_segments_spanning_two_pages(self):
         regular_segment_1, beginning_segments, end_segments, regular_segment_2 = self.get_segments()
 
         segments = [regular_segment_1, beginning_segments, end_segments, regular_segment_2]

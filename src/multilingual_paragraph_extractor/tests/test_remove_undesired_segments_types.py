@@ -8,18 +8,20 @@ from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdent
 from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
 
 
-class TestRemoveHeadersFooters(TestCase):
+class TestRemoveUndesiredSegmentTypes(TestCase):
     extraction_identifier = ExtractionIdentifier(extraction_name="paragraph_extraction")
 
-    def test_remove_headers_footers(self):
-        pdf_data_segments_1 = PdfDataSegment.from_texts(texts=["PAGE_HEADER", "Text", "FOOTNOTE"])
-        pdf_data_segments_1[0].segment_type = TokenType.PAGE_HEADER
-        pdf_data_segments_1[2].segment_type = TokenType.FOOTNOTE
-        language_segment_1 = SegmentsFromLanguage(language="en", segments=pdf_data_segments_1, is_main_language=True)
+    def test_remove_undesired_segment_types(self):
+        segments = PdfDataSegment.from_texts(texts=["PAGE_HEADER", "Text", "FOOTNOTE"])
+        segments[0].segment_type = TokenType.PAGE_HEADER
+        segments[2].segment_type = TokenType.FOOTNOTE
+        language_segment_1 = SegmentsFromLanguage(language="en", segments=segments, is_main_language=True)
 
-        pdf_data_segments_2 = PdfDataSegment.from_texts(texts=["Text", "PAGE_FOOTER"])
-        pdf_data_segments_2[1].segment_type = TokenType.PAGE_FOOTER
-        language_segment_2 = SegmentsFromLanguage(language="fr", segments=pdf_data_segments_2, is_main_language=False)
+        other_segments = PdfDataSegment.from_texts(texts=["Text", "PAGE_FOOTER", "PICTURE", "CAPTION"])
+        other_segments[1].segment_type = TokenType.PAGE_FOOTER
+        other_segments[2].segment_type = TokenType.PICTURE
+        other_segments[3].segment_type = TokenType.CAPTION
+        language_segment_2 = SegmentsFromLanguage(language="fr", segments=other_segments, is_main_language=False)
 
         multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
         segments_from_languages = [language_segment_1, language_segment_2]
