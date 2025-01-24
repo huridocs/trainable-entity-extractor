@@ -29,12 +29,12 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
 
         multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
         segments_from_languages = [language_segment]
-        multilingual_paragraphs = multilingual_paragraph_extractor.extract_paragraphs(segments_from_languages)
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
 
-        self.assertEqual(3, len(multilingual_paragraphs))
-        self.assertEqual("Text.", multilingual_paragraphs[0].texts[0])
-        self.assertEqual("Text to be continued here", multilingual_paragraphs[1].texts[0])
-        self.assertEqual("Text.", multilingual_paragraphs[2].texts[0])
+        self.assertEqual(3, len(segments_from_languages[0].segments))
+        self.assertEqual("Text.", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("Text to be continued here", segments_from_languages[0].segments[1].text_content)
+        self.assertEqual("Text.", segments_from_languages[0].segments[2].text_content)
 
     def test_not_merge_when_same_page(self):
         regular_segment_1, beginning_segments, end_segments, regular_segment_2 = self.get_segments()
@@ -49,13 +49,13 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
 
         multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
         segments_from_languages = [language_segment]
-        multilingual_paragraphs = multilingual_paragraph_extractor.extract_paragraphs(segments_from_languages)
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
 
-        self.assertEqual(4, len(multilingual_paragraphs))
-        self.assertEqual("Text.", multilingual_paragraphs[0].texts[0])
-        self.assertEqual("Text to be continued", multilingual_paragraphs[1].texts[0])
-        self.assertEqual("here", multilingual_paragraphs[2].texts[0])
-        self.assertEqual("Text.", multilingual_paragraphs[3].texts[0])
+        self.assertEqual(4, len(segments_from_languages[0].segments))
+        self.assertEqual("Text.", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("Text to be continued", segments_from_languages[0].segments[1].text_content)
+        self.assertEqual("here", segments_from_languages[0].segments[2].text_content)
+        self.assertEqual("Text.", segments_from_languages[0].segments[3].text_content)
 
     def test_not_merge_when_ends_with_dot(self):
         regular_segment_1, beginning_segments, end_segments, regular_segment_2 = self.get_segments()
@@ -67,13 +67,13 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
 
         multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
         segments_from_languages = [language_segment]
-        multilingual_paragraphs = multilingual_paragraph_extractor.extract_paragraphs(segments_from_languages)
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
 
-        self.assertEqual(4, len(multilingual_paragraphs))
-        self.assertEqual("Text.", multilingual_paragraphs[0].texts[0])
-        self.assertEqual("Text not to be continued.", multilingual_paragraphs[1].texts[0])
-        self.assertEqual("here", multilingual_paragraphs[2].texts[0])
-        self.assertEqual("Text.", multilingual_paragraphs[3].texts[0])
+        self.assertEqual(4, len(segments_from_languages[0].segments))
+        self.assertEqual("Text.", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("Text not to be continued.", segments_from_languages[0].segments[1].text_content)
+        self.assertEqual("here", segments_from_languages[0].segments[2].text_content)
+        self.assertEqual("Text.", segments_from_languages[0].segments[3].text_content)
 
     def test_not_merge_when_next_segment_starts_uppercase(self):
         regular_segment_1, beginning_segments, end_segments, regular_segment_2 = self.get_segments()
@@ -85,13 +85,12 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
 
         multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
         segments_from_languages = [language_segment]
-        multilingual_paragraphs = multilingual_paragraph_extractor.extract_paragraphs(segments_from_languages)
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
 
-        self.assertEqual(4, len(multilingual_paragraphs))
-        self.assertEqual("Text.", multilingual_paragraphs[0].texts[0])
-        self.assertEqual("Text to be continued", multilingual_paragraphs[1].texts[0])
-        self.assertEqual("Here", multilingual_paragraphs[2].texts[0])
-        self.assertEqual("Text.", multilingual_paragraphs[3].texts[0])
+        self.assertEqual("Text.", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("Text to be continued", segments_from_languages[0].segments[1].text_content)
+        self.assertEqual("Here", segments_from_languages[0].segments[2].text_content)
+        self.assertEqual("Text.", segments_from_languages[0].segments[3].text_content)
 
     def test_not_merge_when_next_segment_starts_with_number(self):
         regular_segment_1, beginning_segments, end_segments, regular_segment_2 = self.get_segments()
@@ -103,13 +102,12 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
 
         multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
         segments_from_languages = [language_segment]
-        multilingual_paragraphs = multilingual_paragraph_extractor.extract_paragraphs(segments_from_languages)
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
 
-        self.assertEqual(4, len(multilingual_paragraphs))
-        self.assertEqual("Text.", multilingual_paragraphs[0].texts[0])
-        self.assertEqual("Text to be continued", multilingual_paragraphs[1].texts[0])
-        self.assertEqual("1. Here", multilingual_paragraphs[2].texts[0])
-        self.assertEqual("Text.", multilingual_paragraphs[3].texts[0])
+        self.assertEqual("Text.", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("Text to be continued", segments_from_languages[0].segments[1].text_content)
+        self.assertEqual("1. Here", segments_from_languages[0].segments[2].text_content)
+        self.assertEqual("Text.", segments_from_languages[0].segments[3].text_content)
 
     def test_not_merge_when_next_segment_from_other_type(self):
         regular_segment_1, beginning_segments, end_segments, regular_segment_2 = self.get_segments()
@@ -121,10 +119,9 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
 
         multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
         segments_from_languages = [language_segment]
-        multilingual_paragraphs = multilingual_paragraph_extractor.extract_paragraphs(segments_from_languages)
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
 
-        self.assertEqual(4, len(multilingual_paragraphs))
-        self.assertEqual("Text.", multilingual_paragraphs[0].texts[0])
-        self.assertEqual("Text to be continued", multilingual_paragraphs[1].texts[0])
-        self.assertEqual("here", multilingual_paragraphs[2].texts[0])
-        self.assertEqual("Text.", multilingual_paragraphs[3].texts[0])
+        self.assertEqual("Text.", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("Text to be continued", segments_from_languages[0].segments[1].text_content)
+        self.assertEqual("here", segments_from_languages[0].segments[2].text_content)
+        self.assertEqual("Text.", segments_from_languages[0].segments[3].text_content)

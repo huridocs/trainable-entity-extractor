@@ -1,7 +1,6 @@
 from pdf_token_type_labels.TokenType import TokenType
 
 from multilingual_paragraph_extractor.domain.SegmentsFromLanguage import SegmentsFromLanguage
-from multilingual_paragraph_extractor.domain.MultilingualParagraph import MultilingualParagraph
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
 
@@ -10,7 +9,7 @@ class MultilingualParagraphExtractor:
     def __init__(self, extractor_identifier: ExtractionIdentifier):
         self.extractor_identifier = extractor_identifier
 
-    def extract_paragraphs(self, segments_from_languages: list[SegmentsFromLanguage]) -> list[MultilingualParagraph]:
+    def align_languages(self, segments_from_languages: list[SegmentsFromLanguage]):
         if not segments_from_languages:
             return []
 
@@ -18,20 +17,9 @@ class MultilingualParagraphExtractor:
         segments_from_languages = [self.merge_segments_spanning_two_pages(x) for x in segments_from_languages]
 
         main_language, other_languages = self.get_main_and_other_languages(segments_from_languages)
-        multilingual_paragraphs = self.get_main_language_paragraphs(main_language)
 
         for language_segments in other_languages:
-            self.append_language(multilingual_paragraphs, language_segments)
-
-        return multilingual_paragraphs
-
-    @staticmethod
-    def get_main_language_paragraphs(main_language):
-        multilingual_paragraphs: list[MultilingualParagraph] = []
-        for data_segment in main_language.segments:
-            paragraph = MultilingualParagraph(languages=[main_language.language], texts=[data_segment.text_content])
-            multilingual_paragraphs.append(paragraph)
-        return multilingual_paragraphs
+            self.align_language(main_language, language_segments)
 
     @staticmethod
     def get_main_and_other_languages(
@@ -98,19 +86,29 @@ class MultilingualParagraphExtractor:
 
         return True
 
-    def append_language(self, multilingual_paragraphs: list[MultilingualParagraph], language_segments: SegmentsFromLanguage):
-        for index, multilingual_paragraph in enumerate(multilingual_paragraphs):
-            segment = None if index < len(language_segments.segments) else language_segments.segments[index]
-            next_segment = None if index + 1 >= len(language_segments.segments) else language_segments.segments[index + 1]
+    def align_language(self, main_language: SegmentsFromLanguage, segments_from_language: SegmentsFromLanguage):
+        for index, main_segment in enumerate(main_language.segments):
+            segments_to_align = segments_from_language.segments
 
-            original_text = multilingual_paragraph.texts[0]
+            segment = None if index >= len(segments_to_align) else segments_to_align[index]
 
-            if self.are_same_paragraph(segment.text_content, original_text):
-                multilingual_paragraph.texts.append(language_segments.segments[index].text_content)
-                multilingual_paragraph.languages.append(language_segments.language)
-            else:
-                multilingual_paragraph.texts.append("")
-                multilingual_paragraph.languages.append(language_segments.language)
+            if not segment:
+                segments_to_align.extend(PdfDataSegment.from_texts([""]))
+                continue
 
-    def are_same_paragraph(self, text_content, original_text):
-        pass
+            if self.are_same_paragraph(main_segment, segment):
+                continue
+
+            main_next_segment = None if index + 1 >= len(main_language.segments) else main_language.segments[index + 1]
+
+            if self.are_same_paragraph(main_next_segment, segment):
+                segments_to_align.insert(index, PdfDataSegment.from_texts([""])[0])
+
+    @staticmethod
+    def are_same_paragraph(segment: PdfDataSegment, other_segment: PdfDataSegment):
+        if segment is None or other_segment is None:
+            return False
+
+        segment_numbers = [x for x in segment.text_content if x.isnumeric()]
+        other_segment_numbers = [x for x in other_segment.text_content if x.isnumeric()]
+        return segment_numbers == other_segment_numbers

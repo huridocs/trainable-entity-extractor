@@ -25,12 +25,12 @@ class TestRemoveUndesiredSegmentTypes(TestCase):
 
         multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
         segments_from_languages = [language_segment_1, language_segment_2]
-        multilingual_paragraphs = multilingual_paragraph_extractor.extract_paragraphs(segments_from_languages)
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
 
-        self.assertEqual(1, len(multilingual_paragraphs))
-        self.assertEqual(2, len(multilingual_paragraphs[0].texts))
-        self.assertEqual(2, len(multilingual_paragraphs[0].languages))
-        self.assertEqual("en", multilingual_paragraphs[0].languages[0])
-        self.assertEqual("fr", multilingual_paragraphs[0].languages[1])
-        self.assertEqual("Text", multilingual_paragraphs[0].texts[0])
-        self.assertEqual("Text", multilingual_paragraphs[0].texts[1])
+        self.assertEqual(2, len(segments_from_languages))
+        self.assertEqual(1, len(segments_from_languages[0].segments))
+        self.assertEqual(1, len(segments_from_languages[1].segments))
+        self.assertEqual("en", segments_from_languages[0].language)
+        self.assertEqual("fr", segments_from_languages[1].language)
+        self.assertEqual("Text", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("Text", segments_from_languages[1].segments[0].text_content)
