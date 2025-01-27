@@ -29,6 +29,29 @@ class ParagraphMatchScore(BaseModel):
     segments_around: Optional[float] = None
     overall_score: Optional[float] = None
 
+    def calculate_overall_score(self):
+        self.overall_score = (
+            sum(
+                [
+                    self.index,
+                    self.segment_type,
+                    self.page,
+                    self.text_fuzzy_match,
+                    self.number_of_words,
+                    self.numbers,
+                    self.first_word,
+                    self.special_characters,
+                    self.bounding_boxes,
+                    self.alignment,
+                    self.indentation,
+                    self.font_style,
+                    self.font_size,
+                ]
+            )
+            / 13
+        )
+        return self
+
     @staticmethod
     def from_paragraphs_features(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> "ParagraphMatchScore":
         return ParagraphMatchScore(
@@ -46,7 +69,7 @@ class ParagraphMatchScore(BaseModel):
             font_size=ParagraphMatchScore.get_font_size_score(paragraph_1, paragraph_2),
             font_style=ParagraphMatchScore.get_font_style_score(paragraph_1, paragraph_2),
             overall_score=None,
-        )
+        ).calculate_overall_score()
 
     @staticmethod
     def are_the_same(value_1: int, value_2: int) -> float:

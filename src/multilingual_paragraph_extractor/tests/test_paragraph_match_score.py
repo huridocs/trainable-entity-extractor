@@ -45,6 +45,7 @@ class TestParagraphMatchScore(TestCase):
         self.assertEqual(1.0, match_score.indentation)
         self.assertEqual(1.0, match_score.font_style)
         self.assertEqual(1.0, match_score.font_size)
+        self.assertEqual(1.0, match_score.overall_score)
 
     def test_paragraph_non_matching(self):
         paragraph = self.get_paragraph()
@@ -75,10 +76,11 @@ class TestParagraphMatchScore(TestCase):
         self.assertEqual(0.0, match_score.first_word)
         self.assertEqual(0.0, match_score.special_characters)
         self.assertEqual(0.0, match_score.bounding_boxes)
-        self.assertGreater(0.2, match_score.alignment)
+        self.assertTrue(match_score.alignment < 0.2)
         self.assertEqual(0.0, match_score.indentation)
         self.assertEqual(0.0, match_score.font_style)
-        self.assertGreater(0.2, match_score.font_size)
+        self.assertTrue(match_score.font_size < 0.2)
+        self.assertTrue(match_score.overall_score < 0.05)
 
     def test_paragraph_half_matching(self):
         paragraph = self.get_paragraph()
@@ -102,7 +104,6 @@ class TestParagraphMatchScore(TestCase):
 
         self.assertEqual(0, match_score.index)
         self.assertEqual(1, match_score.page)
-
         self.assertEqual(0, match_score.segment_type)
         self.assertEqual(0.5, match_score.text_fuzzy_match)
         self.assertEqual(0.5, match_score.number_of_words)
@@ -114,3 +115,4 @@ class TestParagraphMatchScore(TestCase):
         self.assertEqual(0.5, match_score.indentation)
         self.assertEqual(0.5, match_score.font_style)
         self.assertEqual(0.5, match_score.font_size)
+        self.assertTrue(0.4 < match_score.overall_score < 0.6)
