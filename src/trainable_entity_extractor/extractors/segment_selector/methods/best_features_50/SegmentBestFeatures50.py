@@ -66,7 +66,7 @@ class SegmentBestFeatures50:
         self.italics: float = False
         self.italics_token_number: int = 0
         self.dots_percentage: float = 0
-        self.font_sizes = [token.font.font_size for _, token in self.pdf_segments.pdf_features.loop_tokens()]
+        self.font_sizes = [token.font_style.font_size for _, token in self.pdf_segments.pdf_features.loop_tokens()]
         self.most_frequent_words = list()
         self.set_features()
 

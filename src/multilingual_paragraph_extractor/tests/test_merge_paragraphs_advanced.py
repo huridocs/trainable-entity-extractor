@@ -85,3 +85,50 @@ class TestMergeParagraphsAdvanced(TestCase):
 
         self.assertEqual("Text 2. en", segments_from_languages[0].segments[2].text_content)
         self.assertEqual("Text 2. tr", segments_from_languages[1].segments[2].text_content)
+
+    def test_merge_paragraphs_when_missing_at_beginning(self):
+        language_segment_1 = SegmentsFromLanguage(language="en", segments=self.get_segments("en"), is_main_language=True)
+        tr_segments_missing_middle = [self.get_segments("tr")[1], self.get_segments("tr")[2]]
+        language_segment_2 = SegmentsFromLanguage(language="tr", segments=tr_segments_missing_middle, is_main_language=False)
+
+        multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
+        segments_from_languages = [language_segment_1, language_segment_2]
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
+
+        self.assertEqual(2, len(segments_from_languages))
+
+        self.assertEqual(3, len(segments_from_languages[0].segments))
+        self.assertEqual(3, len(segments_from_languages[1].segments))
+
+        self.assertEqual("Text 0. en", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("", segments_from_languages[1].segments[0].text_content)
+
+        self.assertEqual("Text 1. en", segments_from_languages[0].segments[1].text_content)
+        self.assertEqual("Text 1. tr", segments_from_languages[1].segments[1].text_content)
+
+        self.assertEqual("Text 2. en", segments_from_languages[0].segments[2].text_content)
+        self.assertEqual("Text 2. tr", segments_from_languages[1].segments[2].text_content)
+
+    def test_merge_paragraphs_when_two_segments_in_other_language(self):
+        language_segment_1 = SegmentsFromLanguage(language="en", segments=self.get_segments("en"), is_main_language=True)
+        segments = self.get_segments("tr")
+        segmentation_issue = [segments[0], PdfDataSegment.from_list_to_merge(segments[1:])]
+        language_segment_2 = SegmentsFromLanguage(language="tr", segments=segmentation_issue, is_main_language=False)
+
+        multilingual_paragraph_extractor = MultilingualParagraphExtractor(extractor_identifier=self.extraction_identifier)
+        segments_from_languages = [language_segment_1, language_segment_2]
+        multilingual_paragraph_extractor.align_languages(segments_from_languages)
+
+        self.assertEqual(2, len(segments_from_languages))
+
+        self.assertEqual(3, len(segments_from_languages[0].segments))
+        self.assertEqual(3, len(segments_from_languages[1].segments))
+
+        self.assertEqual("Text 0. en", segments_from_languages[0].segments[0].text_content)
+        self.assertEqual("", segments_from_languages[1].segments[0].text_content)
+
+        self.assertEqual("Text 1. en", segments_from_languages[0].segments[1].text_content)
+        self.assertEqual("Text 1. tr", segments_from_languages[1].segments[1].text_content)
+
+        self.assertEqual("Text 2. en", segments_from_languages[0].segments[2].text_content)
+        self.assertEqual("Text 2. tr", segments_from_languages[1].segments[2].text_content)

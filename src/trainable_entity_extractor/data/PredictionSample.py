@@ -25,7 +25,7 @@ class PredictionSample:
     @staticmethod
     def from_text(text: str, entity_name: str = ""):
         pdf_data = PdfData(None)
-        pdf_data.pdf_data_segments.append(PdfDataSegment.create_with_text(text))
+        pdf_data.pdf_data_segments.append(PdfDataSegment.from_text(text))
         return PredictionSample(segment_selector_texts=[text], entity_name=entity_name, pdf_data=pdf_data, source_text=text)
 
     @staticmethod

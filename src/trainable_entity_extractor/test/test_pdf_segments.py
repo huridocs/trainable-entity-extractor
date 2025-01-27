@@ -87,7 +87,7 @@ class TestPdfSegments(TestCase):
                 xml_file_name="test.xml",
             )
 
-            xml_file.save(file=file.read())
+            xml_file.save(file_content=file.read())
 
         pdf_segments = PdfData.from_xml_file(xml_file, segmentation_data, [])
 
@@ -122,7 +122,7 @@ class TestPdfSegments(TestCase):
                 xml_file_name="no_pages.xml",
             )
 
-            xml_file.save(file=file.read())
+            xml_file.save(file_content=file.read())
 
         pdf_features = PdfData.from_xml_file(xml_file, segmentation_data, [])
 
@@ -185,7 +185,7 @@ class TestPdfSegments(TestCase):
                 extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name="different_extraction_id"),
                 to_train=False,
                 xml_file_name="test.xml",
-            ).save(file=file.read())
+            ).save(file_content=file.read())
 
         xml_file = XmlFile(
             extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id),
@@ -225,7 +225,7 @@ class TestPdfSegments(TestCase):
                 xml_file_name="test.xml",
             )
 
-            xml_file.save(file=file.read())
+            xml_file.save(file_content=file.read())
 
         pdf_segments = PdfData.from_xml_file(xml_file, segmentation_data, [1])
 

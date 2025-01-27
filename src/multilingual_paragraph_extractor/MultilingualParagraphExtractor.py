@@ -93,22 +93,13 @@ class MultilingualParagraphExtractor:
             segment = None if index >= len(segments_to_align) else segments_to_align[index]
 
             if not segment:
-                segments_to_align.extend(PdfDataSegment.from_texts([""]))
+                segments_to_align.append(PdfDataSegment.from_text(""))
                 continue
 
-            if self.are_same_paragraph(main_segment, segment):
+            if main_segment.are_similar(segment):
                 continue
 
             main_next_segment = None if index + 1 >= len(main_language.segments) else main_language.segments[index + 1]
 
-            if self.are_same_paragraph(main_next_segment, segment):
-                segments_to_align.insert(index, PdfDataSegment.from_texts([""])[0])
-
-    @staticmethod
-    def are_same_paragraph(segment: PdfDataSegment, other_segment: PdfDataSegment):
-        if segment is None or other_segment is None:
-            return False
-
-        segment_numbers = [x for x in segment.text_content if x.isnumeric()]
-        other_segment_numbers = [x for x in other_segment.text_content if x.isnumeric()]
-        return segment_numbers == other_segment_numbers
+            if main_next_segment and main_next_segment.are_similar(segment):
+                segments_to_align.insert(index, PdfDataSegment.from_text(""))

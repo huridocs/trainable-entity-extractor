@@ -25,7 +25,7 @@ class TestXmlFile(TestCase):
                 xml_file_name="test.xml",
             )
 
-            xml_file.save(file=file.read())
+            xml_file.save(file_content=file.read())
 
         self.assertTrue(os.path.exists(f"{base_path}/xml_to_train/test.xml"))
 
@@ -45,7 +45,7 @@ class TestXmlFile(TestCase):
                 xml_file_name="test.xml",
             )
 
-            xml_file.save(file=file.read())
+            xml_file.save(file_content=file.read())
 
         self.assertTrue(os.path.exists(f"{base_path}/xml_to_predict/test.xml"))
 

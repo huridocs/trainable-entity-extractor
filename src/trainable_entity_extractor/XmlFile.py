@@ -14,10 +14,10 @@ class XmlFile:
         self.xml_folder_path = self.get_xml_folder_path()
         self.xml_file_path = join(self.xml_folder_path, self.xml_file_name)
 
-    def save(self, file: bytes):
+    def save(self, file_content: bytes):
         os.makedirs(self.xml_folder_path, exist_ok=True)
         file_path = Path(f"{self.xml_folder_path}/{self.xml_file_name}")
-        file_path.write_bytes(file)
+        file_path.write_bytes(file_content)
 
     def get_xml_folder_path(self) -> str:
         if self.to_train:
