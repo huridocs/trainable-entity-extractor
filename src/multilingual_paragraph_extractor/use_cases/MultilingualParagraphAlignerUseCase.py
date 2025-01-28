@@ -1,11 +1,12 @@
 from pdf_token_type_labels.TokenType import TokenType
 
+from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from multilingual_paragraph_extractor.domain.SegmentsFromLanguage import SegmentsFromLanguage
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
 
 
-class MultilingualParagraphExtractor:
+class MultilingualParagraphAlignerUseCase:
     def __init__(self, extractor_identifier: ExtractionIdentifier):
         self.extractor_identifier = extractor_identifier
 
@@ -13,7 +14,7 @@ class MultilingualParagraphExtractor:
         if not segments_from_languages:
             return []
 
-        segments_from_languages = [self.remove_no_text_content(x) for x in segments_from_languages]
+        segments_from_languages = [self.remove_no_text_types(x) for x in segments_from_languages]
         segments_from_languages = [self.merge_segments_spanning_two_pages(x) for x in segments_from_languages]
 
         main_language, other_languages = self.get_main_and_other_languages(segments_from_languages)
@@ -34,7 +35,7 @@ class MultilingualParagraphExtractor:
         return main_language, other_languages
 
     @staticmethod
-    def remove_no_text_content(segments_from_language: SegmentsFromLanguage) -> SegmentsFromLanguage:
+    def remove_no_text_types(segments_from_language: SegmentsFromLanguage) -> SegmentsFromLanguage:
         text_content_types = [
             TokenType.FORMULA,
             TokenType.LIST_ITEM,
@@ -65,7 +66,7 @@ class MultilingualParagraphExtractor:
         return segments_from_language
 
     @staticmethod
-    def are_same_segment_from_same_language(segment: PdfDataSegment, next_segment: PdfDataSegment) -> bool:
+    def are_same_segment_from_same_language(segment: ParagraphFeatures, next_segment: ParagraphFeatures) -> bool:
         if segment.page_number == next_segment.page_number:
             return False
 
@@ -78,28 +79,7 @@ class MultilingualParagraphExtractor:
         if segment.text_content[-1] in [".", "!", "?", ";"]:
             return False
 
-        if next_segment.text_content[0].isupper():
-            return False
-
-        if next_segment.text_content[0].isdigit():
-            return False
-
         return True
 
     def align_language(self, main_language: SegmentsFromLanguage, segments_from_language: SegmentsFromLanguage):
-        for index, main_segment in enumerate(main_language.segments):
-            segments_to_align = segments_from_language.segments
-
-            segment = None if index >= len(segments_to_align) else segments_to_align[index]
-
-            if not segment:
-                segments_to_align.append(PdfDataSegment.from_text(""))
-                continue
-
-            if main_segment.are_similar(segment):
-                continue
-
-            main_next_segment = None if index + 1 >= len(main_language.segments) else main_language.segments[index + 1]
-
-            if main_next_segment and main_next_segment.are_similar(segment):
-                segments_to_align.insert(index, PdfDataSegment.from_text(""))
+        pass

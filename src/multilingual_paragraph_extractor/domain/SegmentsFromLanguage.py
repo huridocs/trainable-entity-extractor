@@ -1,10 +1,11 @@
 from pydantic import BaseModel
-from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
+
+from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 
 
 class SegmentsFromLanguage(BaseModel):
     language: str
-    segments: list[PdfDataSegment]
+    segments: list[ParagraphFeatures]
     is_main_language: bool
 
     class Config:

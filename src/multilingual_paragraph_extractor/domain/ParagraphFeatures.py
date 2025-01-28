@@ -14,17 +14,15 @@ class ParagraphFeatures(BaseModel):
     index: int = 0
     page_height: int = 0
     page_width: int = 0
-    segment_type: TokenType
-    page_number: int
-    bounding_box: Rectangle
-    text_content: str
+    segment_type: TokenType = TokenType.TEXT
+    page_number: int = 1
+    bounding_box: Rectangle = Rectangle(0, 0, 0, 0)
+    text_content: str = ""
     words: list[str] = []
     numbers: list[int] = []
     non_alphanumeric_characters: list[str] = []
     first_word: Optional[str] = None
     font: Optional[PdfFont] = None
-    previous_segments: list["ParagraphFeatures"] = []
-    next_segments: list["ParagraphFeatures"] = []
 
     class Config:
         arbitrary_types_allowed = True
@@ -43,7 +41,7 @@ class ParagraphFeatures(BaseModel):
             page_width=pdf_data.pdf_features.pages[0].page_width if pdf_data.pdf_features.pages else 1,
             page_number=pdf_segment.page_number,
             bounding_box=pdf_segment.bounding_box,
-            text_content=unidecode(pdf_segment.text_content),
+            text_content=" ".join(unidecode(pdf_segment.text_content).split()),
             segment_type=pdf_segment.segment_type,
             words=words,
             numbers=numbers,
@@ -62,3 +60,14 @@ class ParagraphFeatures(BaseModel):
                 return token
 
         return None
+
+    @staticmethod
+    def from_texts(texts: list[str]):
+        return [ParagraphFeatures(text_content=text, page_width=10, page_height=10) for text in texts]
+
+    def merge(self, paragraph_features: "ParagraphFeatures") -> "ParagraphFeatures":
+        self.text_content += " " + paragraph_features.text_content
+        self.words += paragraph_features.words
+        self.numbers += paragraph_features.numbers
+        self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
+        return self

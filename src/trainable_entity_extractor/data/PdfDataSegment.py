@@ -69,25 +69,3 @@ class PdfDataSegment:
     @staticmethod
     def from_text(text: str):
         return PdfDataSegment(0, Rectangle(0, 0, 0, 0), text)
-
-    def are_similar(self, other: "PdfDataSegment"):
-        segment_numbers = [x for x in self.text_content if x.isnumeric()]
-        other_segment_numbers = [x for x in other.text_content if x.isnumeric()]
-        if segment_numbers and segment_numbers == other_segment_numbers:
-            return True
-
-        words_number = len(self.text_content.split())
-        if words_number < 5 and segment_numbers and other_segment_numbers and segment_numbers != other_segment_numbers:
-            return False
-
-        excluded_symbols = [" ", ".", "!", "?", ";", ","]
-        symbols = [x for x in self.text_content if not x.isalnum() and x not in excluded_symbols]
-        other_symbols = [x for x in other.text_content if not x.isalnum() and x not in excluded_symbols]
-        if len(symbols) > 2 and symbols == other_symbols:
-            return True
-
-        other_words_number = len(other.text_content.split())
-        if words_number < 5 and abs(words_number - other_words_number) < 3:
-            return True
-
-        return False
