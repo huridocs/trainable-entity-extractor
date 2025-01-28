@@ -2,6 +2,7 @@ import json
 import pickle
 import subprocess
 from pathlib import Path
+from time import time
 
 from pdf_annotate import PdfAnnotator, Appearance, Location
 from pdf_token_type_labels.TokenType import TokenType
@@ -9,6 +10,9 @@ from visualization.save_output_to_pdf import hex_color_to_rgb
 
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from multilingual_paragraph_extractor.domain.ParagraphMatchScore import ParagraphMatchScore
+from multilingual_paragraph_extractor.use_cases.MultilingualParagraphAlignerUseCase import (
+    MultilingualParagraphAlignerUseCase,
+)
 from trainable_entity_extractor.XmlFile import XmlFile
 from trainable_entity_extractor.config import ROOT_PATH
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
@@ -171,6 +175,19 @@ def get_paragraphs():
     return main_paragraphs_features, other_paragraphs_features
 
 
+def performance():
+    start = time()
+    main_paragraphs_features, other_paragraphs_features = get_paragraphs()
+    main_paragraphs_features = main_paragraphs_features * 5
+    other_paragraphs_features = other_paragraphs_features * 5
+    print("start")
+
+    aligner_use_case = MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER)
+    aligner_use_case.get_alignment_scores(main_paragraphs_features, other_paragraphs_features)
+    print("ok")
+    print("time", round(time() - start, 2), "s")
+
+
 def visualize():
     save_xmls()
     save_pdfs_data()
@@ -181,4 +198,4 @@ def visualize():
 
 
 if __name__ == "__main__":
-    visualize()
+    performance()
