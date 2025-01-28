@@ -3,7 +3,7 @@ from unittest import TestCase
 from pdf_features.Rectangle import Rectangle
 from pdf_token_type_labels.TokenType import TokenType
 
-from multilingual_paragraph_extractor.MultilingualParagraphExtractor import MultilingualParagraphExtractor
+from multilingual_paragraph_extractor.use_cases.MultilingualParagraphExtractor import MultilingualParagraphExtractor
 from multilingual_paragraph_extractor.domain.SegmentsFromLanguage import SegmentsFromLanguage
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment

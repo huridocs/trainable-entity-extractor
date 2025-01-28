@@ -4,6 +4,7 @@ from pdf_features.PdfFont import PdfFont
 from pdf_features.Rectangle import Rectangle
 from pdf_token_type_labels.TokenType import TokenType
 from pydantic import BaseModel
+from unidecode import unidecode
 
 from trainable_entity_extractor.data.PdfData import PdfData
 from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
@@ -42,12 +43,12 @@ class ParagraphFeatures(BaseModel):
             page_width=pdf_data.pdf_features.pages[0].page_width if pdf_data.pdf_features.pages else 1,
             page_number=pdf_segment.page_number,
             bounding_box=pdf_segment.bounding_box,
-            text_content=pdf_segment.text_content,
+            text_content=unidecode(pdf_segment.text_content),
             segment_type=pdf_segment.segment_type,
             words=words,
             numbers=numbers,
             non_alphanumeric_characters=list(non_alphanumeric_characters),
-            first_word=pdf_segment.text_content.split()[0] if pdf_segment.text_content else None,
+            first_word=unidecode(pdf_segment.text_content.split()[0]) if pdf_segment.text_content else None,
             font=first_token.font if first_token else None,
         )
 

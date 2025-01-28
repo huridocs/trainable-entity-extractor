@@ -46,6 +46,15 @@ class PdfData:
         segments = [PdfDataSegment.from_token_list_to_merge(tokens) for tokens in segments_tokens.values()]
         self.pdf_data_segments.extend(segments)
         self.pdf_data_segments.sort(key=lambda x: (x.page_number, x.bounding_box.top, x.bounding_box.left))
+        self.set_types_from_segmentation_data(segmentation_data)
+
+    def set_types_from_segmentation_data(self, segmentation_data: SegmentationData):
+        for xml_segment_box in segmentation_data.xml_segments_boxes:
+            for segment in self.pdf_data_segments:
+                if segment.page_number != xml_segment_box.page_number:
+                    continue
+                if segment.is_selected(xml_segment_box.get_bounding_box()):
+                    segment.segment_type = xml_segment_box.segment_type
 
     def set_ml_label_from_segmentation_data(self, segmentation_data: SegmentationData):
         for label_segment_box in segmentation_data.label_segments_boxes:

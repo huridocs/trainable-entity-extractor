@@ -5,13 +5,6 @@ from typing import Optional
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 
 
-import rapidfuzz
-from pydantic import BaseModel
-from typing import Optional
-
-from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
-
-
 class ParagraphMatchScore(BaseModel):
     index: Optional[float] = None
     segment_type: Optional[float] = None
@@ -33,22 +26,19 @@ class ParagraphMatchScore(BaseModel):
         self.overall_score = (
             sum(
                 [
-                    self.index,
                     self.segment_type,
-                    self.page,
                     self.text_fuzzy_match,
                     self.number_of_words,
                     self.numbers,
                     self.first_word,
                     self.special_characters,
-                    self.bounding_boxes,
                     self.alignment,
                     self.indentation,
                     self.font_style,
                     self.font_size,
                 ]
             )
-            / 13
+            / 10
         )
         return self
 
@@ -98,6 +88,9 @@ class ParagraphMatchScore(BaseModel):
     @staticmethod
     def get_numbers_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
         max_numbers = max(len(paragraph_1.numbers), len(paragraph_2.numbers))
+        if not max_numbers:
+            return 1
+
         return len([x for x in paragraph_1.numbers if x in paragraph_2.numbers]) / max_numbers
 
     @staticmethod
