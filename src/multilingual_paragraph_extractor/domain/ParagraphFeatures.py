@@ -14,7 +14,7 @@ class ParagraphFeatures(BaseModel):
     index: int = 0
     page_height: int = 0
     page_width: int = 0
-    segment_type: TokenType = TokenType.TEXT
+    paragraph_type: TokenType = TokenType.TEXT
     page_number: int = 1
     bounding_box: Rectangle = Rectangle(0, 0, 0, 0)
     text_content: str = ""
@@ -23,6 +23,7 @@ class ParagraphFeatures(BaseModel):
     non_alphanumeric_characters: list[str] = []
     first_word: Optional[str] = None
     font: Optional[PdfFont] = None
+    __hash__ = object.__hash__
 
     class Config:
         arbitrary_types_allowed = True
@@ -46,7 +47,7 @@ class ParagraphFeatures(BaseModel):
             page_number=pdf_segment.page_number,
             bounding_box=pdf_segment.bounding_box,
             text_content=" ".join(unidecode(pdf_segment.text_content).split()),
-            segment_type=pdf_segment.segment_type,
+            paragraph_type=pdf_segment.segment_type,
             words=words,
             numbers=numbers,
             non_alphanumeric_characters=list(non_alphanumeric_characters),
@@ -67,7 +68,17 @@ class ParagraphFeatures(BaseModel):
 
     @staticmethod
     def from_texts(texts: list[str]):
-        return [ParagraphFeatures(text_content=text, page_width=10, page_height=10) for text in texts]
+        return [
+            ParagraphFeatures(
+                text_content=text,
+                page_width=10,
+                page_height=10,
+                font=PdfFont("1", False, False, 10, "#000000"),
+                first_word=text.split()[0],
+                words=text.split(),
+            )
+            for text in texts
+        ]
 
     def merge(self, paragraph_features: "ParagraphFeatures") -> "ParagraphFeatures":
         self.text_content += " " + paragraph_features.text_content

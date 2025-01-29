@@ -263,13 +263,13 @@ class SegmentNextPreviousTitle:
         previous_title_segment: Optional[SegmentNextPreviousTitle] = None
         for sorted_segment in sorted_pdf_segments:
             sorted_segment.previous_titles_segments = previous_title_segment
-            if sorted_segment.pdf_segment.segment_type == TokenType.TITLE:
+            if sorted_segment.pdf_segment.paragraph_type == TokenType.TITLE:
                 previous_title_segment = sorted_segment
 
         next_title_segment: Optional[SegmentNextPreviousTitle] = None
         for sorted_segment in reversed(sorted_pdf_segments):
             sorted_segment.next_title_segment = next_title_segment
-            if sorted_segment.pdf_segment.segment_type == TokenType.TITLE:
+            if sorted_segment.pdf_segment.paragraph_type == TokenType.TITLE:
                 next_title_segment = sorted_segment
 
     def set_most_frequent_words(self, most_frequent_words: list[str]):

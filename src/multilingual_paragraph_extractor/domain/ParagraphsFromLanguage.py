@@ -26,7 +26,7 @@ class ParagraphsFromLanguage(BaseModel):
             TokenType.TEXT,
             TokenType.SECTION_HEADER,
         ]
-        self.paragraphs = [x for x in self.paragraphs if x.segment_type in text_content_types]
+        self.paragraphs = [x for x in self.paragraphs if x.paragraph_type in text_content_types]
 
     def merge_paragraphs_spanning_two_pages(self):
         fixed_paragraphs = []
@@ -52,7 +52,7 @@ class ParagraphsFromLanguage(BaseModel):
         if int(segment.page_number - next_segment.page_number) > 1:
             return False
 
-        if segment.segment_type != next_segment.segment_type:
+        if segment.paragraph_type != next_segment.paragraph_type:
             return False
 
         if segment.text_content[-1] in [".", "!", "?", ";"]:
@@ -89,14 +89,21 @@ class ParagraphsFromLanguage(BaseModel):
 
     def align(self, main_language: "ParagraphsFromLanguage"):
         self.set_alignment_scores(main_language.paragraphs)
-
-        aligned_paragraphs: list[ParagraphFeatures] = []
-        for segment in main_language.paragraphs:
-            aligned_paragraphs.append(self.alignment_scores.get(segment, ParagraphFeatures.get_empty()))
-
+        aligned_paragraphs = self.get_aligned_paragraphs_from_scores(main_language)
         self.assign_missing_in_both_languages(main_language.paragraphs, aligned_paragraphs)
         self.assign_unmatch_paragraphs()
         self.paragraphs = aligned_paragraphs
+
+    def get_aligned_paragraphs_from_scores(self, main_language):
+        aligned_paragraphs: list[ParagraphFeatures] = []
+        for paragraph in main_language.paragraphs:
+            if paragraph in self.alignment_scores:
+                paragraph_to_add = self.alignment_scores[paragraph].other_paragraph
+            else:
+                paragraph_to_add = ParagraphFeatures.get_empty()
+
+            aligned_paragraphs.append(paragraph_to_add)
+        return aligned_paragraphs
 
     def assign_missing_in_both_languages(
         self, main_paragraphs: list[ParagraphFeatures], aligned_paragraphs: list[ParagraphFeatures]

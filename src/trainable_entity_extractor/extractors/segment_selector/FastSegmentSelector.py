@@ -141,7 +141,7 @@ class FastSegmentSelector(SegmentSelectorBase):
         if not exists(self.model_path) or not segments:
             return []
 
-        self.text_segments = [x for x in segments if x.segment_type in self.text_types]
+        self.text_segments = [x for x in segments if x.paragraph_type in self.text_types]
         self.load_repeated_words()
 
         x, y = self.get_x_y(segments)

@@ -170,8 +170,8 @@ def get_paragraphs():
         TokenType.SECTION_HEADER,
         TokenType.TABLE,
     ]
-    main_paragraphs_features = [x for x in main_paragraphs_features if x.segment_type in text_content_types]
-    other_paragraphs_features = [x for x in other_paragraphs_features if x.segment_type in text_content_types]
+    main_paragraphs_features = [x for x in main_paragraphs_features if x.paragraph_type in text_content_types]
+    other_paragraphs_features = [x for x in other_paragraphs_features if x.paragraph_type in text_content_types]
     return main_paragraphs_features, other_paragraphs_features
 
 

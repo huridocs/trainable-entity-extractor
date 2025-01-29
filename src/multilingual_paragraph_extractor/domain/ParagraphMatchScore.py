@@ -67,7 +67,7 @@ class ParagraphMatchScore(BaseModel):
 
     @staticmethod
     def get_segment_type_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
-        return 1.0 if paragraph_1.segment_type == paragraph_2.segment_type else 0.0
+        return 1.0 if paragraph_1.paragraph_type == paragraph_2.paragraph_type else 0.0
 
     @staticmethod
     def get_text_fuzzy_match_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
