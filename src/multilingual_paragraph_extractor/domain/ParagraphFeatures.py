@@ -28,6 +28,10 @@ class ParagraphFeatures(BaseModel):
         arbitrary_types_allowed = True
 
     @staticmethod
+    def get_empty():
+        return ParagraphFeatures()
+
+    @staticmethod
     def from_pdf_data(pdf_data: PdfData, pdf_segment: PdfDataSegment) -> "ParagraphFeatures":
         non_alphanumeric_characters = [x for x in pdf_segment.text_content if not x.isalnum() and x != " "]
         first_token = ParagraphFeatures.get_first_token(pdf_data, pdf_segment)
