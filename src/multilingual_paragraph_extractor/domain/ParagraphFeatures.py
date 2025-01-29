@@ -68,17 +68,25 @@ class ParagraphFeatures(BaseModel):
 
     @staticmethod
     def from_texts(texts: list[str]):
-        return [
-            ParagraphFeatures(
-                text_content=text,
-                page_width=10,
-                page_height=10,
-                font=PdfFont("1", False, False, 10, "#000000"),
-                first_word=text.split()[0],
-                words=text.split(),
+        paragraphs_features = []
+        for text in texts:
+            non_alphanumeric_characters = [x for x in text if not x.isalnum() and x != " "]
+            words = text.split()
+            numbers = ["".join([y for y in x if y.isnumeric()]) for x in words]
+            numbers = [int(x) for x in numbers if x]
+            paragraphs_features.append(
+                ParagraphFeatures(
+                    text_content=text,
+                    page_width=10,
+                    page_height=10,
+                    font=PdfFont("1", False, False, 10, "#000000"),
+                    first_word=text.split()[0],
+                    words=text.split(),
+                    numbers=numbers,
+                    non_alphanumeric_characters=list(non_alphanumeric_characters),
+                )
             )
-            for text in texts
-        ]
+        return paragraphs_features
 
     def merge(self, paragraph_features: "ParagraphFeatures") -> "ParagraphFeatures":
         self.text_content += " " + paragraph_features.text_content

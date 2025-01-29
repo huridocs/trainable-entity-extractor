@@ -8,10 +8,10 @@ from multilingual_paragraph_extractor.domain.ParagraphsFromLanguage import Parag
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 
 
-class TestMergeParagraphs(TestCase):
+class TestAlignParagraphs(TestCase):
     extraction_identifier = ExtractionIdentifier(extraction_name="paragraph_extraction")
 
-    def test_merge_paragraphs_no_languages(self):
+    def test_align_paragraphs_no_languages(self):
         multilingual_paragraph_extractor = MultilingualParagraphAlignerUseCase(
             extractor_identifier=self.extraction_identifier
         )
@@ -20,7 +20,7 @@ class TestMergeParagraphs(TestCase):
 
         self.assertEqual(0, len(paragraphs_from_languages))
 
-    def test_merge_paragraphs_only_one_language(self):
+    def test_align_paragraphs_only_one_language(self):
         pdf_data_paragraphs = ParagraphFeatures.from_texts(texts=["English text", "English text too"])
         language_paragraph = ParagraphsFromLanguage(language="en", paragraphs=pdf_data_paragraphs, is_main_language=False)
 
@@ -37,7 +37,7 @@ class TestMergeParagraphs(TestCase):
         self.assertEqual("English text", paragraphs_from_languages[0].paragraphs[0].text_content)
         self.assertEqual("English text too", paragraphs_from_languages[0].paragraphs[1].text_content)
 
-    def test_merge_paragraphs_when_no_main_language(self):
+    def test_align_paragraphs_when_no_main_language(self):
         pdf_data_paragraphs_1 = ParagraphFeatures.from_texts(texts=["English text"])
         language_paragraph_1 = ParagraphsFromLanguage(
             language="en", paragraphs=pdf_data_paragraphs_1, is_main_language=False
@@ -66,10 +66,10 @@ class TestMergeParagraphs(TestCase):
 
     @staticmethod
     def get_paragraphs(language: str):
-        paragraphs = ParagraphFeatures.from_texts(texts=[f"a 0. {language}", f"b b 1. {language}", f"c 2. {language}"])
+        paragraphs = ParagraphFeatures.from_texts(texts=[f"a 0. {language}", f"b 1: {language}", f"c 2! {language}"])
         return paragraphs
 
-    def test_merge_paragraphs_when_missing_paragraph_at_the_end(self):
+    def test_align_paragraphs_when_missing_paragraph_at_the_end(self):
         language_paragraph_1 = ParagraphsFromLanguage(
             language="en", paragraphs=self.get_paragraphs("en"), is_main_language=True
         )
@@ -92,13 +92,13 @@ class TestMergeParagraphs(TestCase):
         self.assertEqual("a 0. en", paragraphs_from_languages[0].paragraphs[0].text_content)
         self.assertEqual("a 0. tr", paragraphs_from_languages[1].paragraphs[0].text_content)
 
-        self.assertEqual("b b 1. en", paragraphs_from_languages[0].paragraphs[1].text_content)
-        self.assertEqual("b b 1. tr", paragraphs_from_languages[1].paragraphs[1].text_content)
+        self.assertEqual("b 1: en", paragraphs_from_languages[0].paragraphs[1].text_content)
+        self.assertEqual("b 1: tr", paragraphs_from_languages[1].paragraphs[1].text_content)
 
-        self.assertEqual("c 2. en", paragraphs_from_languages[0].paragraphs[2].text_content)
+        self.assertEqual("c 2! en", paragraphs_from_languages[0].paragraphs[2].text_content)
         self.assertEqual("", paragraphs_from_languages[1].paragraphs[2].text_content)
 
-    def test_merge_paragraphs_when_missing_middle_paragraph(self):
+    def test_align_paragraphs_when_missing_middle_paragraph(self):
         language_paragraph_1 = ParagraphsFromLanguage(
             language="en", paragraphs=self.get_paragraphs("en"), is_main_language=True
         )
@@ -121,13 +121,13 @@ class TestMergeParagraphs(TestCase):
         self.assertEqual("a 0. en", paragraphs_from_languages[0].paragraphs[0].text_content)
         self.assertEqual("a 0. tr", paragraphs_from_languages[1].paragraphs[0].text_content)
 
-        self.assertEqual("b b 1. en", paragraphs_from_languages[0].paragraphs[1].text_content)
+        self.assertEqual("b 1: en", paragraphs_from_languages[0].paragraphs[1].text_content)
         self.assertEqual("", paragraphs_from_languages[1].paragraphs[1].text_content)
 
-        self.assertEqual("c 2. en", paragraphs_from_languages[0].paragraphs[2].text_content)
-        self.assertEqual("c 2. tr", paragraphs_from_languages[1].paragraphs[2].text_content)
+        self.assertEqual("c 2! en", paragraphs_from_languages[0].paragraphs[2].text_content)
+        self.assertEqual("c 2! tr", paragraphs_from_languages[1].paragraphs[2].text_content)
 
-    def test_merge_paragraphs_when_missing_at_beginning(self):
+    def test_align_paragraphs_when_missing_at_beginning(self):
         language_paragraph_1 = ParagraphsFromLanguage(
             language="en", paragraphs=self.get_paragraphs("en"), is_main_language=True
         )
@@ -150,19 +150,19 @@ class TestMergeParagraphs(TestCase):
         self.assertEqual("a 0. en", paragraphs_from_languages[0].paragraphs[0].text_content)
         self.assertEqual("", paragraphs_from_languages[1].paragraphs[0].text_content)
 
-        self.assertEqual("b b 1. en", paragraphs_from_languages[0].paragraphs[1].text_content)
-        self.assertEqual("b b 1. tr", paragraphs_from_languages[1].paragraphs[1].text_content)
+        self.assertEqual("b 1: en", paragraphs_from_languages[0].paragraphs[1].text_content)
+        self.assertEqual("b 1: tr", paragraphs_from_languages[1].paragraphs[1].text_content)
 
-        self.assertEqual("c 2. en", paragraphs_from_languages[0].paragraphs[2].text_content)
-        self.assertEqual("c 2. tr", paragraphs_from_languages[1].paragraphs[2].text_content)
+        self.assertEqual("c 2! en", paragraphs_from_languages[0].paragraphs[2].text_content)
+        self.assertEqual("c 2! tr", paragraphs_from_languages[1].paragraphs[2].text_content)
 
-    def test_merge_paragraphs_when_two_paragraphs_corresponds_to_one(self):
+    def test_align_paragraphs_when_two_paragraphs_corresponds_to_one(self):
         language_paragraph_1 = ParagraphsFromLanguage(
             language="en", paragraphs=self.get_paragraphs("en"), is_main_language=True
         )
         paragraphs = self.get_paragraphs("tr")
-        paragraphation_issue = [paragraphs[0], paragraphs[1].merge(paragraphs[2])]
-        language_paragraph_2 = ParagraphsFromLanguage(language="tr", paragraphs=paragraphation_issue, is_main_language=False)
+        paragraphs_issue = [paragraphs[0], paragraphs[1].merge(paragraphs[2])]
+        language_paragraph_2 = ParagraphsFromLanguage(language="tr", paragraphs=paragraphs_issue, is_main_language=False)
 
         multilingual_paragraph_extractor = MultilingualParagraphAlignerUseCase(
             extractor_identifier=self.extraction_identifier
@@ -178,16 +178,16 @@ class TestMergeParagraphs(TestCase):
         self.assertEqual("a 0. en", paragraphs_from_languages[0].paragraphs[0].text_content)
         self.assertEqual("a 0. tr", paragraphs_from_languages[1].paragraphs[0].text_content)
 
-        self.assertEqual("b b 1. en", paragraphs_from_languages[0].paragraphs[1].text_content)
-        self.assertEqual("b b 1. tr Text 2. tr", paragraphs_from_languages[1].paragraphs[1].text_content)
+        self.assertEqual("b 1: en", paragraphs_from_languages[0].paragraphs[1].text_content)
+        self.assertEqual("b 1: tr c 2! tr", paragraphs_from_languages[1].paragraphs[1].text_content)
 
-        self.assertEqual("c 2. en", paragraphs_from_languages[0].paragraphs[2].text_content)
+        self.assertEqual("c 2! en", paragraphs_from_languages[0].paragraphs[2].text_content)
         self.assertEqual("", paragraphs_from_languages[1].paragraphs[2].text_content)
 
-    def test_merge_paragraphs_when_one_paragraphs_corresponds_to_two(self):
+    def test_align_paragraphs_when_one_paragraph_corresponds_to_two(self):
         paragraphs = self.get_paragraphs("en")
-        paragraphation_issue = [paragraphs[0], paragraphs[1].merge(paragraphs[2])]
-        language_paragraph_1 = ParagraphsFromLanguage(language="en", paragraphs=paragraphation_issue, is_main_language=True)
+        paragraphs_issue = [paragraphs[0], paragraphs[1].merge(paragraphs[2])]
+        language_paragraph_1 = ParagraphsFromLanguage(language="en", paragraphs=paragraphs_issue, is_main_language=True)
 
         language_paragraph_2 = ParagraphsFromLanguage(
             language="tr", paragraphs=self.get_paragraphs("tr"), is_main_language=False
@@ -207,5 +207,5 @@ class TestMergeParagraphs(TestCase):
         self.assertEqual("a 0. en", paragraphs_from_languages[0].paragraphs[0].text_content)
         self.assertEqual("a 0. tr", paragraphs_from_languages[1].paragraphs[0].text_content)
 
-        self.assertEqual("b b 1. en Text 2. en", paragraphs_from_languages[0].paragraphs[1].text_content)
-        self.assertEqual("b b 1. tr Text 2. tr", paragraphs_from_languages[1].paragraphs[1].text_content)
+        self.assertEqual("b 1: en c 2! en", paragraphs_from_languages[0].paragraphs[1].text_content)
+        self.assertEqual("b 1: tr c 2! tr", paragraphs_from_languages[1].paragraphs[1].text_content)
