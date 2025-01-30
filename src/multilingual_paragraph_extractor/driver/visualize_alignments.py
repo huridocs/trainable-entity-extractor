@@ -1,8 +1,8 @@
+import itertools
 import json
 import pickle
 import subprocess
 from pathlib import Path
-from time import time
 
 from pdf_annotate import PdfAnnotator, Appearance, Location
 from pdf_token_type_labels.TokenType import TokenType
@@ -10,6 +10,7 @@ from visualization.save_output_to_pdf import hex_color_to_rgb
 
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from multilingual_paragraph_extractor.domain.ParagraphMatchScore import ParagraphMatchScore
+from multilingual_paragraph_extractor.domain.ParagraphsFromLanguage import ParagraphsFromLanguage
 from multilingual_paragraph_extractor.use_cases.MultilingualParagraphAlignerUseCase import (
     MultilingualParagraphAlignerUseCase,
 )
@@ -23,8 +24,7 @@ from trainable_entity_extractor.data.SegmentationData import SegmentationData
 PARAGRAPH_EXTRACTION_PATH = Path(ROOT_PATH, "data", "paragraph_extraction")
 EXTRACTION_IDENTIFIER = ExtractionIdentifier(run_name="paragraph", extraction_name="id")
 
-MAIN_PDF = "ihrda_1_en"
-OTHER_PDF = "ihrda_1_fr"
+PDFS = ["1", "2", "4", "cejil_5", "ihrda_1"]
 
 
 def get_pdf_data(pdf_name: str):
@@ -57,8 +57,6 @@ def save_xmls():
 
 def save_pdfs_data():
     for xml_path in Path(PARAGRAPH_EXTRACTION_PATH, "xmls").iterdir():
-        if "1_" not in xml_path.name:
-            continue
         pdf_data_pickle = Path(PARAGRAPH_EXTRACTION_PATH, "pdf_data", xml_path.name.replace(".xml", ".pickle"))
         if pdf_data_pickle.exists():
             continue
@@ -107,46 +105,38 @@ def get_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures):
     return paragraph_1, paragraph_2, ParagraphMatchScore.from_paragraphs_features(paragraph_1, paragraph_2).overall_score
 
 
-def annotate_pdf(scores, scores_next, scores_next_next):
-    pdf_path, xml_path = get_paths(MAIN_PDF)
+def annotate_pdf(pdf_name: str, output_name: str, paragraphs: list[ParagraphFeatures], contents: list[str]):
+    pdf_path, xml_path = get_paths(pdf_name)
     annotator = PdfAnnotator(str(pdf_path))
-    for score, score_next, score_next_next in zip(scores, scores_next, scores_next_next):
-        paragraph_1, paragraph_2, match_score = score
-        _, paragraph_2_next, match_score_next = score_next
-        _, paragraph_2_next_next, match_score_next_next = score_next_next
-
+    for paragraph, content in zip(paragraphs, contents):
         left, top, right, bottom = (
-            paragraph_1.bounding_box.left,
-            paragraph_1.page_height - paragraph_1.bounding_box.top,
-            paragraph_1.bounding_box.right,
-            paragraph_1.page_height - paragraph_1.bounding_box.bottom,
+            paragraph.bounding_box.left,
+            paragraph.page_height - paragraph.bounding_box.top,
+            paragraph.bounding_box.right,
+            paragraph.page_height - paragraph.bounding_box.bottom,
         )
 
         text_box_size = 20 * 8 + 8
 
         annotator.add_annotation(
             "square",
-            Location(x1=left, y1=bottom, x2=right, y2=top, page=paragraph_1.page_number - 1),
+            Location(x1=left, y1=bottom, x2=right, y2=top, page=paragraph.page_number - 1),
             Appearance(stroke_color=hex_color_to_rgb("#008B8B")),
         )
 
         annotator.add_annotation(
             "square",
-            Location(x1=left, y1=top, x2=left + text_box_size, y2=top + 10, page=paragraph_1.page_number - 1),
+            Location(x1=left, y1=top, x2=left + text_box_size, y2=top + 10, page=paragraph.page_number - 1),
             Appearance(fill=hex_color_to_rgb("#008B8B")),
         )
 
-        content = f"{paragraph_2.first_word} {int(100 * match_score)} | "
-        content += f"{paragraph_2_next.first_word} {int(100 * match_score_next)} | "
-        content += f"{paragraph_2_next_next.first_word} {int(100 * match_score_next_next)}"
-
         annotator.add_annotation(
             "text",
-            Location(x1=left, y1=top, x2=left + text_box_size, y2=top + 10, page=paragraph_1.page_number - 1),
+            Location(x1=left, y1=top, x2=left + text_box_size, y2=top + 10, page=paragraph.page_number - 1),
             Appearance(content=content, font_size=8, fill=(1, 1, 1), stroke_width=3),
         )
 
-    output_pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, MAIN_PDF + ".pdf")
+    output_pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, output_name + ".pdf")
     annotator.write(output_pdf_path)
 
 
@@ -157,11 +147,9 @@ def get_scores(main_paragraphs_features, other_paragraphs_features):
     return scores, scores_next, scores_next_next
 
 
-def get_paragraphs():
-    main_pdf = load_pdf_data(MAIN_PDF)
-    other_pdf = load_pdf_data(OTHER_PDF)
-    main_paragraphs_features = [ParagraphFeatures.from_pdf_data(main_pdf, x) for x in main_pdf.pdf_data_segments]
-    other_paragraphs_features = [ParagraphFeatures.from_pdf_data(other_pdf, x) for x in other_pdf.pdf_data_segments]
+def get_paragraphs(pdf_name: str):
+    pdf_data = load_pdf_data(pdf_name)
+    paragraphs_features = [ParagraphFeatures.from_pdf_data(pdf_data, x) for x in pdf_data.pdf_data_segments]
     text_content_types = [
         TokenType.FORMULA,
         TokenType.LIST_ITEM,
@@ -170,32 +158,74 @@ def get_paragraphs():
         TokenType.SECTION_HEADER,
         TokenType.TABLE,
     ]
-    main_paragraphs_features = [x for x in main_paragraphs_features if x.paragraph_type in text_content_types]
-    other_paragraphs_features = [x for x in other_paragraphs_features if x.paragraph_type in text_content_types]
-    return main_paragraphs_features, other_paragraphs_features
+    paragraphs_features = [x for x in paragraphs_features if x.paragraph_type in text_content_types]
+    return paragraphs_features
 
 
-def performance():
-    start = time()
-    main_paragraphs_features, other_paragraphs_features = get_paragraphs()
-    main_paragraphs_features = main_paragraphs_features * 5
-    other_paragraphs_features = other_paragraphs_features * 5
-    print("start")
+def loop_combinations() -> tuple[str, ParagraphsFromLanguage, ParagraphsFromLanguage]:
+    for pdf_name in PDFS:
+        languages = [
+            x.name.replace(pdf_name, "")[1:3]
+            for x in Path(PARAGRAPH_EXTRACTION_PATH, "pdfs").iterdir()
+            if x.name.startswith(pdf_name)
+        ]
+        for main_language, other_language in itertools.permutations(languages, 2):
+            main_paragraphs_features = get_paragraphs(pdf_name + "_" + main_language)
+            other_paragraphs_features = get_paragraphs(pdf_name + "_" + other_language)
+            main_paragraphs = ParagraphsFromLanguage(
+                language=main_language, paragraphs=main_paragraphs_features, is_main_language=True
+            )
+            other_paragraphs = ParagraphsFromLanguage(
+                language=other_language, paragraphs=other_paragraphs_features, is_main_language=False
+            )
+            yield pdf_name, main_paragraphs, other_paragraphs
 
-    aligner_use_case = MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER)
-    aligner_use_case.get_alignment_scores(main_paragraphs_features, other_paragraphs_features)
+
+def visualize_matching_scores():
+    for pdf_name, main_paragraphs, other_paragraphs in loop_combinations():
+        scores, scores_next, scores_next_next = get_scores(main_paragraphs.paragraphs, other_paragraphs.paragraphs)
+        output_name = f"scores_{pdf_name}_{main_paragraphs.language}_{other_paragraphs.language}"
+        input_name = f"{pdf_name}_{main_paragraphs.language}"
+
+        paragraphs = list()
+        contents = list()
+        for score, score_next, score_next_next in zip(scores, scores_next, scores_next_next):
+            paragraph_1, paragraph_2, match_score = score
+            _, paragraph_2_next, match_score_next = score_next
+            _, paragraph_2_next_next, match_score_next_next = score_next_next
+            paragraphs.append(paragraph_1)
+            contents.append(
+                f"{paragraph_2.first_word} {int(100 * match_score)} | "
+                f"{paragraph_2_next.first_word} {int(100 * match_score_next)} | "
+                f"{paragraph_2_next_next.first_word} {int(100 * match_score_next_next)}"
+            )
+
+        annotate_pdf(input_name, output_name, paragraphs, contents)
+
     print("ok")
-    print("time", round(time() - start, 2), "s")
 
 
-def visualize():
-    save_xmls()
-    save_pdfs_data()
-    main_paragraphs_features, other_paragraphs_features = get_paragraphs()
-    scores, scores_next, scores_next_next = get_scores(main_paragraphs_features, other_paragraphs_features)
-    annotate_pdf(scores, scores_next, scores_next_next)
+def visualize_alignment():
+    for pdf_name, main_paragraphs, other_paragraphs in loop_combinations():
+        MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])
+        contents = list()
+        for paragraph in main_paragraphs.paragraphs:
+            if paragraph not in other_paragraphs.alignment_scores:
+                contents.append("NO TRANSLATION")
+                continue
+            alignment_score = other_paragraphs.alignment_scores[paragraph]
+            content = f"{alignment_score.other_paragraph.first_word} {int(100 * alignment_score.score)}"
+            contents.append(content)
+
+        output_name = f"alignment_{pdf_name}_{main_paragraphs.language}_{other_paragraphs.language}"
+        input_name = f"{pdf_name}_{main_paragraphs.language}"
+        annotate_pdf(input_name, output_name, main_paragraphs.paragraphs, contents)
+
     print("ok")
 
 
 if __name__ == "__main__":
-    performance()
+    # save_xmls()
+    # save_pdfs_data()
+    visualize_alignment()
+    # visualize_matching_scores()

@@ -30,7 +30,7 @@ class ParagraphMatchScore(BaseModel):
                     self.text_fuzzy_match,
                     self.number_of_words,
                     self.numbers,
-                    self.first_word,
+                    2 * self.first_word,
                     self.special_characters,
                     self.alignment,
                     self.indentation,
@@ -38,7 +38,7 @@ class ParagraphMatchScore(BaseModel):
                     self.font_size,
                 ]
             )
-            / 10
+            / 11
         )
         return self
 

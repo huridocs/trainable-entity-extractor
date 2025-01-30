@@ -6,7 +6,18 @@ from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphF
 from multilingual_paragraph_extractor.domain.ParagraphMatchScore import ParagraphMatchScore
 
 BLOCK_SIZE = 20
-THRESHOLD = 0.7
+THRESHOLD = [0.9, 0.86, 0.82, 0.78]
+TO_AVOID_BEING_MERGED = [
+    TokenType.FORMULA,
+    TokenType.FOOTNOTE,
+    TokenType.TABLE,
+    TokenType.PICTURE,
+    TokenType.TITLE,
+    TokenType.PAGE_HEADER,
+    TokenType.SECTION_HEADER,
+    TokenType.CAPTION,
+    TokenType.PAGE_FOOTER,
+]
 
 
 class ParagraphsFromLanguage(BaseModel):
@@ -20,13 +31,14 @@ class ParagraphsFromLanguage(BaseModel):
 
     def remove_no_text_types(self):
         text_content_types = [
-            TokenType.FORMULA,
             TokenType.LIST_ITEM,
-            TokenType.TITLE,
             TokenType.TEXT,
-            TokenType.SECTION_HEADER,
         ]
         self.paragraphs = [x for x in self.paragraphs if x.paragraph_type in text_content_types]
+
+    def remove_headers_and_footers(self):
+        types = [TokenType.FOOTNOTE, TokenType.PAGE_HEADER, TokenType.PAGE_FOOTER]
+        self.paragraphs = [x for x in self.paragraphs if x.paragraph_type not in types]
 
     def merge_paragraphs_spanning_two_pages(self):
         fixed_paragraphs = []
@@ -52,40 +64,46 @@ class ParagraphsFromLanguage(BaseModel):
         if int(segment.page_number - next_segment.page_number) > 1:
             return False
 
-        if segment.paragraph_type != next_segment.paragraph_type:
+        if segment.paragraph_type in TO_AVOID_BEING_MERGED or next_segment.paragraph_type in TO_AVOID_BEING_MERGED:
             return False
 
         if segment.text_content[-1] in [".", "!", "?", ";"]:
             return False
 
+        if not next_segment.text_content[0].isalnum():
+            return False
+
         return True
 
     def set_alignment_scores(self, main_paragraphs: list[ParagraphFeatures]):
-        unmatched2 = set(range(len(self.paragraphs)))
+        unmatched_1 = set(range(len(main_paragraphs)))
+        unmatched_2 = set(range(len(self.paragraphs)))
 
-        for idx1 in range(len(main_paragraphs)):
-            start_j = max(0, idx1 - BLOCK_SIZE)  # Look behind
-            end_j = min(len(self.paragraphs), idx1 + BLOCK_SIZE)  # Look ahead
-            current_block2 = list(unmatched2 & set(range(start_j, end_j)))
+        for threshold in THRESHOLD:
+            for idx1 in list(unmatched_1):
+                start_j = max(0, idx1 - BLOCK_SIZE)
+                end_j = min(len(self.paragraphs), idx1 + BLOCK_SIZE)
+                current_block2 = list(unmatched_2 & set(range(start_j, end_j)))
 
-            best_match = None
-            best_score = THRESHOLD
+                best_match = None
+                best_score = threshold
 
-            for idx2 in current_block2:
-                match_score = ParagraphMatchScore.from_paragraphs_features(main_paragraphs[idx1], self.paragraphs[idx2])
-                score = match_score.overall_score
-                if score > best_score:
-                    best_score = score
-                    best_match = idx2
-                    if score > 0.95:
-                        break
+                for idx2 in current_block2:
+                    match_score = ParagraphMatchScore.from_paragraphs_features(main_paragraphs[idx1], self.paragraphs[idx2])
+                    score = match_score.overall_score
+                    if score > best_score:
+                        best_score = score
+                        best_match = idx2
+                        if score > 0.95:
+                            break
 
-            if best_match is not None:
-                alignment_score = AlignmentScore(
-                    main_paragraph=main_paragraphs[idx1], other_paragraph=self.paragraphs[best_match], score=best_score
-                )
-                self.alignment_scores[main_paragraphs[idx1]] = alignment_score
-                unmatched2.remove(best_match)
+                if best_match is not None:
+                    alignment_score = AlignmentScore(
+                        main_paragraph=main_paragraphs[idx1], other_paragraph=self.paragraphs[best_match], score=best_score
+                    )
+                    self.alignment_scores[main_paragraphs[idx1]] = alignment_score
+                    unmatched_2.remove(best_match)
+                    unmatched_1.remove(idx1)
 
     def align(self, main_language: "ParagraphsFromLanguage"):
         self.set_alignment_scores(main_language.paragraphs)
@@ -122,7 +140,7 @@ class ParagraphsFromLanguage(BaseModel):
                 continue
 
             alignment_score = ParagraphMatchScore.from_paragraphs_features(main_paragraph, paragraph)
-            if alignment_score.overall_score < THRESHOLD - 0.2:
+            if alignment_score.overall_score < THRESHOLD[-1] - 0.3:
                 continue
 
             self.alignment_scores[main_paragraph] = AlignmentScore(

@@ -81,22 +81,3 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
         self.assertEqual("Text not to be continued.", paragraphs_from_languages[0].paragraphs[1].text_content)
         self.assertEqual("here", paragraphs_from_languages[0].paragraphs[2].text_content)
         self.assertEqual("Text.", paragraphs_from_languages[0].paragraphs[3].text_content)
-
-    def test_not_merge_when_next_paragraph_from_other_type(self):
-        regular_paragraph_1, beginning_paragraphs, end_paragraphs, regular_paragraph_2 = self.get_paragraphs()
-
-        end_paragraphs.paragraph_type = TokenType.TITLE
-
-        paragraphs = [regular_paragraph_1, beginning_paragraphs, end_paragraphs, regular_paragraph_2]
-        language_paragraph = ParagraphsFromLanguage(language="en", paragraphs=paragraphs, is_main_language=False)
-
-        multilingual_paragraph_extractor = MultilingualParagraphAlignerUseCase(
-            extractor_identifier=self.extraction_identifier
-        )
-        paragraphs_from_languages = [language_paragraph]
-        multilingual_paragraph_extractor.align_languages(paragraphs_from_languages)
-
-        self.assertEqual("Text.", paragraphs_from_languages[0].paragraphs[0].text_content)
-        self.assertEqual("Text to be continued", paragraphs_from_languages[0].paragraphs[1].text_content)
-        self.assertEqual("here", paragraphs_from_languages[0].paragraphs[2].text_content)
-        self.assertEqual("Text.", paragraphs_from_languages[0].paragraphs[3].text_content)

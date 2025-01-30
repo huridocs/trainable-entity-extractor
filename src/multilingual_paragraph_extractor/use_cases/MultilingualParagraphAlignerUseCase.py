@@ -11,8 +11,9 @@ class MultilingualParagraphAlignerUseCase:
             return []
 
         for paragraphs_from_language in paragraphs_from_languages:
-            paragraphs_from_language.remove_no_text_types()
+            paragraphs_from_language.remove_headers_and_footers()
             paragraphs_from_language.merge_paragraphs_spanning_two_pages()
+            paragraphs_from_language.remove_no_text_types()
 
         main_language, other_languages = self.get_main_and_other_languages(paragraphs_from_languages)
 
