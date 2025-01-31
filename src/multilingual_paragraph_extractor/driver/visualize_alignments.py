@@ -225,7 +225,7 @@ def visualize_alignment():
 
 
 if __name__ == "__main__":
-    # save_xmls()
-    # save_pdfs_data()
+    save_xmls()
+    save_pdfs_data()
     visualize_alignment()
-    # visualize_matching_scores()
+    visualize_matching_scores()
