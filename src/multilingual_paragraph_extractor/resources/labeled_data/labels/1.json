@@ -1,0 +1,16 @@
+{
+  "main_language": "en",
+  "other_language": "fr",
+  "main_xml_name": "a.xml",
+  "other_xml_name": "b.xml",
+  "paragraphs": [
+    {
+      "main_language": "This is a paragraph in English.",
+      "other_language": "This is a paragraph in English."
+    },
+    {
+      "main_language": "This is another paragraph in English.",
+      "other_language": "This is another paragraph in English."
+    }
+  ]
+}
