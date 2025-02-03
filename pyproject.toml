@@ -1,12 +1,12 @@
 [project]
 name = "trainable-entity-extractor"
-version = "2025.02.03.02"
+version = "2025.02.03.03"
 description = "This tool is a trainable text/PDF to entity extractor"
 license = { file = "LICENSE" }
 authors = [{ name = "HURIDOCS" }]
 requires-python = ">= 3.10"
 dependencies = [
-    "pdf-document-layout-analysis @ git+https://github.com/huridocs/pdf-document-layout-analysis@fe160f24c8ff3ff7652845d6fdad419f200bbd80",
+    "pdf-document-layout-analysis @ git+https://github.com/huridocs/pdf-document-layout-analysis@47cbb87747db65faf61cf3c9e5e7c290be439172",
     "python-Levenshtein==0.25.1",
     "tdda==2.0.9",
     "datasets==2.19.0",
