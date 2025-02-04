@@ -19,12 +19,6 @@ class LabeledData(BaseModel):
     xml_segments_boxes: list[SegmentBox] = list()
     label_segments_boxes: list[SegmentBox] = list()
 
-    def to_dict(self):
-        labeled_data_dict = self.model_dump()
-        labeled_data_dict["xml_segments_boxes"] = [x.to_dict() for x in self.xml_segments_boxes]
-        labeled_data_dict["label_segments_boxes"] = [x.to_dict() for x in self.label_segments_boxes]
-        return labeled_data_dict
-
     def scale_down_labels(self):
         for label in self.label_segments_boxes:
             label.scale_down()

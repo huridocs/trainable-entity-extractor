@@ -29,8 +29,8 @@ class Modes:
                 right_spaces.append(page.page_width - token.bounding_box.right)
                 left_spaces.append(token.bounding_box.left)
                 line_spaces.append(token.bounding_box.bottom)
-                font_sizes.append(token.font_style.font_size)
-                font_ids.append(token.font_style.font_id)
+                font_sizes.append(token.font.font_size)
+                font_ids.append(token.font.font_id)
 
         self.font_size_mode = mode(font_sizes) if font_sizes else 0
         self.font_family_name_mode = mode(font_ids) if font_ids else ""

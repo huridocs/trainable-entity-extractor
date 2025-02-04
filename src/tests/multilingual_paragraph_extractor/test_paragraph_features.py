@@ -5,7 +5,7 @@ from pdf_token_type_labels.TokenType import TokenType
 
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from trainable_entity_extractor.XmlFile import XmlFile
-from trainable_entity_extractor.config import ROOT_PATH, APP_PATH
+from trainable_entity_extractor.config import APP_PATH
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.data.PdfData import PdfData
 from trainable_entity_extractor.data.SegmentBox import SegmentBox

@@ -20,9 +20,6 @@ class SegmentBox(BaseModel):
     page_height: int = 0
     segment_type: TokenType = TokenType.TEXT
 
-    def to_dict(self):
-        return json.loads(self.model_dump_json())
-
     def to_output(self):
         segment_box_dict = json.loads(self.model_dump_json())
         del segment_box_dict["page_width"]

@@ -75,7 +75,7 @@ class FastSegmentSelector(SegmentSelectorBase):
     def get_most_common_words(train_segments):
         counter = Counter()
         for segment in train_segments:
-            counter.update(segment.text_cleaned.lower().split())
+            counter.update(segment.text_content.lower().split())
         return [x[0] for x in counter.most_common(30)]
 
     @staticmethod
@@ -141,7 +141,7 @@ class FastSegmentSelector(SegmentSelectorBase):
         if not exists(self.model_path) or not segments:
             return []
 
-        self.text_segments = [x for x in segments if x.paragraph_type in self.text_types]
+        self.text_segments = [x for x in segments if x.segment_type in self.text_types]
         self.load_repeated_words()
 
         x, y = self.get_x_y(segments)
