@@ -198,7 +198,7 @@ def get_mistakes() -> dict[str, (float, str)]:
         correct = 0
         mistakes = 0
         for truth, prediction, sample in zip(truth_one_hot, prediction_one_hot, test_samples):
-            text = " ".join([x.text_content for x in sample.pdf_data.pdf_data_segments if x.ml_label])
+            text = " ".join([x.text_cleaned for x in sample.pdf_data.pdf_data_segments if x.ml_label])
             missing = [dataset.options[i].label for i in range(len(truth)) if truth[i] and not prediction[i]]
             wrong = [dataset.options[i].label for i in range(len(truth)) if not truth[i] and prediction[i]]
 

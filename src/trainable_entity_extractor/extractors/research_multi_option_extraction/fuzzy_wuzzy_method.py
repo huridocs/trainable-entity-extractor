@@ -69,7 +69,7 @@ if __name__ == "__main__":
         is_president = False
         for president in [x for x in options if x not in presidents]:
             for pdf_segment in pdf_segments:
-                ratio = fuzz.ratio(president, pdf_segment.text_content)
+                ratio = fuzz.ratio(president, pdf_segment.text_cleaned)
                 if ratio > ratio_threshold:
                     # print(president, pdf_segment.text_content)
                     is_president = True

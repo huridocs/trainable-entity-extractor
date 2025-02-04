@@ -17,7 +17,8 @@ class ParagraphFeatures(BaseModel):
     paragraph_type: TokenType = TokenType.TEXT
     page_number: int = 1
     bounding_box: Rectangle = Rectangle(0, 0, 0, 0)
-    text_content: str = ""
+    text_cleaned: str = ""
+    original_text: str = ""
     words: list[str] = []
     numbers: list[int] = []
     non_alphanumeric_characters: list[str] = []
@@ -46,7 +47,8 @@ class ParagraphFeatures(BaseModel):
             page_width=pdf_data.pdf_features.pages[0].page_width if pdf_data.pdf_features.pages else 1,
             page_number=pdf_segment.page_number,
             bounding_box=pdf_segment.bounding_box,
-            text_content=" ".join(unidecode(pdf_segment.text_content).split()),
+            text_cleaned=" ".join(unidecode(pdf_segment.text_content).split()),
+            original_text=" ".join(pdf_segment.text_content),
             paragraph_type=pdf_segment.segment_type,
             words=words,
             numbers=numbers,
@@ -76,7 +78,7 @@ class ParagraphFeatures(BaseModel):
             numbers = [int(x) for x in numbers if x]
             paragraphs_features.append(
                 ParagraphFeatures(
-                    text_content=text,
+                    text_cleaned=text,
                     page_width=10,
                     page_height=10,
                     font=PdfFont("1", False, False, 10, "#000000"),
@@ -89,7 +91,7 @@ class ParagraphFeatures(BaseModel):
         return paragraphs_features
 
     def merge(self, paragraph_features: "ParagraphFeatures") -> "ParagraphFeatures":
-        self.text_content += " " + paragraph_features.text_content
+        self.text_cleaned += " " + paragraph_features.text_cleaned
         self.words += paragraph_features.words
         self.numbers += paragraph_features.numbers
         self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters

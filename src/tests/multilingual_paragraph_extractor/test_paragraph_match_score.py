@@ -13,7 +13,7 @@ class TestParagraphMatchScore(TestCase):
     @staticmethod
     def get_paragraph():
         return ParagraphFeatures(
-            text_content="text 1",
+            text_cleaned="text 1",
             page_width=10,
             page_height=10,
             paragraph_type=TokenType.PAGE_HEADER,
@@ -51,7 +51,7 @@ class TestParagraphMatchScore(TestCase):
         paragraph = self.get_paragraph()
 
         other_paragraph = ParagraphFeatures(
-            text_content="",
+            text_cleaned="",
             page_width=10,
             page_height=10,
             paragraph_type=TokenType.TEXT,
@@ -88,7 +88,7 @@ class TestParagraphMatchScore(TestCase):
         other_paragraph = ParagraphFeatures(
             index=2,
             page_number=1,
-            text_content="",
+            text_cleaned="",
             page_width=10,
             page_height=10,
             paragraph_type=TokenType.TEXT,

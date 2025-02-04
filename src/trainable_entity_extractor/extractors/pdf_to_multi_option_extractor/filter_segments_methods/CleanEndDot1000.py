@@ -16,7 +16,7 @@ class CleanEndDot1000(FilterSegmentsMethod):
             if not pdf_data_segment_copy:
                 break
 
-            if pdf_data_segment_copy.text_content and "." == pdf_data_segment.text_content[-1]:
+            if pdf_data_segment_copy.text_content and "." == pdf_data_segment.text_cleaned[-1]:
                 pdf_data_segment_copy.text_content += "."
 
             total_text += " " + pdf_data_segment_copy.text_content

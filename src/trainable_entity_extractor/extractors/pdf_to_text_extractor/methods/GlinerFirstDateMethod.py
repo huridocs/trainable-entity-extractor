@@ -17,10 +17,10 @@ class GlinerFirstDateMethod(FirstDateMethod):
         merge_segments: list[list[PdfDataSegment]] = self.merge_segments_for_dates(segments)
         for segments in merge_segments:
             segment_merged = PdfDataSegment.from_list_to_merge(segments)
-            if not self.contains_year(segment_merged.text_content):
+            if not self.contains_year(segment_merged.text_cleaned):
                 continue
 
-            date = GlinerDateParserMethod.get_date([segment_merged.text_content])
+            date = GlinerDateParserMethod.get_date([segment_merged.text_cleaned])
             if date:
                 for segment in segments:
                     segment.ml_label = 1

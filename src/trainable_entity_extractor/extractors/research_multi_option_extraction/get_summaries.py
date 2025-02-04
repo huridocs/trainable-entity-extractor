@@ -50,7 +50,7 @@ def get_summaries():
         multi_line_paragraphs = remove_one_line_paragraph(pdf_labels.paragraphs)
         pdf_segments = [PdfSegment.from_pdf_tokens(paragraph.tokens) for paragraph in multi_line_paragraphs]
         pdf_segments = [x for x in pdf_segments if x.paragraph_type in valid_types]
-        texts = [pdf_segment.text_content for pdf_segment in pdf_segments if pdf_segment.paragraph_type in valid_types]
+        texts = [pdf_segment.text_cleaned for pdf_segment in pdf_segments if pdf_segment.paragraph_type in valid_types]
         summary = summarizer(get_text(texts), max_length=130, min_length=30, do_sample=False)[0]["summary_text"]
         path.write_text(summary)
         print(path)

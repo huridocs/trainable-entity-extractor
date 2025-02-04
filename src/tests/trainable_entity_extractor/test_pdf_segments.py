@@ -12,8 +12,8 @@ from pdf_token_type_labels.TokenType import TokenType
 
 
 class TestPdfSegments(TestCase):
-    test_file_path = f"{APP_PATH}/trainable_entity_extractor/test/test_files/test.xml"
-    no_pages_file_path = f"{APP_PATH}/trainable_entity_extractor/test/test_files/no_pages.xml"
+    test_file_path = f"{APP_PATH}/tests/trainable_entity_extractor/test_files/test.xml"
+    no_pages_file_path = f"{APP_PATH}/tests/trainable_entity_extractor/test_files/no_pages.xml"
 
     def test_get_pdf_features(self):
         tenant = "tenant_save"

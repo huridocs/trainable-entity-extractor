@@ -15,9 +15,9 @@ class SpaceFixerGlinerFirstDateMethod(FirstDateMethod):
 
     def get_date_from_segments(self, segments: list[PdfDataSegment], languages: list[str]) -> str:
         for segment in self.loop_segments(segments):
-            if not self.contains_year(segment.text_content):
+            if not self.contains_year(segment.text_cleaned):
                 continue
-            date = GlinerDateParserMethod.get_date([segment.text_content])
+            date = GlinerDateParserMethod.get_date([segment.text_cleaned])
             if date:
                 segment.ml_label = 1
                 return date.strftime("%Y-%m-%d")

@@ -75,7 +75,7 @@ class FastSegmentSelector(SegmentSelectorBase):
     def get_most_common_words(train_segments):
         counter = Counter()
         for segment in train_segments:
-            counter.update(segment.text_content.lower().split())
+            counter.update(segment.text_cleaned.lower().split())
         return [x[0] for x in counter.most_common(30)]
 
     @staticmethod

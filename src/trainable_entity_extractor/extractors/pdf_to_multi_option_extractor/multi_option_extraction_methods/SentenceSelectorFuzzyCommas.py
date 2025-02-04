@@ -42,7 +42,7 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
 
         sentence_segment_list = []
         for segment in merged_sentences:
-            segment_text = " ".join(segment.text_content.split())
+            segment_text = " ".join(segment.text_cleaned.split())
             for text in re.split(r"\.|:", segment_text):
                 if not text:
                     continue
@@ -65,17 +65,17 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
         return sentences_across_pages
 
     def get_segments_merged(self, segments):
-        segments = [segment for segment in segments if segment.text_content.strip()]
+        segments = [segment for segment in segments if segment.text_cleaned.strip()]
         if not segments:
             return list()
 
         merged_sentences = [segments[0]]
         for segment in segments[1:]:
-            previous_segment_text = " ".join(merged_sentences[-1].text_content.split())
+            previous_segment_text = " ".join(merged_sentences[-1].text_cleaned.split())
 
             if previous_segment_text[-1] not in [".", ":"]:
                 merged_segment = deepcopy(merged_sentences[-1])
-                merged_segment.text_content = f"{previous_segment_text}, {' '.join(segment.text_content.split())}"
+                merged_segment.text_cleaned = f"{previous_segment_text}, {' '.join(segment.text_cleaned.split())}"
                 bounding_boxes = [merged_segment.bounding_box, segment.bounding_box]
                 merged_segment.bounding_box = Rectangle.merge_rectangles(bounding_boxes)
                 merged_sentences[-1] = merged_segment
@@ -89,7 +89,7 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
         sentence_segments = list()
         for sentence, segment in sentence_segment_list:
             sentence_segment = deepcopy(segment)
-            sentence_segment.text_content = sentence
+            sentence_segment.text_cleaned = sentence
             sentence_segments.append(sentence_segment)
 
         sentence_pdf_data = PdfData(pdf_features=None, file_name=sample.pdf_data.file_name)

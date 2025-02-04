@@ -43,7 +43,7 @@ def character_density():
         segment_top = min([x.bounding_box.top for x in paragraph.tokens]) + 8
         first_line_segment = PdfSegment.from_pdf_tokens([x for x in paragraph.tokens if x.bounding_box.top < segment_top])
         pdf_segment = PdfSegment.from_pdf_tokens(paragraph.tokens)
-        characters_count = len([x for x in first_line_segment.text_content if x.isalpha()])
+        characters_count = len([x for x in first_line_segment.text_cleaned if x.isalpha()])
 
         character_ratio: float = pdf_segment.bounding_box.width / characters_count if characters_count else 0
 

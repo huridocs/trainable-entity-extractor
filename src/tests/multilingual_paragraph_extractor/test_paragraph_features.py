@@ -5,7 +5,7 @@ from pdf_token_type_labels.TokenType import TokenType
 
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from trainable_entity_extractor.XmlFile import XmlFile
-from trainable_entity_extractor.config import ROOT_PATH
+from trainable_entity_extractor.config import ROOT_PATH, APP_PATH
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.data.PdfData import PdfData
 from trainable_entity_extractor.data.SegmentBox import SegmentBox
@@ -16,7 +16,7 @@ class TestParagraphFeatures(TestCase):
     identifier = ExtractionIdentifier(run_name="paragraph", extraction_name="id")
 
     def test_extract_paragraphs(self):
-        xml_path = Path(ROOT_PATH, "src", "multilingual_paragraph_extractor", "tests", "resources", "test.xml")
+        xml_path = Path(APP_PATH, "tests", "multilingual_paragraph_extractor", "resources", "test.xml")
 
         with open(xml_path, "rb") as file:
             xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
@@ -45,7 +45,7 @@ class TestParagraphFeatures(TestCase):
             pdf_data=pdf_data, pdf_segment=pdf_data.pdf_data_segments[4]
         )
 
-        self.assertEqual("Distr.: General 15 February 2021 Original: English", paragraph.text_content)
+        self.assertEqual("Distr.: General 15 February 2021 Original: English", paragraph.text_cleaned)
         self.assertEqual(792, paragraph.page_height)
         self.assertEqual(612, paragraph.page_width)
         self.assertEqual(1, paragraph.page_number)
@@ -66,7 +66,7 @@ class TestParagraphFeatures(TestCase):
         self.assertEqual(False, paragraph.font.italics)
 
     def test_extract_other_paragraphs(self):
-        xml_path = Path(ROOT_PATH, "src", "multilingual_paragraph_extractor", "tests", "resources", "test.xml")
+        xml_path = Path(APP_PATH, "tests", "multilingual_paragraph_extractor", "resources", "test.xml")
 
         with open(xml_path, "rb") as file:
             xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
@@ -84,7 +84,7 @@ class TestParagraphFeatures(TestCase):
             pdf_data=pdf_data, pdf_segment=pdf_data.pdf_data_segments[80]
         )
 
-        self.assertEqual("2/2", paragraph.text_content)
+        self.assertEqual("2/2", paragraph.text_cleaned)
         self.assertEqual(792, paragraph.page_height)
         self.assertEqual(612, paragraph.page_width)
         self.assertEqual(2, paragraph.page_number)

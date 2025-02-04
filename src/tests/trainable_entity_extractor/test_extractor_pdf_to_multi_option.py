@@ -15,7 +15,7 @@ from trainable_entity_extractor.data.TrainingSample import TrainingSample
 
 extraction_id = "test_pdf_to_multi_option"
 extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
-TEST_XML_PATH = f"{APP_PATH}/trainable_entity_extractor/test/test_files"
+TEST_XML_PATH = f"{APP_PATH}/tests/trainable_entity_extractor/test_files"
 
 
 class TestExtractorPdfToMultiOption(TestCase):

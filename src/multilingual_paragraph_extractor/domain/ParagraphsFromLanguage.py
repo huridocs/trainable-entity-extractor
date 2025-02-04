@@ -67,10 +67,10 @@ class ParagraphsFromLanguage(BaseModel):
         if segment.paragraph_type in TO_AVOID_BEING_MERGED or next_segment.paragraph_type in TO_AVOID_BEING_MERGED:
             return False
 
-        if segment.text_content[-1] in [".", "!", "?", ";"]:
+        if segment.text_cleaned[-1] in [".", "!", "?", ";"]:
             return False
 
-        if not next_segment.text_content[0].isalnum():
+        if not next_segment.text_cleaned[0].isalnum():
             return False
 
         return True

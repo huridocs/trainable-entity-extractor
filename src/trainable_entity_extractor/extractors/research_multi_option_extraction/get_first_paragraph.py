@@ -12,8 +12,8 @@ def get_first_paragraph():
         pdf_segments = [PdfSegment.from_pdf_tokens(paragraph.tokens) for paragraph in pdf_labels.paragraphs]
         pdf_segments = [x for x in pdf_segments if x.paragraph_type in valid_types]
         print(pdf_labels.pdf_name)
-        print([len(x.text_content) for x in pdf_segments])
-        print("\n".join([x.text_content for x in pdf_segments]))
+        print([len(x.text_cleaned) for x in pdf_segments])
+        print("\n".join([x.text_cleaned for x in pdf_segments]))
         break
 
 
