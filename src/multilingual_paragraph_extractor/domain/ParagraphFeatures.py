@@ -81,7 +81,7 @@ class ParagraphFeatures(BaseModel):
                     text_cleaned=text,
                     page_width=10,
                     page_height=10,
-                    font=PdfFont("1", False, False, 10, "#000000"),
+                    font=PdfFont(font_id="1", bold=False, italics=False, font_size=10, color="#000000"),
                     first_word=text.split()[0],
                     words=text.split(),
                     numbers=numbers,
