@@ -210,10 +210,10 @@ def visualize_alignment():
         MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])
         contents = list()
         for paragraph in main_paragraphs.paragraphs:
-            if paragraph not in other_paragraphs.alignment_scores:
+            if paragraph not in other_paragraphs._alignment_scores:
                 contents.append("NO TRANSLATION")
                 continue
-            alignment_score = other_paragraphs.alignment_scores[paragraph]
+            alignment_score = other_paragraphs._alignment_scores[paragraph]
             content = f"{alignment_score.other_paragraph.first_word} {int(100 * alignment_score.score)}"
             contents.append(content)
 

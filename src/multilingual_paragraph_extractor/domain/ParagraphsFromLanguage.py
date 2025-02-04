@@ -24,7 +24,7 @@ class ParagraphsFromLanguage(BaseModel):
     language: str
     paragraphs: list[ParagraphFeatures]
     is_main_language: bool
-    alignment_scores: dict[ParagraphFeatures, AlignmentScore] = dict()
+    _alignment_scores: dict[ParagraphFeatures, AlignmentScore] = dict()
 
     class Config:
         arbitrary_types_allowed = True
@@ -101,7 +101,7 @@ class ParagraphsFromLanguage(BaseModel):
                     alignment_score = AlignmentScore(
                         main_paragraph=main_paragraphs[idx1], other_paragraph=self.paragraphs[best_match], score=best_score
                     )
-                    self.alignment_scores[main_paragraphs[idx1]] = alignment_score
+                    self._alignment_scores[main_paragraphs[idx1]] = alignment_score
                     unmatched_2.remove(best_match)
                     unmatched_1.remove(idx1)
 
@@ -115,8 +115,8 @@ class ParagraphsFromLanguage(BaseModel):
     def get_aligned_paragraphs_from_scores(self, main_language):
         aligned_paragraphs: list[ParagraphFeatures] = []
         for paragraph in main_language.paragraphs:
-            if paragraph in self.alignment_scores:
-                paragraph_to_add = self.alignment_scores[paragraph].other_paragraph
+            if paragraph in self._alignment_scores:
+                paragraph_to_add = self._alignment_scores[paragraph].other_paragraph
             else:
                 paragraph_to_add = ParagraphFeatures.get_empty()
 
@@ -127,14 +127,14 @@ class ParagraphsFromLanguage(BaseModel):
         self, main_paragraphs: list[ParagraphFeatures], aligned_paragraphs: list[ParagraphFeatures]
     ):
         for idx, main_paragraph in enumerate(main_paragraphs):
-            if main_paragraph in self.alignment_scores:
+            if main_paragraph in self._alignment_scores:
                 continue
 
             main_previous = main_paragraphs[idx - 1] if idx > 0 else None
-            if main_previous not in self.alignment_scores:
+            if main_previous not in self._alignment_scores:
                 continue
 
-            previous_index = self.paragraphs.index(self.alignment_scores[main_previous].other_paragraph)
+            previous_index = self.paragraphs.index(self._alignment_scores[main_previous].other_paragraph)
             paragraph = self.paragraphs[previous_index + 1] if previous_index + 1 < len(self.paragraphs) else None
             if not paragraph or paragraph in aligned_paragraphs:
                 continue
@@ -143,14 +143,14 @@ class ParagraphsFromLanguage(BaseModel):
             if alignment_score.overall_score < THRESHOLD[-1] - 0.3:
                 continue
 
-            self.alignment_scores[main_paragraph] = AlignmentScore(
+            self._alignment_scores[main_paragraph] = AlignmentScore(
                 main_paragraph=main_paragraph, other_paragraph=paragraph, score=alignment_score.overall_score
             )
 
             aligned_paragraphs[idx] = paragraph
 
     def assign_unmatch_paragraphs(self):
-        inverse_alignment_scores = {score.other_paragraph: score for score in self.alignment_scores.values()}
+        inverse_alignment_scores = {score.other_paragraph: score for score in self._alignment_scores.values()}
         for idx, paragraph_to_be_merged in enumerate(self.paragraphs):
             if paragraph_to_be_merged in inverse_alignment_scores:
                 continue
@@ -173,9 +173,9 @@ class ParagraphsFromLanguage(BaseModel):
                 paragraph_to_be_merged.merge(next_paragraph)
 
     def should_merge_paragraphs(self, main_paragraph: ParagraphFeatures, merged_paragraph: ParagraphFeatures) -> bool:
-        if main_paragraph not in self.alignment_scores:
+        if main_paragraph not in self._alignment_scores:
             return False
 
-        previous_score = self.alignment_scores[main_paragraph].score
+        previous_score = self._alignment_scores[main_paragraph].score
         match_score = ParagraphMatchScore.from_paragraphs_features(main_paragraph, merged_paragraph)
         return previous_score <= match_score.overall_score
