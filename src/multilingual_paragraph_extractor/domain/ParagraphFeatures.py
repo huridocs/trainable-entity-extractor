@@ -16,7 +16,7 @@ class ParagraphFeatures(BaseModel):
     page_width: int = 0
     paragraph_type: TokenType = TokenType.TEXT
     page_number: int = 1
-    bounding_box: Rectangle = Rectangle(0, 0, 0, 0)
+    bounding_box: Rectangle = Rectangle.from_coordinates(0, 0, 0, 0)
     text_cleaned: str = ""
     original_text: str = ""
     words: list[str] = []

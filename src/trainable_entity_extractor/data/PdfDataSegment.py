@@ -64,8 +64,8 @@ class PdfDataSegment:
 
     @staticmethod
     def from_texts(texts: list[str]):
-        return [PdfDataSegment(i + 1, Rectangle(0, 0, 0, 0), text) for i, text in enumerate(texts)]
+        return [PdfDataSegment(i + 1, Rectangle.from_coordinates(0, 0, 0, 0), text) for i, text in enumerate(texts)]
 
     @staticmethod
     def from_text(text: str):
-        return PdfDataSegment(0, Rectangle(0, 0, 0, 0), text)
+        return PdfDataSegment(0, Rectangle.from_coordinates(0, 0, 0, 0), text)
