@@ -50,6 +50,8 @@ def get_segmentation_data(pdf_path: Path):
         "-X",
         "POST",
         "-F",
+        "fast=false",
+        "-F",
         f"file=@{pdf_path}",
         "localhost:5060",
     ]
@@ -260,8 +262,8 @@ def get_algorithm_labels(filter_pdfs: list[str] = None):
 
 
 if __name__ == "__main__":
-    save_xmls()
+    # save_xmls()
     save_pdfs_data()
-    visualize_matching_scores()
-    visualize_alignment()
-    get_algorithm_labels()
+    # visualize_matching_scores()
+    # visualize_alignment()
+    # get_algorithm_labels()

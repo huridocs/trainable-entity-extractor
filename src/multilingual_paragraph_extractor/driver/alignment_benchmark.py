@@ -104,7 +104,7 @@ def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
 
 
 def get_alignment_benchmark():
-    predictions_labels = get_algorithm_labels(["ohchr_2"])
+    predictions_labels = get_algorithm_labels()
 
     results: list[AlignmentResult] = list()
     for prediction_labels in predictions_labels:
@@ -115,7 +115,7 @@ def get_alignment_benchmark():
         results.append(
             AlignmentResult(
                 name=prediction_labels.get_label_file_name().rsplit(".", 1)[0],
-                algorithm="base_6_Feb_2025",
+                algorithm="lightGBM_6_Feb_2025",
                 precision=precision,
                 recall=recall,
                 f1_score=f1_score,
