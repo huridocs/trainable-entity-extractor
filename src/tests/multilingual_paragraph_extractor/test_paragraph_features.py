@@ -103,3 +103,26 @@ class TestParagraphFeatures(TestCase):
         self.assertEqual(9, paragraph.font.font_size)
         self.assertEqual(False, paragraph.font.bold)
         self.assertEqual(False, paragraph.font.italics)
+
+    def test_super_index(self):
+        xml_path = Path(APP_PATH, "tests", "multilingual_paragraph_extractor", "resources", "test.xml")
+
+        with open(xml_path, "rb") as file:
+            xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
+            xml_file.save(file_content=file.read())
+
+        segmentation_data = SegmentationData(
+            page_width=612,
+            page_height=792,
+            xml_segments_boxes=[],
+            label_segments_boxes=[],
+        )
+        pdf_data = PdfData.from_xml_file(xml_file=xml_file, segmentation_data=segmentation_data)
+
+        pdf_data.pdf_data_segments[0].text_content = "³"
+        paragraph: ParagraphFeatures = ParagraphFeatures.from_pdf_data(
+            pdf_data=pdf_data, pdf_segment=pdf_data.pdf_data_segments[0]
+        )
+
+        self.assertEqual("³", paragraph.original_text)
+        self.assertEqual([], paragraph.numbers)

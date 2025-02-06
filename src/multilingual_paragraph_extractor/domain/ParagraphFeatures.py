@@ -38,7 +38,7 @@ class ParagraphFeatures(BaseModel):
         non_alphanumeric_characters = [x for x in pdf_segment.text_content if not x.isalnum() and x != " "]
         first_token = ParagraphFeatures.get_first_token(pdf_data, pdf_segment)
         words = pdf_segment.text_content.split()
-        numbers = ["".join([y for y in x if y.isnumeric()]) for x in words]
+        numbers = ["".join([y for y in x if y.isnumeric() and y.isascii()]) for x in words]
         numbers = [int(x) for x in numbers if x]
 
         return ParagraphFeatures(
@@ -48,7 +48,7 @@ class ParagraphFeatures(BaseModel):
             page_number=pdf_segment.page_number,
             bounding_box=pdf_segment.bounding_box,
             text_cleaned=" ".join(unidecode(pdf_segment.text_content).split()),
-            original_text=" ".join(pdf_segment.text_content),
+            original_text=" ".join(pdf_segment.text_content.split()),
             paragraph_type=pdf_segment.segment_type,
             words=words,
             numbers=numbers,

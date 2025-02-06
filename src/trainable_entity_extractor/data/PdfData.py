@@ -75,7 +75,7 @@ class PdfData:
     @staticmethod
     def from_xml_file(xml_file: XmlFile, segmentation_data: SegmentationData, pages_to_keep: list[int] = None) -> "PdfData":
         try:
-            file_content: str = open(xml_file.xml_file_path).read()
+            file_content: str = open(xml_file.xml_file_path, encoding="utf-8").read()
         except FileNotFoundError:
             return PdfData.get_blank()
 
