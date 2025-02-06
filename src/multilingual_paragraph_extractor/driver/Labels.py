@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 
+from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScore
+from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
+
 
 class LanguagesTexts(BaseModel):
     main_language: str
@@ -14,11 +17,34 @@ class Labels(BaseModel):
     other_language: str
     main_xml_name: str
     other_xml_name: str
-    paragraphs: list[LanguagesTexts]
+    paragraphs: list[LanguagesTexts] = []
+    _seconds: float = 0
+    _alignment_scores: list[AlignmentScore] = []
 
-    def add_paragraph(self, main_text: str, other_text: str):
-        self.paragraphs.append(LanguagesTexts(main_language=main_text, other_language=other_text))
+    def get_seconds(self) -> float:
+        return self._seconds
+
+    def add_seconds(self, seconds: float):
+        self._seconds = seconds
+
+    def get_alignment_scores(self) -> list[AlignmentScore]:
+        return self._alignment_scores
+
+    def add_paragraph(self, alignment_score: AlignmentScore):
+        texts = LanguagesTexts(
+            main_language=alignment_score.main_paragraph.original_text,
+            other_language=alignment_score.other_paragraph.original_text,
+        )
+        self.paragraphs.append(texts)
+        self._alignment_scores.append(alignment_score)
 
     def get_label_file_name(self) -> str:
         base_name = self.main_xml_name.rsplit("_", 1)[0]
         return f"{base_name}_{self.main_language}_{self.other_language}.json"
+
+    def get_main_pdf_name(self) -> str:
+        return self.main_xml_name.replace(".xml", ".pdf")
+
+    def get_mistakes_pdf_name(self) -> str:
+        base_name = self.main_xml_name.rsplit("_", 1)[0]
+        return f"{base_name}_{self.main_language}_{self.other_language}_mistakes.pdf"

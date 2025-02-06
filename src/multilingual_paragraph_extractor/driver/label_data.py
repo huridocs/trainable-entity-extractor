@@ -171,7 +171,7 @@ def annotate_pdf(pdf_name: str, output_name: str, paragraphs: list[ParagraphFeat
             Appearance(content=content, font_size=8, fill=(1, 1, 1), stroke_width=3),
         )
 
-    output_pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, output_name + ".pdf")
+    output_pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, "alignment", output_name + ".pdf")
     annotator.write(output_pdf_path)
 
 
@@ -227,39 +227,41 @@ def visualize_alignment():
         annotate_pdf(input_name, output_name, main_paragraphs.paragraphs, contents)
 
 
-def get_algorithm_labels():
+def get_algorithm_labels(filter_pdfs: list[str] = None):
     labels_list: list[Labels] = list()
-    times = list()
+
     for pdf_name, main_paragraphs, other_paragraphs in loop_combinations():
+        if filter_pdfs and pdf_name not in filter_pdfs:
+            continue
         label_file_name = pdf_name + "_" + main_paragraphs.language + "_" + other_paragraphs.language + ".json"
         output_path = Path(PARAGRAPH_EXTRACTION_PATH, "labels", label_file_name)
 
         start = time()
         MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])
-        times.append(round(time() - start, 2))
         label = Labels(
             main_language=main_paragraphs.language,
             other_language=other_paragraphs.language,
             main_xml_name=pdf_name + "_" + main_paragraphs.language + ".xml",
             other_xml_name=pdf_name + "_" + other_paragraphs.language + ".xml",
-            paragraphs=[],
         )
+        label.add_seconds(round(time() - start, 2))
         contents = list()
         for paragraph in main_paragraphs.paragraphs:
             if paragraph not in other_paragraphs._alignment_scores:
                 contents.append("NO TRANSLATION")
                 continue
             alignment_score = other_paragraphs._alignment_scores[paragraph]
-            label.add_paragraph(paragraph.original_text, alignment_score.other_paragraph.original_text)
+            label.add_paragraph(alignment_score)
 
         labels_list.append(label)
         output_path.write_text(json.dumps(label.model_dump(), indent=4, ensure_ascii=False), encoding="utf-8")
-    return labels_list, times
+
+    return labels_list
 
 
 if __name__ == "__main__":
     save_xmls()
     save_pdfs_data()
-    # visualize_matching_scores()
-    # visualize_alignment()
-    # get_algorithm_labels()
+    visualize_matching_scores()
+    visualize_alignment()
+    get_algorithm_labels()
