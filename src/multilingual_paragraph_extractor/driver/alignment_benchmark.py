@@ -91,8 +91,6 @@ def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
         else:
             print()
             print(f"Prediction not in truth")
-            print(alignment_score.main_paragraph.original_text)
-            print(alignment_score.other_paragraph.original_text)
             color = "#F15628"
             fix_labels(truth_labels, alignment_score)
 
@@ -146,7 +144,7 @@ def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
 
 
 def get_alignment_benchmark(model_name: str, show_mistakes: bool = True):
-    predictions_labels = get_algorithm_labels(["cejil_1"])
+    predictions_labels = get_algorithm_labels(["ihrda_2"])
 
     results: list[AlignmentResult] = list()
     for prediction_labels in predictions_labels:
