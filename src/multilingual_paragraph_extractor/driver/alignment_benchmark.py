@@ -53,7 +53,16 @@ def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
     for prediction_paragraph, alignment_score in zip(prediction_labels.paragraphs, prediction_labels.get_alignment_scores()):
         text = str(int(100 * alignment_score.score)) + "% "
         text += " ".join([x for x in alignment_score.other_paragraph.text_cleaned.split()][:3])
-        color = "#008B8B" if prediction_paragraph in truth_labels.paragraphs else "#F15628"
+
+        if prediction_paragraph in truth_labels.paragraphs:
+            color = "#008B8B"
+        else:
+            print()
+            print(f"Prediction not in truth")
+            print(alignment_score.main_paragraph.original_text)
+            print(alignment_score.other_paragraph.original_text)
+            color = "#F15628"
+
         add_annotation(annotator, alignment_score.main_paragraph, text, color)
 
     if not output_pdf_path.parent.exists():
@@ -104,15 +113,14 @@ def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
 
 
 def get_alignment_benchmark(model_name: str, show_mistakes: bool = True):
-    predictions_labels = get_algorithm_labels()
+    predictions_labels = get_algorithm_labels(["cejil_1"])
 
     results: list[AlignmentResult] = list()
     for prediction_labels in predictions_labels:
         json_labels = json.loads(Path(LABELED_DATA_PATH, "labels", prediction_labels.get_label_file_name()).read_text())
         truth_labels = Labels(**json_labels)
         precision, recall, f1_score = get_f1_score(truth_labels, prediction_labels)
-        if show_mistakes:
-            save_mistakes(truth_labels, prediction_labels)
+
         results.append(
             AlignmentResult(
                 name=prediction_labels.get_label_file_name().rsplit(".", 1)[0],
@@ -124,6 +132,10 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True):
                 seconds=prediction_labels.get_seconds(),
             )
         )
+
+        if show_mistakes:
+            save_mistakes(truth_labels, prediction_labels)
+
     results.append(get_average(results))
     markdown = markdown_table([x.model_dump() for x in results]).set_params(padding_width=5).get_markdown()
     print(markdown)
@@ -131,4 +143,5 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True):
 
 if __name__ == "__main__":
     model_name = "vgt_base"
-    get_alignment_benchmark(model_name, True)
+    show_mistakes = True
+    get_alignment_benchmark(model_name, show_mistakes)

@@ -27,8 +27,14 @@ class ParagraphFeatures(BaseModel):
     font: Optional[PdfFont] = None
     __hash__ = object.__hash__
 
-    class Config:
-        arbitrary_types_allowed = True
+    def merge(self, paragraph_features: "ParagraphFeatures") -> "ParagraphFeatures":
+        self.text_cleaned += " " + paragraph_features.text_cleaned
+        self.original_text += " " + paragraph_features.original_text
+        self.words += paragraph_features.words
+        self.numbers += paragraph_features.numbers
+        self.numbers_by_spaces += paragraph_features.numbers_by_spaces
+        self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
+        return self
 
     @staticmethod
     def get_empty():
@@ -121,10 +127,3 @@ class ParagraphFeatures(BaseModel):
             )
         return paragraphs_features
 
-    def merge(self, paragraph_features: "ParagraphFeatures") -> "ParagraphFeatures":
-        self.text_cleaned += " " + paragraph_features.text_cleaned
-        self.words += paragraph_features.words
-        self.numbers_by_spaces += paragraph_features.numbers_by_spaces
-        self.numbers += paragraph_features.numbers
-        self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
-        return self
