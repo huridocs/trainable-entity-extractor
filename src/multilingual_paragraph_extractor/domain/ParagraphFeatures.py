@@ -126,4 +126,3 @@ class ParagraphFeatures(BaseModel):
                 )
             )
         return paragraphs_features
-

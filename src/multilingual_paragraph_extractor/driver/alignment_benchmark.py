@@ -3,8 +3,10 @@ from pathlib import Path
 
 from pdf_annotate import PdfAnnotator, Location, Appearance
 from py_markdown_table.markdown_table import markdown_table
+from rapidfuzz import fuzz
 from visualization.save_output_to_pdf import hex_color_to_rgb
 
+from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScore
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from multilingual_paragraph_extractor.driver.AlignmentResult import AlignmentResult
 from multilingual_paragraph_extractor.driver.Labels import Labels
@@ -44,6 +46,36 @@ def add_annotation(annotator: PdfAnnotator, paragraph_features: ParagraphFeature
     )
 
 
+def print_with_breaks(text: str, words_per_line: int = 20) -> str:
+    words = text.split()
+    lines = [" ".join(words[i : i + words_per_line]) for i in range(0, len(words), words_per_line)]
+    return "\n".join(lines)
+
+
+def fix_labels(truth_labels: Labels, alignment_score: AlignmentScore):
+    for truth_paragraph in truth_labels.paragraphs:
+        fuzz_ratio_main = round(fuzz.ratio(alignment_score.main_paragraph.original_text, truth_paragraph.main_language))
+        fuzz_ratio_other = round(fuzz.ratio(alignment_score.other_paragraph.original_text, truth_paragraph.other_language))
+        if fuzz_ratio_main > 95 or fuzz_ratio_other > 95:
+            base_file_name = truth_labels.main_xml_name.rsplit("_", 1)[0]
+            main_json_file_name = base_file_name + "_" + truth_labels.main_language
+            main_json_file_name += "_" + truth_labels.other_language + ".json"
+            other_json_file_name = base_file_name + "_" + truth_labels.other_language
+            other_json_file_name += "_" + truth_labels.main_language + ".json"
+            print(f"\nFOR MAIN DOCUMENT: ({main_json_file_name})")
+            print(f'\033[95m"main_language": "{alignment_score.main_paragraph.original_text}",\033[0m')
+            print(f'\033[92m"other_language": "{alignment_score.other_paragraph.original_text}"\033[0m\n')
+
+            print(f"\nFOR OTHER DOCUMENT: ({other_json_file_name})")
+            print(f'\033[94m"main_language": "{alignment_score.other_paragraph.original_text}",\033[0m')
+            print(f'\033[91m"other_language": "{alignment_score.main_paragraph.original_text}"\033[0m\n')
+
+            print("\033[95m" + print_with_breaks(alignment_score.main_paragraph.original_text) + "\033[0m")
+            print("\033[92m" + print_with_breaks(alignment_score.other_paragraph.original_text) + "\033[0m\n")
+
+    print("*" * 30)
+
+
 def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
     pdf_path = Path(LABELED_DATA_PATH, "pdfs", truth_labels.get_main_pdf_name())
     output_pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, "mistakes", truth_labels.get_mistakes_pdf_name())
@@ -62,6 +94,7 @@ def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
             print(alignment_score.main_paragraph.original_text)
             print(alignment_score.other_paragraph.original_text)
             color = "#F15628"
+            fix_labels(truth_labels, alignment_score)
 
         add_annotation(annotator, alignment_score.main_paragraph, text, color)
 
