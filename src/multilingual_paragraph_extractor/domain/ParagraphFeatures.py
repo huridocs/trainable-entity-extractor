@@ -21,6 +21,7 @@ class ParagraphFeatures(BaseModel):
     original_text: str = ""
     words: list[str] = []
     numbers: list[int] = []
+    numbers_by_spaces: list[int] = []
     non_alphanumeric_characters: list[str] = []
     first_word: Optional[str] = None
     font: Optional[PdfFont] = None
@@ -34,12 +35,41 @@ class ParagraphFeatures(BaseModel):
         return ParagraphFeatures()
 
     @staticmethod
+    def get_numbers(words):
+        numbers_and_spaces_list = ["".join([y if y.isnumeric() and y.isascii() else " " for y in x]) for x in words]
+        numbers_by_spaces = []
+        for numbers_and_spaces in numbers_and_spaces_list:
+            if not numbers_and_spaces:
+                continue
+            numbers_by_spaces.extend([int(x) for x in numbers_and_spaces.split() if x])
+
+        merged_number_words = []
+        for idx, word in enumerate(words):
+            if not merged_number_words:
+                merged_number_words.append(word)
+                continue
+
+            if not word.isnumeric():
+                merged_number_words.append(word)
+                continue
+
+            if merged_number_words[-1].isnumeric() and word.isnumeric():
+                merged_number_words[-1] += word
+                continue
+
+            merged_number_words.append(word)
+
+        numbers = ["".join([y for y in x if y.isnumeric() and y.isascii()]) for x in merged_number_words]
+        numbers = [int(x) for x in numbers if x]
+
+        return numbers_by_spaces, numbers
+
+    @staticmethod
     def from_pdf_data(pdf_data: PdfData, pdf_segment: PdfDataSegment) -> "ParagraphFeatures":
         non_alphanumeric_characters = [x for x in pdf_segment.text_content if not x.isalnum() and x != " "]
         first_token = ParagraphFeatures.get_first_token(pdf_data, pdf_segment)
         words = pdf_segment.text_content.split()
-        numbers = ["".join([y for y in x if y.isnumeric() and y.isascii()]) for x in words]
-        numbers = [int(x) for x in numbers if x]
+        numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
 
         return ParagraphFeatures(
             index=pdf_data.pdf_data_segments.index(pdf_segment),
@@ -52,6 +82,7 @@ class ParagraphFeatures(BaseModel):
             paragraph_type=pdf_segment.segment_type,
             words=words,
             numbers=numbers,
+            numbers_by_spaces=numbers_by_spaces,
             non_alphanumeric_characters=list(non_alphanumeric_characters),
             first_word=unidecode(pdf_segment.text_content.split()[0]) if pdf_segment.text_content else None,
             font=first_token.font if first_token else None,
@@ -74,8 +105,7 @@ class ParagraphFeatures(BaseModel):
         for text in texts:
             non_alphanumeric_characters = [x for x in text if not x.isalnum() and x != " "]
             words = text.split()
-            numbers = ["".join([y for y in x if y.isnumeric()]) for x in words]
-            numbers = [int(x) for x in numbers if x]
+            numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
             paragraphs_features.append(
                 ParagraphFeatures(
                     text_cleaned=text,
@@ -85,6 +115,7 @@ class ParagraphFeatures(BaseModel):
                     first_word=text.split()[0],
                     words=text.split(),
                     numbers=numbers,
+                    numbers_by_spaces=numbers_by_spaces,
                     non_alphanumeric_characters=list(non_alphanumeric_characters),
                 )
             )
@@ -93,6 +124,7 @@ class ParagraphFeatures(BaseModel):
     def merge(self, paragraph_features: "ParagraphFeatures") -> "ParagraphFeatures":
         self.text_cleaned += " " + paragraph_features.text_cleaned
         self.words += paragraph_features.words
+        self.numbers_by_spaces += paragraph_features.numbers_by_spaces
         self.numbers += paragraph_features.numbers
         self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
         return self

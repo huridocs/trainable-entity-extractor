@@ -57,7 +57,7 @@ class TestParagraphFeatures(TestCase):
 
         self.assertEqual(4, paragraph.index)
         self.assertEqual(7, len(paragraph.words))
-        self.assertEqual([15, 2021], paragraph.numbers)
+        self.assertEqual([15, 2021], paragraph.numbers_by_spaces)
         self.assertEqual([".", ":", ":"], paragraph.non_alphanumeric_characters)
         self.assertEqual("Distr.:", paragraph.first_word)
 
@@ -96,7 +96,7 @@ class TestParagraphFeatures(TestCase):
 
         self.assertEqual(80, paragraph.index)
         self.assertEqual(1, len(paragraph.words))
-        self.assertEqual([22], paragraph.numbers)
+        self.assertEqual([22], paragraph.numbers_by_spaces)
         self.assertEqual(["/"], paragraph.non_alphanumeric_characters)
         self.assertEqual("2/2", paragraph.first_word)
 
@@ -125,4 +125,9 @@ class TestParagraphFeatures(TestCase):
         )
 
         self.assertEqual("³", paragraph.original_text)
-        self.assertEqual([], paragraph.numbers)
+        self.assertEqual([], paragraph.numbers_by_spaces)
+
+    def test_get_numbers(self):
+        self.assertEqual(([15, 2021], [15, 2021]), ParagraphFeatures.get_numbers(["15", "February", "2021"]))
+        self.assertEqual(([15, 16, 2021], [15162021]), ParagraphFeatures.get_numbers(["15", "16", "2021"]))
+        self.assertEqual(([15, 16, 2021, 1], [1516, 20211]), ParagraphFeatures.get_numbers(["15", "16", "2021.1"]))

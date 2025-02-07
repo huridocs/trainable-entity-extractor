@@ -44,7 +44,7 @@ def add_annotation(annotator: PdfAnnotator, paragraph_features: ParagraphFeature
     )
 
 
-def show_mistakes(truth_labels: Labels, prediction_labels: Labels):
+def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
     pdf_path = Path(LABELED_DATA_PATH, "pdfs", truth_labels.get_main_pdf_name())
     output_pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, "mistakes", truth_labels.get_mistakes_pdf_name())
 
@@ -103,15 +103,16 @@ def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
     )
 
 
-def get_alignment_benchmark(model_name: str):
-    predictions_labels = get_algorithm_labels(["ihrda_2"])
+def get_alignment_benchmark(model_name: str, show_mistakes: bool = True):
+    predictions_labels = get_algorithm_labels()
 
     results: list[AlignmentResult] = list()
     for prediction_labels in predictions_labels:
         json_labels = json.loads(Path(LABELED_DATA_PATH, "labels", prediction_labels.get_label_file_name()).read_text())
         truth_labels = Labels(**json_labels)
         precision, recall, f1_score = get_f1_score(truth_labels, prediction_labels)
-        show_mistakes(truth_labels, prediction_labels)
+        if show_mistakes:
+            save_mistakes(truth_labels, prediction_labels)
         results.append(
             AlignmentResult(
                 name=prediction_labels.get_label_file_name().rsplit(".", 1)[0],
@@ -130,4 +131,4 @@ def get_alignment_benchmark(model_name: str):
 
 if __name__ == "__main__":
     model_name = "vgt_base"
-    get_alignment_benchmark(model_name)
+    get_alignment_benchmark(model_name, True)

@@ -35,6 +35,7 @@ class ParagraphsFromLanguage(BaseModel):
             TokenType.TEXT,
         ]
         self.paragraphs = [x for x in self.paragraphs if x.paragraph_type in text_content_types]
+        self.paragraphs = [x for x in self.paragraphs if any(char.isalnum() for char in x.text_cleaned)]
 
     def remove_headers_and_footers(self):
         types = [TokenType.FOOTNOTE, TokenType.PAGE_HEADER, TokenType.PAGE_FOOTER]

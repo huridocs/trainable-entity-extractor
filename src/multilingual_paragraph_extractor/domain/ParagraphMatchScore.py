@@ -87,11 +87,16 @@ class ParagraphMatchScore(BaseModel):
 
     @staticmethod
     def get_numbers_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
-        max_numbers = max(len(paragraph_1.numbers), len(paragraph_2.numbers))
-        if not max_numbers:
+        max_numbers = max(len(paragraph_1.numbers_by_spaces), len(paragraph_2.numbers_by_spaces))
+        numbers_length = max(len(paragraph_1.numbers), len(paragraph_2.numbers))
+
+        if not max_numbers or not numbers_length:
             return 1
 
-        return len([x for x in paragraph_1.numbers if x in paragraph_2.numbers]) / max_numbers
+        by_spaces_score = len([x for x in paragraph_1.numbers_by_spaces if x in paragraph_2.numbers_by_spaces]) / max_numbers
+        numbers_score = len([x for x in paragraph_1.numbers if x in paragraph_2.numbers]) / numbers_length
+
+        return max(by_spaces_score, numbers_score)
 
     @staticmethod
     def get_first_word_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:

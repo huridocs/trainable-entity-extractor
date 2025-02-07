@@ -105,7 +105,10 @@ def load_pdf_data(pdf_name: str) -> PdfData:
 
 def get_paragraphs(pdf_name: str):
     pdf_data = load_pdf_data(pdf_name)
-    paragraphs_features = [ParagraphFeatures.from_pdf_data(pdf_data, x) for x in pdf_data.pdf_data_segments]
+    paragraphs_features = []
+    for pdf_segment in pdf_data.pdf_data_segments:
+        paragraph_features = ParagraphFeatures.from_pdf_data(pdf_data=pdf_data, pdf_segment=pdf_segment)
+        paragraphs_features.append(paragraph_features)
     return paragraphs_features
 
 
