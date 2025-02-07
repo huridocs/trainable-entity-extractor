@@ -96,7 +96,8 @@ class TestParagraphFeatures(TestCase):
 
         self.assertEqual(80, paragraph.index)
         self.assertEqual(1, len(paragraph.words))
-        self.assertEqual([22], paragraph.numbers_by_spaces)
+        self.assertEqual([2, 2], paragraph.numbers_by_spaces)
+        self.assertEqual([22], paragraph.numbers)
         self.assertEqual(["/"], paragraph.non_alphanumeric_characters)
         self.assertEqual("2/2", paragraph.first_word)
 
