@@ -6,7 +6,6 @@ from pathlib import Path
 from time import time
 
 from pdf_annotate import Location, Appearance, PdfAnnotator
-from pdf_token_type_labels.TokenType import TokenType
 from visualization.save_output_to_pdf import hex_color_to_rgb
 
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
@@ -107,20 +106,10 @@ def load_pdf_data(pdf_name: str) -> PdfData:
 def get_paragraphs(pdf_name: str):
     pdf_data = load_pdf_data(pdf_name)
     paragraphs_features = [ParagraphFeatures.from_pdf_data(pdf_data, x) for x in pdf_data.pdf_data_segments]
-    text_content_types = [
-        TokenType.FORMULA,
-        TokenType.LIST_ITEM,
-        TokenType.TITLE,
-        TokenType.TEXT,
-        TokenType.SECTION_HEADER,
-        TokenType.TABLE,
-    ]
-    paragraphs_features = [x for x in paragraphs_features if x.paragraph_type in text_content_types]
     return paragraphs_features
 
 
-def loop_combinations() -> tuple[str, ParagraphsFromLanguage, ParagraphsFromLanguage]:
-
+def loop_combinations():
     pdf_languages: dict[str, set[str]] = {}
 
     for pdf_path in Path(LABELED_DATA_PATH, "pdfs").iterdir():
@@ -139,6 +128,7 @@ def loop_combinations() -> tuple[str, ParagraphsFromLanguage, ParagraphsFromLang
             other_paragraphs = ParagraphsFromLanguage(
                 language=other_language, paragraphs=get_paragraphs(f"{pdf_name}_{other_language}"), is_main_language=False
             )
+
             yield pdf_name, main_paragraphs, other_paragraphs
 
 

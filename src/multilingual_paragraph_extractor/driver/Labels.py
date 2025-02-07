@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
 from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScore
-from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 
 
 class LanguagesTexts(BaseModel):

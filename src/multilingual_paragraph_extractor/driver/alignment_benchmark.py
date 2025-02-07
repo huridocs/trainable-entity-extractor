@@ -87,7 +87,7 @@ def get_f1_score(truth_labels: Labels, prediction_labels: Labels):
 
 def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
     total_paragraphs = sum([x.total_paragraphs for x in alignment_results])
-    total_seconds = sum([x.seconds for x in alignment_results])
+    seconds = sum([x.seconds for x in alignment_results]) / len(alignment_results)
     total_precision = sum([x.precision for x in alignment_results])
     total_recall = sum([x.recall for x in alignment_results])
     total_f1_score = sum([x.f1_score for x in alignment_results])
@@ -99,12 +99,12 @@ def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
         recall=round(total_recall / len(alignment_results), 2),
         f1_score=round(total_f1_score / len(alignment_results), 2),
         total_paragraphs=total_paragraphs,
-        seconds=total_seconds,
+        seconds=round(seconds, 2),
     )
 
 
-def get_alignment_benchmark():
-    predictions_labels = get_algorithm_labels()
+def get_alignment_benchmark(model_name: str):
+    predictions_labels = get_algorithm_labels(["ihrda_2"])
 
     results: list[AlignmentResult] = list()
     for prediction_labels in predictions_labels:
@@ -115,7 +115,7 @@ def get_alignment_benchmark():
         results.append(
             AlignmentResult(
                 name=prediction_labels.get_label_file_name().rsplit(".", 1)[0],
-                algorithm="lightGBM_6_Feb_2025",
+                algorithm=model_name,
                 precision=precision,
                 recall=recall,
                 f1_score=f1_score,
@@ -129,4 +129,5 @@ def get_alignment_benchmark():
 
 
 if __name__ == "__main__":
-    get_alignment_benchmark()
+    model_name = "vgt_base"
+    get_alignment_benchmark(model_name)
