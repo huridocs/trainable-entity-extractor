@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from difflib import SequenceMatcher
 
+from pydantic import BaseModel
 from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScore
 
 
@@ -7,8 +8,57 @@ class LanguagesTexts(BaseModel):
     main_language: str
     other_language: str
 
+    @staticmethod
+    def get_bidirectional_differences(text_1: str, text_2) -> str:
+        matcher = SequenceMatcher(None, text_1, text_2)
+        differences = {"text_1_unique": [], "text_2_unique": []}
+
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == "replace":
+                differences["text_1_unique"].append(text_1[i1:i2])
+                differences["text_2_unique"].append(text_2[j1:j2])
+            elif tag == "delete":
+                differences["text_1_unique"].append(text_1[i1:i2])
+            elif tag == "insert":
+                differences["text_2_unique"].append(text_2[j1:j2])
+
+        return "".join(differences["text_1_unique"] + differences["text_2_unique"])
+
+    def are_similar_texts(self, text_1: str, text_2: str) -> bool:
+        if abs(len(text_1) - len(text_2)) > 4:
+            return False
+
+        differences = self.get_bidirectional_differences(text_1, text_2)
+        are_only_numbers = all([x.isnumeric() for x in differences])
+
+        if not are_only_numbers:
+            return False
+
+        if len(differences) > 4:
+            return False
+
+        if len(differences) > len(text_1) * 0.05:
+            return False
+
+        if len(differences) > len(text_2) * 0.05:
+            return False
+
+        return True
+
     def __eq__(self, other: "LanguagesTexts"):
-        return self.main_language == other.main_language and self.other_language == other.other_language
+        are_main_same = self.main_language == other.main_language
+        are_other_same = self.other_language == other.other_language
+
+        if are_main_same and are_other_same:
+            return True
+
+        are_main_similar = self.are_similar_texts(self.main_language, other.main_language)
+        are_other_similar = self.are_similar_texts(self.other_language, other.other_language)
+
+        if are_main_similar and are_other_similar:
+            return True
+
+        return False
 
 
 class Labels(BaseModel):
