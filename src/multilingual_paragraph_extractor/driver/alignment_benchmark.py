@@ -74,7 +74,7 @@ def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
     if not output_pdf_path.parent.exists():
         output_pdf_path.parent.mkdir(parents=True)
 
-    # annotator.write(output_pdf_path)
+    annotator.write(output_pdf_path)
 
 
 def get_scores(truth_labels: Labels, prediction_labels: Labels):

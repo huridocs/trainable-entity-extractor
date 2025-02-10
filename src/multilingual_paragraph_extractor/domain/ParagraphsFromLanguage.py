@@ -39,13 +39,20 @@ class ParagraphsFromLanguage(BaseModel):
 
         while index < len(self.paragraphs):
             paragraph = self.paragraphs[index]
-            if index + 1 < len(self.paragraphs) and paragraph.is_similar(self.paragraphs[index + 1]):
+
+            if index + 1 >= len(self.paragraphs):
+                fixed_paragraphs.append(paragraph)
+                index += 1
+                continue
+
+            if paragraph.is_similar(self.paragraphs[index + 1]):
                 merged_segment = paragraph.merge(self.paragraphs[index + 1])
                 fixed_paragraphs.append(merged_segment)
                 index += 2
-            else:
-                fixed_paragraphs.append(paragraph)
-                index += 1
+                continue
+
+            fixed_paragraphs.append(paragraph)
+            index += 1
 
         self.paragraphs = fixed_paragraphs
 

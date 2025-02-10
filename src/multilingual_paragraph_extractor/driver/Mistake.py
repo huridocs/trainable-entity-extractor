@@ -1,3 +1,5 @@
+import difflib
+
 from pydantic import BaseModel
 from rapidfuzz import fuzz
 
@@ -17,36 +19,43 @@ class Mistake(BaseModel):
         title += f"Score {round(self.alignment_score.score * 100, 2)}%"
         return title
 
-    def get_difference(self, text_1: str, text_2: str) -> str:
-        if text_1 == text_2:
-            return text_1[:75] + "..." + self.add_color(" ok", "92")
+    def get_difference(self, label: str, prediction: str) -> str:
+        if label == prediction:
+            return self.add_color("ok", "92") + " " + self.add_color(label[:70] + "...", "90")
 
-        correct_text = ""
-        longer_text = text_1 if len(text_1) > len(text_2) else text_2
-        shorter_text = text_1 if longer_text == text_2 else text_2
-        idx = 0
-        for char_1, char_2 in zip(longer_text, shorter_text):
-            if char_1 == char_2:
-                correct_text += char_1
-                idx += 1
-                continue
-            break
-        wrong_text = longer_text[idx:]
-        return self.add_break_lines(correct_text + self.add_color(wrong_text, "91"))
+        m = difflib.SequenceMatcher(a=label, b=prediction)
+
+        result = "\nLabel        :  "
+        result += self.add_color(self.add_break_lines(label), "90")
+        result += "\n\nPrediction   :  "
+        differences = ""
+        for tag, i1, i2, j1, j2 in m.get_opcodes():
+            if tag == "replace":
+                differences += self.add_color(label[i1:i2], "92")
+                differences += self.add_color(prediction[j1:j2], "91")
+            if tag == "delete":
+                differences += self.add_color(label[i1:i2], "92")
+            if tag == "insert":
+                differences += self.add_color(prediction[j1:j2], "91")
+            if tag == "equal":
+                differences += f"{label[i1:i2]}"
+        result += f"{self.add_break_lines(differences)}"
+        return result
 
     def __str__(self):
         languages_texts = self.get_label()
         print_text = f"\n{self.get_title()}\n\n"
 
         if languages_texts:
-            print_text += f"Main : "
+            print_text += f"Main language : "
             print_text += self.get_difference(
-                self.alignment_score.main_paragraph.original_text, languages_texts.main_language
+                languages_texts.main_language,
+                self.alignment_score.main_paragraph.original_text,
             )
-            print_text += "\n"
-            print_text += f"Other: "
+            print_text += "\n\n"
+            print_text += f"Other language: "
             print_text += self.get_difference(
-                self.alignment_score.other_paragraph.original_text, languages_texts.other_language
+                languages_texts.other_language, self.alignment_score.other_paragraph.original_text
             )
         else:
             print_text += "No label found\n\n"
