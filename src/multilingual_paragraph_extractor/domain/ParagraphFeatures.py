@@ -9,6 +9,18 @@ from unidecode import unidecode
 from trainable_entity_extractor.data.PdfData import PdfData
 from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
 
+TO_AVOID_BEING_MERGED = [
+    TokenType.FORMULA,
+    TokenType.FOOTNOTE,
+    TokenType.TABLE,
+    TokenType.PICTURE,
+    TokenType.TITLE,
+    TokenType.PAGE_HEADER,
+    TokenType.SECTION_HEADER,
+    TokenType.CAPTION,
+    TokenType.PAGE_FOOTER,
+]
+
 
 class ParagraphFeatures(BaseModel):
     index: int = 0
@@ -25,6 +37,7 @@ class ParagraphFeatures(BaseModel):
     non_alphanumeric_characters: list[str] = []
     first_word: Optional[str] = None
     font: Optional[PdfFont] = None
+    last_token_bounding_box: Optional[Rectangle] = None
     __hash__ = object.__hash__
 
     def merge(self, paragraph_features: "ParagraphFeatures") -> "ParagraphFeatures":
@@ -35,6 +48,30 @@ class ParagraphFeatures(BaseModel):
         self.numbers_by_spaces += paragraph_features.numbers_by_spaces
         self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
         return self
+
+    def is_similar(self, next_segment: "ParagraphFeatures") -> bool:
+        if self.page_number == next_segment.page_number:
+            return False
+
+        if int(self.page_number - next_segment.page_number) > 1:
+            return False
+
+        if self.paragraph_type in TO_AVOID_BEING_MERGED or next_segment.paragraph_type in TO_AVOID_BEING_MERGED:
+            return False
+
+        if self.text_cleaned[-1] in [".", "!", "?", ";"]:
+            return False
+
+        if not next_segment.text_cleaned[0].isalnum():
+            return False
+
+        if self.last_token_bounding_box.right < self.bounding_box.right - 0.1 * self.bounding_box.width:
+            return False
+
+        if self.last_token_bounding_box.right < self.page_width - 0.2 * self.page_width:
+            return False
+
+        return True
 
     @staticmethod
     def get_empty():
@@ -76,6 +113,13 @@ class ParagraphFeatures(BaseModel):
         first_token = ParagraphFeatures.get_first_token(pdf_data, pdf_segment)
         words = pdf_segment.text_content.split()
         numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
+        tokens = list()
+        for page, token in pdf_data.pdf_features.loop_tokens():
+            if token.page_number != pdf_segment.page_number:
+                continue
+
+            if pdf_segment.is_selected(token.bounding_box):
+                tokens.append(token)
 
         return ParagraphFeatures(
             index=pdf_data.pdf_data_segments.index(pdf_segment),
@@ -92,6 +136,7 @@ class ParagraphFeatures(BaseModel):
             non_alphanumeric_characters=list(non_alphanumeric_characters),
             first_word=unidecode(pdf_segment.text_content.split()[0]) if pdf_segment.text_content else None,
             font=first_token.font if first_token else None,
+            last_token_bounding_box=tokens[-1].bounding_box if tokens else None,
         )
 
     @staticmethod

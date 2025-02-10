@@ -3,13 +3,12 @@ from pathlib import Path
 
 from pdf_annotate import PdfAnnotator, Location, Appearance
 from py_markdown_table.markdown_table import markdown_table
-from rapidfuzz import fuzz
 from visualization.save_output_to_pdf import hex_color_to_rgb
 
-from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScore
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from multilingual_paragraph_extractor.driver.AlignmentResult import AlignmentResult
 from multilingual_paragraph_extractor.driver.Labels import Labels
+from multilingual_paragraph_extractor.driver.Mistake import Mistake
 from multilingual_paragraph_extractor.driver.label_data import (
     get_algorithm_labels,
     LABELED_DATA_PATH,
@@ -46,63 +45,39 @@ def add_annotation(annotator: PdfAnnotator, paragraph_features: ParagraphFeature
     )
 
 
-def print_with_breaks(text: str, words_per_line: int = 20) -> str:
-    words = text.split()
-    lines = [" ".join(words[i : i + words_per_line]) for i in range(0, len(words), words_per_line)]
-    return "\n".join(lines)
-
-
-def fix_labels(truth_labels: Labels, alignment_score: AlignmentScore):
-    for truth_paragraph in truth_labels.paragraphs:
-        fuzz_ratio_main = round(fuzz.ratio(alignment_score.main_paragraph.original_text, truth_paragraph.main_language))
-        fuzz_ratio_other = round(fuzz.ratio(alignment_score.other_paragraph.original_text, truth_paragraph.other_language))
-        if fuzz_ratio_main > 95 or fuzz_ratio_other > 95:
-            base_file_name = truth_labels.main_xml_name.rsplit("_", 1)[0]
-            main_json_file_name = base_file_name + "_" + truth_labels.main_language
-            main_json_file_name += "_" + truth_labels.other_language + ".json"
-            other_json_file_name = base_file_name + "_" + truth_labels.other_language
-            other_json_file_name += "_" + truth_labels.main_language + ".json"
-            print(f"\nFOR MAIN DOCUMENT: ({main_json_file_name})")
-            print(f'\033[95m"main_language": "{alignment_score.main_paragraph.original_text}",\033[0m')
-            print(f'\033[92m"other_language": "{alignment_score.other_paragraph.original_text}"\033[0m\n')
-
-            print(f"\nFOR OTHER DOCUMENT: ({other_json_file_name})")
-            print(f'\033[94m"main_language": "{alignment_score.other_paragraph.original_text}",\033[0m')
-            print(f'\033[91m"other_language": "{alignment_score.main_paragraph.original_text}"\033[0m\n')
-
-            print("\033[95m" + print_with_breaks(alignment_score.main_paragraph.original_text) + "\033[0m")
-            print("\033[92m" + print_with_breaks(alignment_score.other_paragraph.original_text) + "\033[0m\n")
-
-    print("*" * 30)
-
-
 def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
     pdf_path = Path(LABELED_DATA_PATH, "pdfs", truth_labels.get_main_pdf_name())
     output_pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, "mistakes", truth_labels.get_mistakes_pdf_name())
 
     annotator = PdfAnnotator(str(pdf_path))
-
+    mistake_number = 1
     for prediction_paragraph, alignment_score in zip(prediction_labels.paragraphs, prediction_labels.get_alignment_scores()):
         text = str(int(100 * alignment_score.score)) + "% "
         text += " ".join([x for x in alignment_score.other_paragraph.text_cleaned.split()][:3])
 
-        if prediction_paragraph in truth_labels.paragraphs:
-            color = "#008B8B"
-        else:
-            print()
-            print(f"Prediction not in truth")
+        is_mistake = True
+        for truth_paragraph in truth_labels.paragraphs:
+            if prediction_paragraph == truth_paragraph:
+                is_mistake = False
+                break
+
+        if is_mistake:
+            text = f"Mistake n{mistake_number}: " + text
             color = "#F15628"
-            fix_labels(truth_labels, alignment_score)
+            print(Mistake(mistake_number=mistake_number, truth_labels=truth_labels, alignment_score=alignment_score))
+            mistake_number += 1
+        else:
+            color = "#008B8B"
 
         add_annotation(annotator, alignment_score.main_paragraph, text, color)
 
     if not output_pdf_path.parent.exists():
         output_pdf_path.parent.mkdir(parents=True)
 
-    annotator.write(output_pdf_path)
+    # annotator.write(output_pdf_path)
 
 
-def get_f1_score(truth_labels: Labels, prediction_labels: Labels):
+def get_scores(truth_labels: Labels, prediction_labels: Labels):
     true_positive = 0
     false_positive = 0
     false_negative = 0
@@ -143,14 +118,14 @@ def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
     )
 
 
-def get_alignment_benchmark(model_name: str, show_mistakes: bool = True):
-    predictions_labels = get_algorithm_labels(["ihrda_2"])
+def get_alignment_benchmark(model_name: str, show_mistakes: bool = True, file_filter: list[str] = None):
+    predictions_labels = get_algorithm_labels(file_filter)
 
     results: list[AlignmentResult] = list()
     for prediction_labels in predictions_labels:
         json_labels = json.loads(Path(LABELED_DATA_PATH, "labels", prediction_labels.get_label_file_name()).read_text())
         truth_labels = Labels(**json_labels)
-        precision, recall, f1_score = get_f1_score(truth_labels, prediction_labels)
+        precision, recall, f1_score = get_scores(truth_labels, prediction_labels)
 
         results.append(
             AlignmentResult(
@@ -175,4 +150,5 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True):
 if __name__ == "__main__":
     model_name = "vgt_base"
     show_mistakes = True
-    get_alignment_benchmark(model_name, show_mistakes)
+    file_filter = ["ihrda_2_fr_en"]
+    get_alignment_benchmark(model_name, show_mistakes, file_filter)

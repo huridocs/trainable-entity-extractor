@@ -222,14 +222,17 @@ def visualize_alignment():
         annotate_pdf(input_name, output_name, main_paragraphs.paragraphs, contents)
 
 
-def get_algorithm_labels(filter_pdfs: list[str] = None):
+def get_algorithm_labels(file_filter: list[str] = None):
     labels_list: list[Labels] = list()
 
     for pdf_name, main_paragraphs, other_paragraphs in loop_combinations():
-        if filter_pdfs and pdf_name not in filter_pdfs:
+
+        base_json_name = pdf_name + "_" + main_paragraphs.language + "_" + other_paragraphs.language
+
+        if file_filter and base_json_name not in file_filter:
             continue
-        label_file_name = pdf_name + "_" + main_paragraphs.language + "_" + other_paragraphs.language + ".json"
-        output_path = Path(PARAGRAPH_EXTRACTION_PATH, "labels", label_file_name)
+
+        output_path = Path(PARAGRAPH_EXTRACTION_PATH, "labels", base_json_name + ".json")
 
         start = time()
         MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])

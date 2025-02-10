@@ -7,17 +7,6 @@ from multilingual_paragraph_extractor.domain.ParagraphMatchScore import Paragrap
 
 BLOCK_SIZE = 20
 THRESHOLD = [0.9, 0.86, 0.82, 0.78]
-TO_AVOID_BEING_MERGED = [
-    TokenType.FORMULA,
-    TokenType.FOOTNOTE,
-    TokenType.TABLE,
-    TokenType.PICTURE,
-    TokenType.TITLE,
-    TokenType.PAGE_HEADER,
-    TokenType.SECTION_HEADER,
-    TokenType.CAPTION,
-    TokenType.PAGE_FOOTER,
-]
 
 
 class ParagraphsFromLanguage(BaseModel):
@@ -35,6 +24,9 @@ class ParagraphsFromLanguage(BaseModel):
             TokenType.TEXT,
         ]
         self.paragraphs = [x for x in self.paragraphs if x.paragraph_type in text_content_types]
+
+    def remove_no_text_paragraphs(self):
+        self.paragraphs = [x for x in self.paragraphs if x.text_cleaned]
         self.paragraphs = [x for x in self.paragraphs if any(char.isalnum() for char in x.text_cleaned)]
 
     def remove_headers_and_footers(self):
@@ -47,7 +39,7 @@ class ParagraphsFromLanguage(BaseModel):
 
         while index < len(self.paragraphs):
             paragraph = self.paragraphs[index]
-            if index + 1 < len(self.paragraphs) and self.are_same_paragraph(paragraph, self.paragraphs[index + 1]):
+            if index + 1 < len(self.paragraphs) and paragraph.is_similar(self.paragraphs[index + 1]):
                 merged_segment = paragraph.merge(self.paragraphs[index + 1])
                 fixed_paragraphs.append(merged_segment)
                 index += 2
@@ -56,25 +48,6 @@ class ParagraphsFromLanguage(BaseModel):
                 index += 1
 
         self.paragraphs = fixed_paragraphs
-
-    @staticmethod
-    def are_same_paragraph(segment: ParagraphFeatures, next_segment: ParagraphFeatures) -> bool:
-        if segment.page_number == next_segment.page_number:
-            return False
-
-        if int(segment.page_number - next_segment.page_number) > 1:
-            return False
-
-        if segment.paragraph_type in TO_AVOID_BEING_MERGED or next_segment.paragraph_type in TO_AVOID_BEING_MERGED:
-            return False
-
-        if segment.text_cleaned[-1] in [".", "!", "?", ";"]:
-            return False
-
-        if not next_segment.text_cleaned[0].isalnum():
-            return False
-
-        return True
 
     def set_alignment_scores(self, main_paragraphs: list[ParagraphFeatures]):
         unmatched_1 = set(range(len(main_paragraphs)))

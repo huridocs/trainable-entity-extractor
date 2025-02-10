@@ -46,19 +46,16 @@ class LanguagesTexts(BaseModel):
         return True
 
     def __eq__(self, other: "LanguagesTexts"):
-        are_main_same = self.main_language == other.main_language
-        are_other_same = self.other_language == other.other_language
-
-        if are_main_same and are_other_same:
+        if self.main_language == other.main_language and self.other_language == other.other_language:
             return True
 
-        are_main_similar = self.are_similar_texts(self.main_language, other.main_language)
-        are_other_similar = self.are_similar_texts(self.other_language, other.other_language)
+        if not self.are_similar_texts(self.main_language, other.main_language):
+            return False
 
-        if are_main_similar and are_other_similar:
-            return True
+        if not self.are_similar_texts(self.other_language, other.other_language):
+            return False
 
-        return False
+        return True
 
 
 class Labels(BaseModel):
