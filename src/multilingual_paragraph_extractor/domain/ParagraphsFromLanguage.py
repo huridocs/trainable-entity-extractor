@@ -139,24 +139,27 @@ class ParagraphsFromLanguage(BaseModel):
             previous_paragraph = self.paragraphs[idx - 1] if idx > 0 else None
             if previous_paragraph in inverse_alignment_scores:
                 main_to_receive = inverse_alignment_scores[previous_paragraph].main_paragraph
-                merged_paragraph = previous_paragraph.model_copy().merge(paragraph_to_be_merged)
-                if self.should_merge_paragraphs(main_to_receive, merged_paragraph):
+                if self.should_merge_paragraphs(main_to_receive, previous_paragraph, paragraph_to_be_merged):
                     previous_paragraph.merge(paragraph_to_be_merged)
                     continue
 
             next_paragraph = self.paragraphs[idx + 1] if idx + 1 < len(self.paragraphs) else None
             if next_paragraph not in inverse_alignment_scores:
                 continue
-
             main_to_receive = inverse_alignment_scores[next_paragraph].main_paragraph
-            merged_paragraph = paragraph_to_be_merged.model_copy().merge(next_paragraph)
-            if self.should_merge_paragraphs(main_to_receive, merged_paragraph):
+            if self.should_merge_paragraphs(main_to_receive, paragraph_to_be_merged, next_paragraph):
                 paragraph_to_be_merged.merge(next_paragraph)
 
-    def should_merge_paragraphs(self, main_paragraph: ParagraphFeatures, merged_paragraph: ParagraphFeatures) -> bool:
+    def should_merge_paragraphs(
+        self, main_paragraph: ParagraphFeatures, previous_paragraph: ParagraphFeatures, next_paragraph: ParagraphFeatures
+    ) -> bool:
         if main_paragraph not in self._alignment_scores:
             return False
 
+        if previous_paragraph.get_distance(next_paragraph) > 0:
+            return False
+
+        merged_paragraph = previous_paragraph.model_copy().merge(next_paragraph)
         previous_score = self._alignment_scores[main_paragraph].score
         match_score = ParagraphMatchScore.from_paragraphs_features(main_paragraph, merged_paragraph)
         return previous_score <= match_score.overall_score

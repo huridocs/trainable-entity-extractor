@@ -37,6 +37,7 @@ class ParagraphFeatures(BaseModel):
     non_alphanumeric_characters: list[str] = []
     first_word: Optional[str] = None
     font: Optional[PdfFont] = None
+    first_token_bounding_box: Optional[Rectangle] = None
     last_token_bounding_box: Optional[Rectangle] = None
     __hash__ = object.__hash__
 
@@ -136,6 +137,7 @@ class ParagraphFeatures(BaseModel):
             non_alphanumeric_characters=list(non_alphanumeric_characters),
             first_word=unidecode(pdf_segment.text_content.split()[0]) if pdf_segment.text_content else None,
             font=first_token.font if first_token else None,
+            first_token_bounding_box=tokens[0].bounding_box if tokens else None,
             last_token_bounding_box=tokens[-1].bounding_box if tokens else None,
         )
 
@@ -171,3 +173,9 @@ class ParagraphFeatures(BaseModel):
                 )
             )
         return paragraphs_features
+
+    def get_distance(self, next_paragraph: "ParagraphFeatures") -> float:
+        if self.page_number != next_paragraph.page_number:
+            return 0
+
+        return (next_paragraph.first_token_bounding_box.top - self.last_token_bounding_box.bottom) / self.page_height
