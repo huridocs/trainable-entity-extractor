@@ -5,7 +5,7 @@ from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScor
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from multilingual_paragraph_extractor.domain.ParagraphMatchScore import ParagraphMatchScore
 
-BLOCK_SIZE = 20
+BLOCK_SIZE = 10
 THRESHOLD = [0.9, 0.86, 0.82, 0.78]
 
 
@@ -60,18 +60,37 @@ class ParagraphsFromLanguage(BaseModel):
         unmatched_1 = set(range(len(main_paragraphs)))
         unmatched_2 = set(range(len(self.paragraphs)))
 
+        indexes_matching: dict[int, int] = dict()
+        scores: dict[(ParagraphFeatures, ParagraphFeatures), float] = dict()
+
         for threshold in THRESHOLD:
+            last_idx2_inserted = 0
+            threshold_block_size = BLOCK_SIZE
+
             for idx1 in list(unmatched_1):
-                start_j = max(0, idx1 - BLOCK_SIZE)
-                end_j = min(len(self.paragraphs), idx1 + BLOCK_SIZE)
+                if idx1 - 1 in indexes_matching:
+                    last_idx2_inserted = indexes_matching[idx1 - 1]
+                start_j = max(0, last_idx2_inserted - threshold_block_size)
+                end_j = min(len(self.paragraphs), last_idx2_inserted + threshold_block_size)
                 current_block2 = list(unmatched_2 & set(range(start_j, end_j)))
+
+                after_indexes = sorted([x for x in current_block2 if x > last_idx2_inserted])
+                before_indexes = sorted([x for x in current_block2 if x not in after_indexes], reverse=True)
+                current_block2 = after_indexes + before_indexes
 
                 best_match = None
                 best_score = threshold
 
                 for idx2 in current_block2:
-                    match_score = ParagraphMatchScore.from_paragraphs_features(main_paragraphs[idx1], self.paragraphs[idx2])
-                    score = match_score.overall_score
+                    if (main_paragraphs[idx1], self.paragraphs[idx2]) in scores:
+                        score = scores[(main_paragraphs[idx1], self.paragraphs[idx2])]
+                    else:
+                        match = ParagraphMatchScore.from_paragraphs_features(main_paragraphs[idx1], self.paragraphs[idx2])
+                        score = match.overall_score
+                        scores[(main_paragraphs[idx1], self.paragraphs[idx2])] = score
+
+                    main_first_word = main_paragraphs[idx1].first_word
+                    other_first_word = self.paragraphs[idx2].first_word
                     if score > best_score:
                         best_score = score
                         best_match = idx2
@@ -79,12 +98,16 @@ class ParagraphsFromLanguage(BaseModel):
                             break
 
                 if best_match is not None:
+                    last_idx2_inserted = best_match
+                    indexes_matching[idx1] = best_match
                     alignment_score = AlignmentScore(
                         main_paragraph=main_paragraphs[idx1], other_paragraph=self.paragraphs[best_match], score=best_score
                     )
                     self._alignment_scores[main_paragraphs[idx1]] = alignment_score
                     unmatched_2.remove(best_match)
                     unmatched_1.remove(idx1)
+                else:
+                    last_idx2_inserted += 1
 
     def align(self, main_language: "ParagraphsFromLanguage"):
         self.set_alignment_scores(main_language.paragraphs)
