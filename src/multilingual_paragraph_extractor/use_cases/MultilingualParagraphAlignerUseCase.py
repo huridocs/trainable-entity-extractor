@@ -1,3 +1,5 @@
+from pdf_token_type_labels.TokenType import TokenType
+
 from multilingual_paragraph_extractor.domain.ParagraphsFromLanguage import ParagraphsFromLanguage
 from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
 
@@ -12,14 +14,24 @@ class MultilingualParagraphAlignerUseCase:
 
         for paragraphs_from_language in paragraphs_from_languages:
             paragraphs_from_language.remove_no_text_paragraphs()
-            paragraphs_from_language.remove_headers_and_footers()
             paragraphs_from_language.merge_paragraphs_spanning_two_pages()
-            paragraphs_from_language.remove_no_text_types()
 
         main_language, other_languages = self.get_main_and_other_languages(paragraphs_from_languages)
 
         for other_language_paragraphs in other_languages:
             other_language_paragraphs.align(main_language)
+
+        self.remove_no_text_paragraphs(paragraphs_from_languages)
+
+    @staticmethod
+    def remove_no_text_paragraphs(paragraphs_from_languages: list[ParagraphsFromLanguage]):
+        number_of_paragraphs = len(paragraphs_from_languages[0].paragraphs)
+        for idx in reversed(range(number_of_paragraphs)):
+            types = [x.paragraphs[idx].paragraph_type for x in paragraphs_from_languages]
+            if [x for x in types if x not in [TokenType.LIST_ITEM, TokenType.TEXT]]:
+                for paragraphs_from_language in paragraphs_from_languages:
+                    del paragraphs_from_language.paragraphs[idx]
+
 
     @staticmethod
     def get_main_and_other_languages(

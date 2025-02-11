@@ -50,7 +50,7 @@ class ParagraphFeatures(BaseModel):
         self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
         return self
 
-    def is_similar(self, next_segment: "ParagraphFeatures") -> bool:
+    def should_be_merged_with(self, next_segment: "ParagraphFeatures") -> bool:
         if self.page_number == next_segment.page_number:
             return False
 
