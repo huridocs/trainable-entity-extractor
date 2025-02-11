@@ -91,7 +91,7 @@ class Mistake(BaseModel):
         return "\n".join(lines)
 
     def get_label(self) -> LanguagesTexts:
-        best_ratio = 85
+        best_ratio = 75
         best_paragraph = None
 
         for truth_paragraph in self.truth_labels.paragraphs:

@@ -104,12 +104,12 @@ class ParagraphMatchScore(BaseModel):
 
     @staticmethod
     def get_first_word_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
-        return rapidfuzz.fuzz.ratio(paragraph_1.first_word, paragraph_2.first_word) / 100
+        longer_paragraph, shorter_paragraph = ParagraphMatchScore.get_sorted_paragraphs(paragraph_1, paragraph_2)
+        return rapidfuzz.fuzz.ratio(longer_paragraph.first_word, shorter_paragraph.first_word) / 100
 
     @staticmethod
     def get_special_characters_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
-        shorter_paragraph = paragraph_1 if len(paragraph_1.text_cleaned) < len(paragraph_2.text_cleaned) else paragraph_2
-        longer_paragraph = paragraph_2 if shorter_paragraph == paragraph_1 else paragraph_1
+        longer_paragraph, shorter_paragraph = ParagraphMatchScore.get_sorted_paragraphs(paragraph_1, paragraph_2)
         if longer_paragraph.non_alphanumeric_characters:
             same_special_characters = len(
                 [
@@ -123,6 +123,12 @@ class ParagraphMatchScore(BaseModel):
             return 0
         else:
             return 1
+
+    @staticmethod
+    def get_sorted_paragraphs(paragraph_1, paragraph_2):
+        longer_paragraph = paragraph_1 if len(paragraph_1.text_cleaned) > len(paragraph_2.text_cleaned) else paragraph_2
+        shorter_paragraph = paragraph_2 if longer_paragraph == paragraph_1 else paragraph_1
+        return longer_paragraph, shorter_paragraph
 
     @staticmethod
     def get_bounding_boxes_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
