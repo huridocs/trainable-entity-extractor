@@ -7,5 +7,6 @@ class AlignmentResult(BaseModel):
     precision: float
     recall: float
     f1_score: float
+    mistakes_number: int
     total_paragraphs: int
     seconds: float

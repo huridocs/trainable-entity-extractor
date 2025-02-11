@@ -1,4 +1,5 @@
 import difflib
+from typing import Optional
 
 from pydantic import BaseModel
 from rapidfuzz import fuzz
@@ -10,13 +11,15 @@ from multilingual_paragraph_extractor.driver.Labels import Labels, LanguagesText
 class Mistake(BaseModel):
     mistake_number: int
     truth_labels: Labels
-    alignment_score: AlignmentScore
+    alignment_score: Optional[AlignmentScore] = None
+    truth_paragraph: Optional[LanguagesTexts] = None
 
     def get_title(self) -> str:
         file = self.truth_labels.main_xml_name.rsplit(".", 1)[0]
         title = self.add_color(f"Mistake n{self.mistake_number}\n", "94")
-        title += f"{file}_{self.truth_labels.other_language} Page {self.alignment_score.main_paragraph.page_number}\n"
-        title += f"Score {round(self.alignment_score.score * 100, 2)}%"
+        if self.alignment_score:
+            title += f"{file}_{self.truth_labels.other_language} Page {self.alignment_score.main_paragraph.page_number}\n"
+            title += f"Score {round(self.alignment_score.score * 100, 2)}%"
         return title
 
     def get_difference(self, label: str, prediction: str) -> str:
@@ -28,6 +31,8 @@ class Mistake(BaseModel):
         result = "\nLabel        :  "
         result += self.add_color(self.add_break_lines(label), "90")
         result += "\n\nPrediction   :  "
+        result += self.add_color(prediction, "90")
+        result += "\n\nDifference   :  "
         differences = ""
         for tag, i1, i2, j1, j2 in m.get_opcodes():
             if tag == "replace":
@@ -43,7 +48,7 @@ class Mistake(BaseModel):
         return result
 
     def __str__(self):
-        languages_texts = self.get_label()
+        languages_texts = self.get_label() if self.alignment_score else None
         print_text = f"\n{self.get_title()}\n\n"
 
         if languages_texts:
@@ -55,10 +60,23 @@ class Mistake(BaseModel):
             print_text += "\n\n"
             print_text += f"Other language: "
             print_text += self.get_difference(
-                languages_texts.other_language, self.alignment_score.other_paragraph.original_text
+                languages_texts.other_language,
+                self.alignment_score.other_paragraph.original_text,
             )
+        elif self.truth_paragraph:
+            print_text += "No prediction for label\n"
+            print_text += f"Main language : "
+            print_text += self.add_break_lines(self.truth_paragraph.main_language)
+            print_text += "\n\n"
+            print_text += f"Other language: "
+            print_text += self.add_break_lines(self.truth_paragraph.other_language)
         else:
-            print_text += "No label found\n\n"
+            print_text += "No label for prediction\n"
+            print_text += f"Main language : "
+            print_text += self.add_break_lines(self.alignment_score.main_paragraph.original_text)
+            print_text += "\n\n"
+            print_text += f"Other language: "
+            print_text += self.add_break_lines(self.alignment_score.other_paragraph.original_text)
 
         return print_text
 
@@ -73,7 +91,7 @@ class Mistake(BaseModel):
         return "\n".join(lines)
 
     def get_label(self) -> LanguagesTexts:
-        best_ratio = 0
+        best_ratio = 85
         best_paragraph = None
 
         for truth_paragraph in self.truth_labels.paragraphs:

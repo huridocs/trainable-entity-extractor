@@ -71,6 +71,11 @@ def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
 
         add_annotation(annotator, alignment_score.main_paragraph, text, color)
 
+    for truth_paragraph in truth_labels.paragraphs:
+        if truth_paragraph not in prediction_labels.paragraphs:
+            print(Mistake(mistake_number=mistake_number, truth_labels=truth_labels, truth_paragraph=truth_paragraph))
+            mistake_number += 1
+
     if not output_pdf_path.parent.exists():
         output_pdf_path.parent.mkdir(parents=True)
 
@@ -97,7 +102,7 @@ def get_scores(truth_labels: Labels, prediction_labels: Labels):
 
     f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-    return round(100 * precision, 2), round(100 * recall, 2), round(100 * f1_score, 2)
+    return round(100 * precision, 2), round(100 * recall, 2), round(100 * f1_score, 2), false_negative + false_positive
 
 
 def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
@@ -113,6 +118,7 @@ def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
         precision=round(total_precision / len(alignment_results), 2),
         recall=round(total_recall / len(alignment_results), 2),
         f1_score=round(total_f1_score / len(alignment_results), 2),
+        mistakes_number=sum([x.mistakes_number for x in alignment_results]),
         total_paragraphs=total_paragraphs,
         seconds=round(seconds, 2),
     )
@@ -125,7 +131,7 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True, file_fi
     for prediction_labels in predictions_labels:
         json_labels = json.loads(Path(LABELED_DATA_PATH, "labels", prediction_labels.get_label_file_name()).read_text())
         truth_labels = Labels(**json_labels)
-        precision, recall, f1_score = get_scores(truth_labels, prediction_labels)
+        precision, recall, f1_score, mistakes_number = get_scores(truth_labels, prediction_labels)
 
         results.append(
             AlignmentResult(
@@ -134,6 +140,7 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True, file_fi
                 precision=precision,
                 recall=recall,
                 f1_score=f1_score,
+                mistakes_number=mistakes_number,
                 total_paragraphs=len(truth_labels.paragraphs),
                 seconds=prediction_labels.get_seconds(),
             )
@@ -149,7 +156,7 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True, file_fi
 
 if __name__ == "__main__":
     model_name = "vgt_base"
-    show_mistakes = False
-    file_filter = ["ihrda_2_fr_en"]
-    file_filter = []
+    show_mistakes = True
+    file_filter = ["ihrda_1_en_pt"]
+    # file_filter = []
     get_alignment_benchmark(model_name, show_mistakes, file_filter)

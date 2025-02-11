@@ -45,8 +45,8 @@ class ParagraphMatchScore(BaseModel):
     @staticmethod
     def from_paragraphs_features(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> "ParagraphMatchScore":
         return ParagraphMatchScore(
-            index=ParagraphMatchScore.are_the_same(paragraph_1.index, paragraph_2.index),
-            page=ParagraphMatchScore.are_the_same(paragraph_1.page_number, paragraph_2.page_number),
+            index=ParagraphMatchScore.get_difference(paragraph_1.index, paragraph_2.index),
+            page=ParagraphMatchScore.get_difference(paragraph_1.page_number, paragraph_2.page_number),
             segment_type=ParagraphMatchScore.get_segment_type_score(paragraph_1, paragraph_2),
             text_fuzzy_match=ParagraphMatchScore.get_text_fuzzy_match_score(paragraph_1, paragraph_2),
             number_of_words=ParagraphMatchScore.get_number_of_words_score(paragraph_1, paragraph_2),
@@ -62,8 +62,12 @@ class ParagraphMatchScore(BaseModel):
         ).calculate_overall_score()
 
     @staticmethod
-    def are_the_same(value_1: int, value_2: int) -> float:
-        return 1.0 if value_1 == value_2 else 0.0
+    def get_difference(value_1: int, value_2: int) -> float:
+        difference = abs(value_1 - value_2)
+        if difference < 2:
+            return 1
+
+        return 1 / difference
 
     @staticmethod
     def get_segment_type_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
@@ -104,12 +108,18 @@ class ParagraphMatchScore(BaseModel):
 
     @staticmethod
     def get_special_characters_score(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures) -> float:
-        if paragraph_1.non_alphanumeric_characters:
+        shorter_paragraph = paragraph_1 if len(paragraph_1.text_cleaned) < len(paragraph_2.text_cleaned) else paragraph_2
+        longer_paragraph = paragraph_2 if shorter_paragraph == paragraph_1 else paragraph_1
+        if longer_paragraph.non_alphanumeric_characters:
             same_special_characters = len(
-                [x for x in paragraph_1.non_alphanumeric_characters if x in paragraph_2.non_alphanumeric_characters]
+                [
+                    x
+                    for x in longer_paragraph.non_alphanumeric_characters
+                    if x in shorter_paragraph.non_alphanumeric_characters
+                ]
             )
-            return same_special_characters / len(paragraph_1.non_alphanumeric_characters)
-        elif paragraph_2.non_alphanumeric_characters:
+            return same_special_characters / len(longer_paragraph.non_alphanumeric_characters)
+        elif shorter_paragraph.non_alphanumeric_characters:
             return 0
         else:
             return 1
