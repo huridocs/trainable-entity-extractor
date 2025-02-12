@@ -98,8 +98,8 @@ class ParagraphsFromLanguage(BaseModel):
         for i, main_paragraph in enumerate(main_paragraphs[:-1]):
             if main_paragraph not in self._alignment_scores:
                 continue
-            aligned_paragraph = self._alignment_scores[main_paragraph].other_paragraph
-            next_paragraph_index = self.paragraphs.index(aligned_paragraph) + 1
+            other_paragraph = self._alignment_scores[main_paragraph].other_paragraph
+            next_paragraph_index = self.paragraphs.index(other_paragraph) + 1
 
             if next_paragraph_index >= len(self.paragraphs):
                 continue
@@ -114,7 +114,7 @@ class ParagraphsFromLanguage(BaseModel):
                 next_paragraph_indexes.append(index)
 
             main_paragraph_separators = self.find_paragraph_separators(main_paragraph.original_text)
-            other_paragraph_separators = self.find_paragraph_separators(aligned_paragraph.original_text)
+            other_paragraph_separators = self.find_paragraph_separators(other_paragraph.original_text)
 
             if [s[1] for s in main_paragraph_separators] == [s[1] for s in other_paragraph_separators]:
                 continue
@@ -132,19 +132,20 @@ class ParagraphsFromLanguage(BaseModel):
                 continue
 
             main_paragraph_insert_index = main_paragraphs.index(main_paragraph)
-            aligned_paragraph_insert_index = aligned_paragraphs.index(aligned_paragraph) + 1
+            aligned_paragraph_insert_index = aligned_paragraphs.index(other_paragraph)
 
-            for index in range(len(split_paragraphs)):
+            for index, (split_paragraph, next_para_idx) in enumerate(zip(split_paragraphs, next_paragraph_indexes)):
+                new_other_paragraph = self.paragraphs[next_para_idx]
                 alignment = AlignmentScore(
-                    main_paragraph=split_paragraphs[index],
-                    other_paragraph=self.paragraphs[next_paragraph_indexes[index]],
+                    main_paragraph=split_paragraph,
+                    other_paragraph=new_other_paragraph,
                     score=alignment_score,
                 )
-                self._alignment_scores[split_paragraphs[index]] = alignment
-                main_paragraphs.insert(main_paragraph_insert_index, split_paragraphs[index])
-                aligned_paragraphs.insert(aligned_paragraph_insert_index, self.paragraphs[next_paragraph_indexes[index]])
-                main_paragraph_insert_index += 1
-                aligned_paragraph_insert_index += 1
+                self._alignment_scores[split_paragraph] = alignment
+                main_paragraphs.insert(main_paragraph_insert_index + index, split_paragraph)
+
+                if index > 0:
+                    aligned_paragraphs.insert(aligned_paragraph_insert_index + index, new_other_paragraph)
 
             paragraphs_to_remove.append(main_paragraph)
 
@@ -169,11 +170,11 @@ class ParagraphsFromLanguage(BaseModel):
             main_paragraph_text = previous_paragraph.original_text
             unmatched_main_paragraphs = [previous_paragraph]
 
-            for i in range(main_paragraphs.index(main_paragraph), len(main_paragraphs)):
-                if main_paragraphs[i] in self._alignment_scores:
+            for j in range(main_paragraphs.index(main_paragraph), len(main_paragraphs)):
+                if main_paragraphs[j] in self._alignment_scores:
                     break
-                unmatched_main_paragraphs.append(main_paragraphs[i])
-                main_paragraph_text += " " + main_paragraphs[i].original_text
+                unmatched_main_paragraphs.append(main_paragraphs[j])
+                main_paragraph_text += " " + main_paragraphs[j].original_text
 
             other_paragraph = self._alignment_scores[previous_paragraph].other_paragraph
             main_paragraph_separators = self.find_paragraph_separators(main_paragraph_text)
@@ -198,17 +199,13 @@ class ParagraphsFromLanguage(BaseModel):
             other_paragraph_alignment_index = aligned_paragraphs.index(other_paragraph)
             paragraphs_to_remove.append(other_paragraph)
 
-            for index, split_paragraph in enumerate(split_paragraphs):
-                self.paragraphs.insert(other_paragraph_insert_index, split_paragraph)
-                aligned_paragraphs.insert(other_paragraph_alignment_index, split_paragraph)
+            for j, (split_paragraph, unmatched_paragraph) in enumerate(zip(split_paragraphs, unmatched_main_paragraphs)):
+                self.paragraphs.insert(other_paragraph_insert_index + j, split_paragraph)
+                aligned_paragraphs.insert(other_paragraph_alignment_index + j, split_paragraph)
 
-                alignment = AlignmentScore(
-                    main_paragraph=unmatched_main_paragraphs[index], other_paragraph=split_paragraph, score=alignment_score
+                self._alignment_scores[unmatched_paragraph] = AlignmentScore(
+                    main_paragraph=unmatched_paragraph, other_paragraph=split_paragraph, score=alignment_score
                 )
-                self._alignment_scores[unmatched_main_paragraphs[index]] = alignment
-
-                other_paragraph_insert_index += 1
-                other_paragraph_alignment_index += 1
 
         for paragraph in paragraphs_to_remove:
             self.paragraphs.remove(paragraph)
