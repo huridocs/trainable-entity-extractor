@@ -50,6 +50,31 @@ class ParagraphFeatures(BaseModel):
         self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
         return self
 
+    @staticmethod
+    def get_split_paragraph(paragraph: "ParagraphFeatures", split_paragraph_original_text: str):
+        text_cleaned = " ".join(unidecode(split_paragraph_original_text).split())
+        words = split_paragraph_original_text.split()
+        numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
+        non_alphanumeric_characters = [x for x in split_paragraph_original_text if not x.isalnum() and x != " "]
+        return ParagraphFeatures(
+            index=paragraph.index,
+            page_height=paragraph.page_height,
+            page_width=paragraph.page_width,
+            paragraph_type=paragraph.paragraph_type,
+            page_number=paragraph.page_number,
+            bounding_box=paragraph.bounding_box,
+            text_cleaned=text_cleaned,
+            original_text=split_paragraph_original_text,
+            words=words,
+            numbers=numbers,
+            numbers_by_spaces=numbers_by_spaces,
+            non_alphanumeric_characters=list(non_alphanumeric_characters),
+            first_word=words[0],
+            font=paragraph.font,
+            first_token_bounding_box=None,
+            last_token_bounding_box=None,
+        )
+
     def is_similar(self, next_segment: "ParagraphFeatures") -> bool:
         if self.page_number == next_segment.page_number:
             return False
