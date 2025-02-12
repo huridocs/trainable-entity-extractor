@@ -1,5 +1,8 @@
+import re
+
 from pdf_token_type_labels.TokenType import TokenType
 from pydantic import BaseModel
+from rapidfuzz import fuzz
 
 from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScore
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
@@ -31,7 +34,31 @@ class ParagraphsFromLanguage(BaseModel):
 
     def remove_headers_and_footers(self):
         types = [TokenType.FOOTNOTE, TokenType.PAGE_HEADER, TokenType.PAGE_FOOTER]
+        header_paragraphs = self.find_headers_with_similarities()
         self.paragraphs = [x for x in self.paragraphs if x.paragraph_type not in types]
+        self.paragraphs = [p for p in self.paragraphs if p not in header_paragraphs]
+
+    @staticmethod
+    def is_top_of_page(paragraph: ParagraphFeatures, page_height: int, threshold: int = 0.1):
+        return paragraph.bounding_box.top < page_height * threshold
+
+    def find_headers_with_similarities(self, similarity_threshold: int = 90):
+        paragraphs_on_top = [x for x in self.paragraphs if self.is_top_of_page(x, self.paragraphs[0].page_height)]
+
+        headers = {}
+        for paragraph in paragraphs_on_top:
+            found_match = False
+            for header_text in headers:
+                if fuzz.ratio(paragraph.text_cleaned, header_text) > similarity_threshold:
+                    headers[header_text].append(paragraph)
+                    found_match = True
+                    break
+            if not found_match:
+                headers[paragraph.text_cleaned] = [paragraph]
+
+        repeated_headers = {k: v for k, v in headers.items() if len(v) > 1}
+        header_paragraphs = [p for header_list in repeated_headers.values() for p in header_list]
+        return header_paragraphs
 
     def merge_paragraphs_spanning_two_pages(self):
         fixed_paragraphs = []
