@@ -1,4 +1,5 @@
 import re
+from math import ceil
 
 from pdf_token_type_labels.TokenType import TokenType
 from pydantic import BaseModel
@@ -10,6 +11,9 @@ from multilingual_paragraph_extractor.domain.ParagraphMatchScore import Paragrap
 
 BLOCK_SIZE = 10
 THRESHOLD = [0.9, 0.86, 0.82, 0.78]
+HEADER_SIMILARITY_THRESHOLD = 90
+TOP_OF_PAGE_THRESHOLD = 0.1
+REPEATED_HEADER_THRESHOLD = 0.2
 
 
 class ParagraphsFromLanguage(BaseModel):
@@ -39,24 +43,25 @@ class ParagraphsFromLanguage(BaseModel):
         self.paragraphs = [p for p in self.paragraphs if p not in header_paragraphs]
 
     @staticmethod
-    def is_top_of_page(paragraph: ParagraphFeatures, page_height: int, threshold: int = 0.1):
-        return paragraph.bounding_box.top < page_height * threshold
+    def is_top_of_page(paragraph: ParagraphFeatures, page_height: int):
+        return paragraph.bounding_box.top < page_height * TOP_OF_PAGE_THRESHOLD
 
-    def find_headers_with_similarities(self, similarity_threshold: int = 90):
+    def find_headers_with_similarities(self):
         paragraphs_on_top = [x for x in self.paragraphs if self.is_top_of_page(x, self.paragraphs[0].page_height)]
-
+        pages_number = max([x.page_number for x in self.paragraphs])
         headers = {}
         for paragraph in paragraphs_on_top:
             found_match = False
             for header_text in headers:
-                if fuzz.ratio(paragraph.text_cleaned, header_text) > similarity_threshold:
+                if fuzz.ratio(paragraph.text_cleaned, header_text) > HEADER_SIMILARITY_THRESHOLD:
                     headers[header_text].append(paragraph)
                     found_match = True
                     break
             if not found_match:
                 headers[paragraph.text_cleaned] = [paragraph]
 
-        repeated_headers = {k: v for k, v in headers.items() if len(v) > 1}
+        min_pages = max(ceil(pages_number * REPEATED_HEADER_THRESHOLD), 3)
+        repeated_headers = {k: v for k, v in headers.items() if len(v) >= min_pages}
         header_paragraphs = [p for header_list in repeated_headers.values() for p in header_list]
         return header_paragraphs
 
@@ -211,10 +216,6 @@ class ParagraphsFromLanguage(BaseModel):
             self.paragraphs.remove(paragraph)
             aligned_paragraphs.remove(paragraph)
 
-    def split_merged_paragraphs(self, main_paragraphs: list[ParagraphFeatures], aligned_paragraphs):
-        self.split_main_paragraphs(main_paragraphs, aligned_paragraphs)
-        self.split_other_paragraphs(main_paragraphs, aligned_paragraphs)
-
     def merge_paragraphs_spanning_two_pages(self):
         fixed_paragraphs = []
         index = 0
@@ -227,7 +228,7 @@ class ParagraphsFromLanguage(BaseModel):
                 index += 1
                 continue
 
-            if paragraph.is_similar(self.paragraphs[index + 1]):
+            if paragraph.is_part_of_same_segment(self.paragraphs[index + 1]):
                 merged_segment = paragraph.merge(self.paragraphs[index + 1])
                 fixed_paragraphs.append(merged_segment)
                 index += 2
@@ -296,7 +297,8 @@ class ParagraphsFromLanguage(BaseModel):
         aligned_paragraphs = self.get_aligned_paragraphs_from_scores(main_language)
         self.assign_missing_in_both_languages(main_language.paragraphs, aligned_paragraphs)
         self.assign_unmatch_paragraphs()
-        self.split_merged_paragraphs(main_language.paragraphs, aligned_paragraphs)
+        self.split_main_paragraphs(main_language.paragraphs, aligned_paragraphs)
+        self.split_other_paragraphs(main_language.paragraphs, aligned_paragraphs)
         self.paragraphs = aligned_paragraphs
 
     def get_aligned_paragraphs_from_scores(self, main_language):

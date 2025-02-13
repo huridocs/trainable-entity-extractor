@@ -17,19 +17,32 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
     def get_paragraphs():
         last_token_bounding_box = Rectangle.from_coordinates(0, 0, 100, 100)
         regular_paragraph_1 = ParagraphFeatures(
-            page_number=1, text_cleaned="Text.", page_width=100, last_token_bounding_box=last_token_bounding_box
+            page_number=1,
+            original_text="Text.",
+            text_cleaned="Text.",
+            page_width=100,
+            last_token_bounding_box=last_token_bounding_box,
         )
         beginning_paragraphs = ParagraphFeatures(
             page_number=1,
+            original_text="Text to be continued",
             text_cleaned="Text to be continued",
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
         )
         end_paragraphs = ParagraphFeatures(
-            page_number=2, text_cleaned="here", page_width=100, last_token_bounding_box=last_token_bounding_box
+            page_number=2,
+            original_text="here",
+            text_cleaned="here",
+            page_width=100,
+            last_token_bounding_box=last_token_bounding_box,
         )
         regular_paragraph_2 = ParagraphFeatures(
-            page_number=2, text_cleaned="Text.", page_width=100, last_token_bounding_box=last_token_bounding_box
+            page_number=2,
+            original_text="Text.",
+            text_cleaned="Text.",
+            page_width=100,
+            last_token_bounding_box=last_token_bounding_box,
         )
 
         return regular_paragraph_1, beginning_paragraphs, end_paragraphs, regular_paragraph_2

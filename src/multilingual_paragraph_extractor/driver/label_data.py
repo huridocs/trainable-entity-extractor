@@ -231,9 +231,6 @@ def get_algorithm_labels(file_filter: list[str] = None):
 
         if file_filter and base_json_name not in file_filter:
             continue
-
-        output_path = Path(PARAGRAPH_EXTRACTION_PATH, "labels", base_json_name + ".json")
-
         start = time()
         MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])
         label = Labels(
@@ -252,7 +249,6 @@ def get_algorithm_labels(file_filter: list[str] = None):
             label.add_paragraph(alignment_score)
 
         labels_list.append(label)
-        output_path.write_text(json.dumps(label.model_dump(), indent=4, ensure_ascii=False), encoding="utf-8")
 
     return labels_list
 

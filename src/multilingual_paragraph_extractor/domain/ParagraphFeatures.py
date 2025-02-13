@@ -75,7 +75,7 @@ class ParagraphFeatures(BaseModel):
             last_token_bounding_box=None,
         )
 
-    def is_similar(self, next_segment: "ParagraphFeatures") -> bool:
+    def is_part_of_same_segment(self, next_segment: "ParagraphFeatures") -> bool:
         if self.page_number == next_segment.page_number:
             return False
 
@@ -195,6 +195,8 @@ class ParagraphFeatures(BaseModel):
                     numbers=numbers,
                     numbers_by_spaces=numbers_by_spaces,
                     non_alphanumeric_characters=list(non_alphanumeric_characters),
+                    first_token_bounding_box=Rectangle.from_coordinates(0, 0, 0, 0),
+                    last_token_bounding_box=Rectangle.from_coordinates(0, 0, 0, 0),
                 )
             )
         return paragraphs_features

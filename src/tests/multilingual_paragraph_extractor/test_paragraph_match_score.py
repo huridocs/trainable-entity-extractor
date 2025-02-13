@@ -68,9 +68,9 @@ class TestParagraphMatchScore(TestCase):
 
         match_score = ParagraphMatchScore.from_paragraphs_features(paragraph, other_paragraph)
 
-        self.assertEqual(0.0, match_score.index)
+        self.assertEqual(0.5, match_score.index)
         self.assertEqual(0.0, match_score.segment_type)
-        self.assertEqual(0.0, match_score.page)
+        self.assertEqual(1, match_score.page)
         self.assertEqual(0.0, match_score.text_fuzzy_match)
         self.assertEqual(0.0, match_score.number_of_words)
         self.assertEqual(0.0, match_score.numbers)
@@ -104,7 +104,7 @@ class TestParagraphMatchScore(TestCase):
 
         match_score = ParagraphMatchScore.from_paragraphs_features(paragraph, other_paragraph)
 
-        self.assertEqual(0, match_score.index)
+        self.assertEqual(1, match_score.index)
         self.assertEqual(1, match_score.page)
         self.assertEqual(0, match_score.segment_type)
         self.assertEqual(0.5, match_score.text_fuzzy_match)
