@@ -20,10 +20,38 @@ class ParagraphsFromLanguage(BaseModel):
     language: str
     paragraphs: list[ParagraphFeatures]
     is_main_language: bool
+    _aligned_paragraphs: list[ParagraphFeatures] = list()
     _alignment_scores: dict[ParagraphFeatures, AlignmentScore] = dict()
+    _main_language_paragraphs = list[ParagraphFeatures]
 
     class Config:
         arbitrary_types_allowed = True
+
+    def set_as_main_language(self):
+        self.is_main_language = True
+        self._aligned_paragraphs = self.paragraphs
+
+    def get_aligned_paragraphs(self):
+        return self._aligned_paragraph
+
+    def align(self, main_language: "ParagraphsFromLanguage"):
+        self._main_language_paragraphs = main_language.paragraphs
+        self.set_alignment_scores()
+        self.get_aligned_paragraphs_from_scores()
+
+        if not self.is_same_pdf():
+            self._aligned_paragraphs = [ParagraphFeatures.get_empty() for _ in range(len(self._main_language_paragraphs))]
+            return
+
+        self.assign_missing_in_both_languages()
+
+    def fix_segments(self, main_language: "ParagraphsFromLanguage") -> bool:
+        self.align(main_language)
+        segmentation_fixed = self.fix_segmentation()
+        main_segmentation_fixed = self.assign_unmatch_paragraphs_merging_it_with_other()
+        if segmentation_fixed or main_segmentation_fixed:
+            return True
+        return False
 
     def remove_no_text_types(self):
         text_content_types = [
@@ -66,24 +94,27 @@ class ParagraphsFromLanguage(BaseModel):
         return header_paragraphs
 
     @staticmethod
-    def find_paragraph_separators(text: str) -> list[tuple[int, str]]:
+    def is_paragraph_separators(text: str) -> bool:
         patterns = [
-            r"(?:^|\s+)(\d+)\.\s",
-            r"(?:^|\s+)\((\d+)\)\s",
-            r"(?:^|\s+)([a-z])\)\s",
-            r"(?:^|\s+)([ivx]+)\)\s",
-            r"(?:^|\s+)([IVXLC]+)\.\s",
+            r"(?:^|\s+)(\d+)\.",  # Matches numbers followed by a dot
+            r"(?:^|\s+)(\d+)",  # Matches numbers
+            r"(?:^|\s+)\((\d+)\)",  # Matches numbers inside parentheses
+            r"(?:^|\s+)([a-z])\)",  # Matches lowercase letters followed by a closing parenthesis
+            r"(?:^|\s+)([A-Z])\)",  # Matches uppercase letters followed by a closing parenthesis
+            r"^[a-fA-F]$",  # Matches single characters a-f or A-F
+            r"(?:^|\s+)([ivx]+)",  # Matches Roman numerals in lowercase
+            r"(?:^|\s+)([IVXLC]+)",  # Matches Roman numerals in uppercase
+            r"(?:^|\s+)([•*•-])",  # Matches bullet points
         ]
 
-        separation_points = []
-
         for pattern in patterns:
-            for match in re.finditer(pattern, text):
-                separation_points.append((match.start(), match.group(0).strip()))
-        return sorted(separation_points)
+            for _ in re.finditer(pattern, text):
+                return True
+
+        return False
 
     @staticmethod
-    def split_merged_paragraph(
+    def split_main_paragraph(
         paragraph: ParagraphFeatures, split_paragraphs_start_indexes: list[int]
     ) -> list[ParagraphFeatures]:
         split_paragraphs = []
@@ -98,123 +129,53 @@ class ParagraphsFromLanguage(BaseModel):
             split_paragraphs.append(new_paragraph)
         return split_paragraphs
 
-    def split_main_paragraphs(self, main_paragraphs, aligned_paragraphs):
-        paragraphs_to_remove = []
-        for i, main_paragraph in enumerate(main_paragraphs[:-1]):
-            if main_paragraph not in self._alignment_scores:
-                continue
-            other_paragraph = self._alignment_scores[main_paragraph].other_paragraph
-            next_paragraph_index = self.paragraphs.index(other_paragraph) + 1
-
-            if next_paragraph_index >= len(self.paragraphs):
+    def fix_segmentation(self):
+        previous_paragraph_count = len(self.paragraphs)
+        for idx, main_unassigned_paragraph in enumerate(self._main_language_paragraphs):
+            if main_unassigned_paragraph in self._alignment_scores:
                 continue
 
-            if self.paragraphs[next_paragraph_index] in aligned_paragraphs:
+            previous_main_paragraph = self._main_language_paragraphs[idx - 1] if idx > 0 else None
+            if previous_main_paragraph in self._alignment_scores:
+                to_receive = self._alignment_scores[previous_main_paragraph].other_paragraph
+                if self.should_merge_paragraphs(to_receive, previous_main_paragraph, main_unassigned_paragraph):
+                    self.split_paragraph(self.paragraphs, main_unassigned_paragraph, to_receive)
+                    continue
+
+            next_paragraph = (
+                self._main_language_paragraphs[idx + 1] if idx + 1 < len(self._main_language_paragraphs) else None
+            )
+            if next_paragraph not in self._alignment_scores:
                 continue
 
-            next_paragraph_indexes = [next_paragraph_index - 1, next_paragraph_index]
-            for index in range(next_paragraph_index + 1, len(self.paragraphs)):
-                if self.paragraphs[index] in aligned_paragraphs:
-                    break
-                next_paragraph_indexes.append(index)
+            to_receive = self._alignment_scores[next_paragraph].main_paragraph
+            if self.should_merge_paragraphs(to_receive, main_unassigned_paragraph, next_paragraph):
+                self.split_paragraph(self.paragraphs, next_paragraph, to_receive)
 
-            main_paragraph_separators = self.find_paragraph_separators(main_paragraph.original_text)
-            other_paragraph_separators = self.find_paragraph_separators(other_paragraph.original_text)
+        return len(self.paragraphs) != previous_paragraph_count
 
-            if [s[1] for s in main_paragraph_separators] == [s[1] for s in other_paragraph_separators]:
-                continue
+    @staticmethod
+    def split_paragraph(paragraph_list: list[ParagraphFeatures], next_main: ParagraphFeatures, to_fix: ParagraphFeatures):
+        splitter_word = next_main.first_word
 
-            alignment_score = self._alignment_scores[main_paragraph].score
+        if not ParagraphsFromLanguage.is_paragraph_separators(splitter_word):
+            return False
 
-            split_paragraphs_start_indexes = [
-                s[0]
-                for index, s in enumerate(main_paragraph_separators)
-                if s[1] in self.paragraphs[next_paragraph_indexes[index]].first_word
-            ]
-            split_paragraphs = self.split_merged_paragraph(main_paragraph, split_paragraphs_start_indexes)
+        if splitter_word not in to_fix.original_text:
+            return False
 
-            if len(split_paragraphs) != len(next_paragraph_indexes):
-                continue
+        if to_fix.original_text.count(splitter_word) > 1:
+            return False
 
-            main_paragraph_insert_index = main_paragraphs.index(main_paragraph)
-            aligned_paragraph_insert_index = aligned_paragraphs.index(other_paragraph)
+        try:
+            index = paragraph_list.index(to_fix)
+        except ValueError:
+            return False
 
-            for index, (split_paragraph, next_para_idx) in enumerate(zip(split_paragraphs, next_paragraph_indexes)):
-                new_other_paragraph = self.paragraphs[next_para_idx]
-                alignment = AlignmentScore(
-                    main_paragraph=split_paragraph,
-                    other_paragraph=new_other_paragraph,
-                    score=alignment_score,
-                )
-                self._alignment_scores[split_paragraph] = alignment
-                main_paragraphs.insert(main_paragraph_insert_index + index, split_paragraph)
-
-                if index > 0:
-                    aligned_paragraphs.insert(aligned_paragraph_insert_index + index, new_other_paragraph)
-
-            paragraphs_to_remove.append(main_paragraph)
-
-        for paragraph in paragraphs_to_remove:
-            del self._alignment_scores[paragraph]
-            main_paragraphs.remove(paragraph)
-
-    def split_other_paragraphs(self, main_paragraphs, aligned_paragraphs):
-        paragraphs_to_remove = []
-        for i, main_paragraph in enumerate(main_paragraphs[:-1]):
-            if main_paragraph in self._alignment_scores:
-                continue
-
-            previous_paragraph_index = i - 1
-            if previous_paragraph_index < 0:
-                continue
-
-            previous_paragraph = main_paragraphs[previous_paragraph_index]
-            if previous_paragraph not in self._alignment_scores:
-                continue
-
-            main_paragraph_text = previous_paragraph.original_text
-            unmatched_main_paragraphs = [previous_paragraph]
-
-            for j in range(main_paragraphs.index(main_paragraph), len(main_paragraphs)):
-                if main_paragraphs[j] in self._alignment_scores:
-                    break
-                unmatched_main_paragraphs.append(main_paragraphs[j])
-                main_paragraph_text += " " + main_paragraphs[j].original_text
-
-            other_paragraph = self._alignment_scores[previous_paragraph].other_paragraph
-            main_paragraph_separators = self.find_paragraph_separators(main_paragraph_text)
-            other_paragraph_separators = self.find_paragraph_separators(other_paragraph.original_text)
-
-            if not main_paragraph_separators:
-                continue
-
-            if [s[1] for s in main_paragraph_separators] != [s[1] for s in other_paragraph_separators]:
-                continue
-
-            alignment_score = self._alignment_scores[previous_paragraph].score
-            del self._alignment_scores[previous_paragraph]
-
-            split_paragraphs_start_indexes = [
-                s[0]
-                for index, s in enumerate(other_paragraph_separators)
-                if s[1] in unmatched_main_paragraphs[index].first_word
-            ]
-            split_paragraphs = self.split_merged_paragraph(other_paragraph, split_paragraphs_start_indexes)
-            other_paragraph_insert_index = self.paragraphs.index(other_paragraph)
-            other_paragraph_alignment_index = aligned_paragraphs.index(other_paragraph)
-            paragraphs_to_remove.append(other_paragraph)
-
-            for j, (split_paragraph, unmatched_paragraph) in enumerate(zip(split_paragraphs, unmatched_main_paragraphs)):
-                self.paragraphs.insert(other_paragraph_insert_index + j, split_paragraph)
-                aligned_paragraphs.insert(other_paragraph_alignment_index + j, split_paragraph)
-
-                self._alignment_scores[unmatched_paragraph] = AlignmentScore(
-                    main_paragraph=unmatched_paragraph, other_paragraph=split_paragraph, score=alignment_score
-                )
-
-        for paragraph in paragraphs_to_remove:
-            self.paragraphs.remove(paragraph)
-            aligned_paragraphs.remove(paragraph)
+        paragraph_1, paragraph_2 = to_fix.split_paragraph(splitter_word)
+        paragraph_list[index] = paragraph_1
+        paragraph_list.insert(index + 1, paragraph_2)
+        return True
 
     def merge_paragraphs_spanning_two_pages(self):
         fixed_paragraphs = []
@@ -239,8 +200,9 @@ class ParagraphsFromLanguage(BaseModel):
 
         self.paragraphs = fixed_paragraphs
 
-    def set_alignment_scores(self, main_paragraphs: list[ParagraphFeatures]):
-        unmatched_1 = set(range(len(main_paragraphs)))
+    def set_alignment_scores(self):
+        self._alignment_scores = dict()
+        unmatched_1 = set(range(len(self._main_language_paragraphs)))
         unmatched_2 = set(range(len(self.paragraphs)))
 
         indexes_matching: dict[int, int] = dict()
@@ -265,14 +227,16 @@ class ParagraphsFromLanguage(BaseModel):
                 best_score = threshold
 
                 for idx2 in current_block2:
-                    if (main_paragraphs[idx1], self.paragraphs[idx2]) in scores:
-                        score = scores[(main_paragraphs[idx1], self.paragraphs[idx2])]
+                    if (self._main_language_paragraphs[idx1], self.paragraphs[idx2]) in scores:
+                        score = scores[(self._main_language_paragraphs[idx1], self.paragraphs[idx2])]
                     else:
-                        match = ParagraphMatchScore.from_paragraphs_features(main_paragraphs[idx1], self.paragraphs[idx2])
+                        match = ParagraphMatchScore.from_paragraphs_features(
+                            self._main_language_paragraphs[idx1], self.paragraphs[idx2]
+                        )
                         score = match.overall_score
-                        scores[(main_paragraphs[idx1], self.paragraphs[idx2])] = score
+                        scores[(self._main_language_paragraphs[idx1], self.paragraphs[idx2])] = score
 
-                    main_first_word = main_paragraphs[idx1].first_word
+                    main_first_word = self._main_language_paragraphs[idx1].first_word
                     other_first_word = self.paragraphs[idx2].first_word
                     if score > best_score:
                         best_score = score
@@ -284,48 +248,44 @@ class ParagraphsFromLanguage(BaseModel):
                     last_idx2_inserted = best_match
                     indexes_matching[idx1] = best_match
                     alignment_score = AlignmentScore(
-                        main_paragraph=main_paragraphs[idx1], other_paragraph=self.paragraphs[best_match], score=best_score
+                        main_paragraph=self._main_language_paragraphs[idx1],
+                        other_paragraph=self.paragraphs[best_match],
+                        score=best_score,
                     )
-                    self._alignment_scores[main_paragraphs[idx1]] = alignment_score
+                    self._alignment_scores[self._main_language_paragraphs[idx1]] = alignment_score
                     unmatched_2.remove(best_match)
                     unmatched_1.remove(idx1)
                 else:
                     last_idx2_inserted += 1
 
-    def align(self, main_language: "ParagraphsFromLanguage"):
-        self.set_alignment_scores(main_language.paragraphs)
-        aligned_paragraphs = self.get_aligned_paragraphs_from_scores(main_language)
-        self.assign_missing_in_both_languages(main_language.paragraphs, aligned_paragraphs)
-        self.assign_unmatch_paragraphs()
-        self.split_main_paragraphs(main_language.paragraphs, aligned_paragraphs)
-        self.split_other_paragraphs(main_language.paragraphs, aligned_paragraphs)
-        self.paragraphs = aligned_paragraphs
+    def is_same_pdf(self):
+        paragraph_count = len(self._main_language_paragraphs)
+        unmatched_paragraphs = [x for x in self._main_language_paragraphs if x not in self._alignment_scores]
+        match_percentage = 100 * (paragraph_count - len(unmatched_paragraphs)) / paragraph_count
+        return 50 < match_percentage
 
-    def get_aligned_paragraphs_from_scores(self, main_language):
-        aligned_paragraphs: list[ParagraphFeatures] = []
-        for paragraph in main_language.paragraphs:
+    def get_aligned_paragraphs_from_scores(self):
+        self._aligned_paragraphs: list[ParagraphFeatures] = []
+        for paragraph in self._main_language_paragraphs:
             if paragraph in self._alignment_scores:
                 paragraph_to_add = self._alignment_scores[paragraph].other_paragraph
             else:
                 paragraph_to_add = ParagraphFeatures.get_empty()
 
-            aligned_paragraphs.append(paragraph_to_add)
-        return aligned_paragraphs
+            self._aligned_paragraphs.append(paragraph_to_add)
 
-    def assign_missing_in_both_languages(
-        self, main_paragraphs: list[ParagraphFeatures], aligned_paragraphs: list[ParagraphFeatures]
-    ):
-        for idx, main_paragraph in enumerate(main_paragraphs):
+    def assign_missing_in_both_languages(self):
+        for idx, main_paragraph in enumerate(self._main_language_paragraphs):
             if main_paragraph in self._alignment_scores:
                 continue
 
-            main_previous = main_paragraphs[idx - 1] if idx > 0 else None
+            main_previous = self._main_language_paragraphs[idx - 1] if idx > 0 else None
             if main_previous not in self._alignment_scores:
                 continue
 
             previous_index = self.paragraphs.index(self._alignment_scores[main_previous].other_paragraph)
             paragraph = self.paragraphs[previous_index + 1] if previous_index + 1 < len(self.paragraphs) else None
-            if not paragraph or paragraph in aligned_paragraphs:
+            if not paragraph or paragraph in self._aligned_paragraphs:
                 continue
 
             alignment_score = ParagraphMatchScore.from_paragraphs_features(main_paragraph, paragraph)
@@ -336,10 +296,11 @@ class ParagraphsFromLanguage(BaseModel):
                 main_paragraph=main_paragraph, other_paragraph=paragraph, score=alignment_score.overall_score
             )
 
-            aligned_paragraphs[idx] = paragraph
+            self._aligned_paragraphs[idx] = paragraph
 
-    def assign_unmatch_paragraphs(self):
+    def assign_unmatch_paragraphs_merging_it_with_other(self):
         inverse_alignment_scores = {score.other_paragraph: score for score in self._alignment_scores.values()}
+        main_paragraphs_count = len(self._main_language_paragraphs)
         for idx, paragraph_to_be_merged in enumerate(self.paragraphs):
             if paragraph_to_be_merged in inverse_alignment_scores:
                 continue
@@ -348,7 +309,7 @@ class ParagraphsFromLanguage(BaseModel):
             if previous_paragraph in inverse_alignment_scores:
                 main_to_receive = inverse_alignment_scores[previous_paragraph].main_paragraph
                 if self.should_merge_paragraphs(main_to_receive, previous_paragraph, paragraph_to_be_merged):
-                    previous_paragraph.merge(paragraph_to_be_merged)
+                    self.split_main_or_merge_other(main_to_receive, previous_paragraph, paragraph_to_be_merged)
                     continue
 
             next_paragraph = self.paragraphs[idx + 1] if idx + 1 < len(self.paragraphs) else None
@@ -356,18 +317,42 @@ class ParagraphsFromLanguage(BaseModel):
                 continue
             main_to_receive = inverse_alignment_scores[next_paragraph].main_paragraph
             if self.should_merge_paragraphs(main_to_receive, paragraph_to_be_merged, next_paragraph):
-                paragraph_to_be_merged.merge(next_paragraph)
+                self.split_main_or_merge_other(main_to_receive, paragraph_to_be_merged, next_paragraph)
+
+        return main_paragraphs_count != len(self._main_language_paragraphs)
+
+    def split_main_or_merge_other(
+        self, main_paragraph: ParagraphFeatures, previous_paragraph: ParagraphFeatures, next_paragraph: ParagraphFeatures
+    ):
+        if self.split_paragraph(self._main_language_paragraphs, next_paragraph, main_paragraph):
+            return
+
+        if previous_paragraph in self._aligned_paragraphs:
+            previous_paragraph.merge(next_paragraph)
+            return
+
+        if next_paragraph in self._aligned_paragraphs:
+            index = self._aligned_paragraphs.index(next_paragraph)
+            self._aligned_paragraphs[index] = previous_paragraph.merge(next_paragraph)
 
     def should_merge_paragraphs(
-        self, main_paragraph: ParagraphFeatures, previous_paragraph: ParagraphFeatures, next_paragraph: ParagraphFeatures
+        self,
+        paragraph: ParagraphFeatures,
+        previous_paragraph_to_merge: ParagraphFeatures,
+        next_paragraph_to_merge: ParagraphFeatures,
     ) -> bool:
-        if main_paragraph not in self._alignment_scores:
+        if paragraph not in self._alignment_scores:
             return False
 
-        if previous_paragraph.get_distance(next_paragraph) > 0:
+        if previous_paragraph_to_merge.get_distance(next_paragraph_to_merge) > 0:
             return False
 
-        merged_paragraph = previous_paragraph.model_copy().merge(next_paragraph)
-        previous_score = self._alignment_scores[main_paragraph].score
-        match_score = ParagraphMatchScore.from_paragraphs_features(main_paragraph, merged_paragraph)
+        merged_paragraph = previous_paragraph_to_merge.model_copy().merge(next_paragraph_to_merge)
+        previous_score = self._alignment_scores[paragraph].score
+        match_score = ParagraphMatchScore.from_paragraphs_features(paragraph, merged_paragraph)
         return previous_score <= match_score.overall_score
+
+    def is_aligned(self, main_language: "ParagraphsFromLanguage") -> bool:
+        if not self._aligned_paragraphs:
+            return False
+        return len(self._aligned_paragraphs) == len(main_language.paragraphs)

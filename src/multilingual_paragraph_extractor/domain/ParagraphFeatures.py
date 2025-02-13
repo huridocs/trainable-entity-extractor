@@ -50,30 +50,54 @@ class ParagraphFeatures(BaseModel):
         self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
         return self
 
-    @staticmethod
-    def get_split_paragraph(paragraph: "ParagraphFeatures", split_paragraph_original_text: str):
-        text_cleaned = " ".join(unidecode(split_paragraph_original_text).split())
-        words = split_paragraph_original_text.split()
+    def split_paragraph(self, splitter_word: str) -> ("ParagraphFeatures", "ParagraphFeatures"):
+        paragraph_text_1 = self.original_text.split(splitter_word)[0]
+        text_cleaned = " ".join(unidecode(paragraph_text_1).split())
+        words = paragraph_text_1.split()
         numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
-        non_alphanumeric_characters = [x for x in split_paragraph_original_text if not x.isalnum() and x != " "]
-        return ParagraphFeatures(
-            index=paragraph.index,
-            page_height=paragraph.page_height,
-            page_width=paragraph.page_width,
-            paragraph_type=paragraph.paragraph_type,
-            page_number=paragraph.page_number,
-            bounding_box=paragraph.bounding_box,
+        paragraph_1 = ParagraphFeatures(
+            index=self.index,
+            page_height=self.page_height,
+            page_width=self.page_width,
+            paragraph_type=self.paragraph_type,
+            page_number=self.page_number,
+            bounding_box=self.bounding_box,
             text_cleaned=text_cleaned,
-            original_text=split_paragraph_original_text,
+            original_text=paragraph_text_1,
             words=words,
             numbers=numbers,
             numbers_by_spaces=numbers_by_spaces,
-            non_alphanumeric_characters=list(non_alphanumeric_characters),
+            non_alphanumeric_characters=ParagraphFeatures.get_aphanumeric(paragraph_text_1),
             first_word=words[0],
-            font=paragraph.font,
-            first_token_bounding_box=None,
-            last_token_bounding_box=None,
+            font=self.font,
+            first_token_bounding_box=self.first_token_bounding_box,
+            last_token_bounding_box=self.last_token_bounding_box,
         )
+
+        paragraph_text_2 = splitter_word + self.original_text.split(splitter_word)[1]
+        text_cleaned = " ".join(unidecode(paragraph_text_2).split())
+        words = paragraph_text_2.split()
+        numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
+        paragraph_2 = ParagraphFeatures(
+            index=self.index,
+            page_height=self.page_height,
+            page_width=self.page_width,
+            paragraph_type=self.paragraph_type,
+            page_number=self.page_number,
+            bounding_box=self.bounding_box,
+            text_cleaned=text_cleaned,
+            original_text=paragraph_text_2,
+            words=words,
+            numbers=numbers,
+            numbers_by_spaces=numbers_by_spaces,
+            non_alphanumeric_characters=ParagraphFeatures.get_aphanumeric(paragraph_text_2),
+            first_word=words[0],
+            font=self.font,
+            first_token_bounding_box=self.first_token_bounding_box,
+            last_token_bounding_box=self.last_token_bounding_box,
+        )
+
+        return paragraph_1, paragraph_2
 
     def is_part_of_same_segment(self, next_segment: "ParagraphFeatures") -> bool:
         if self.page_number == next_segment.page_number:
@@ -134,8 +158,11 @@ class ParagraphFeatures(BaseModel):
         return numbers_by_spaces, numbers
 
     @staticmethod
+    def get_aphanumeric(text):
+        return [x for x in text if not x.isalnum() and x != " "]
+
+    @staticmethod
     def from_pdf_data(pdf_data: PdfData, pdf_segment: PdfDataSegment) -> "ParagraphFeatures":
-        non_alphanumeric_characters = [x for x in pdf_segment.text_content if not x.isalnum() and x != " "]
         first_token = ParagraphFeatures.get_first_token(pdf_data, pdf_segment)
         words = pdf_segment.text_content.split()
         numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
@@ -159,7 +186,7 @@ class ParagraphFeatures(BaseModel):
             words=words,
             numbers=numbers,
             numbers_by_spaces=numbers_by_spaces,
-            non_alphanumeric_characters=list(non_alphanumeric_characters),
+            non_alphanumeric_characters=ParagraphFeatures.get_aphanumeric(pdf_segment.text_content),
             first_word=unidecode(pdf_segment.text_content.split()[0]) if pdf_segment.text_content else None,
             font=first_token.font if first_token else None,
             first_token_bounding_box=tokens[0].bounding_box if tokens else None,
@@ -186,6 +213,7 @@ class ParagraphFeatures(BaseModel):
             numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
             paragraphs_features.append(
                 ParagraphFeatures(
+                    original_text=text,
                     text_cleaned=text,
                     page_width=10,
                     page_height=10,

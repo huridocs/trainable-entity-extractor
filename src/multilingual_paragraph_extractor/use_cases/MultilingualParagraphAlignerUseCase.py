@@ -18,8 +18,24 @@ class MultilingualParagraphAlignerUseCase:
 
         main_language, other_languages = self.get_main_and_other_languages(paragraphs_from_languages)
 
-        for other_language_paragraphs in other_languages:
-            other_language_paragraphs.align(main_language)
+        self.fix_segmentation(main_language, other_languages)
+
+        if not self.are_aligned(main_language, other_languages):
+            for other_language_paragraphs in other_languages:
+                other_language_paragraphs.align(main_language)
+
+        main_language.set_as_main_language()
+
+    @staticmethod
+    def fix_segmentation(main_language, other_languages):
+        for i in range(3):
+            main_paragraphs_changed = False
+            for other_language_paragraphs in other_languages:
+                if other_language_paragraphs.fix_segments(main_language):
+                    main_paragraphs_changed = True
+
+            if not main_paragraphs_changed:
+                break
 
     @staticmethod
     def get_main_and_other_languages(
@@ -32,3 +48,11 @@ class MultilingualParagraphAlignerUseCase:
         main_language = main_languages[0]
         other_languages = [x for x in paragraphs_from_languages if x != main_language]
         return main_language, other_languages
+
+    @staticmethod
+    def are_aligned(main_language: ParagraphsFromLanguage, other_languages: list[ParagraphsFromLanguage]) -> bool:
+        for other_language_paragraphs in other_languages:
+            if not other_language_paragraphs.is_aligned(main_language):
+                return False
+
+        return True

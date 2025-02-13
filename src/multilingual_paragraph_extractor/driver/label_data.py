@@ -233,6 +233,8 @@ def get_algorithm_labels(file_filter: list[str] = None):
             continue
         start = time()
         MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])
+        MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])
+        MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])
         label = Labels(
             main_language=main_paragraphs.language,
             other_language=other_paragraphs.language,

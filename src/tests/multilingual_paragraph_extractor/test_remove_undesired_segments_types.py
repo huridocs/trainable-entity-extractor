@@ -32,9 +32,9 @@ class TestRemoveUndesiredSegmentTypes(TestCase):
         multilingual_paragraph_extractor.align_languages(segments_from_languages)
 
         self.assertEqual(2, len(segments_from_languages))
-        self.assertEqual(1, len(segments_from_languages[0].paragraphs))
-        self.assertEqual(1, len(segments_from_languages[1].paragraphs))
+        self.assertEqual(1, len(segments_from_languages[0]._aligned_paragraphs))
+        self.assertEqual(1, len(segments_from_languages[1]._aligned_paragraphs))
         self.assertEqual("en", segments_from_languages[0].language)
         self.assertEqual("fr", segments_from_languages[1].language)
-        self.assertEqual("Text en", segments_from_languages[0].paragraphs[0].text_cleaned)
-        self.assertEqual("Text fr", segments_from_languages[1].paragraphs[0].text_cleaned)
+        self.assertEqual("Text en", segments_from_languages[0]._aligned_paragraphs[0].text_cleaned)
+        self.assertEqual("Text fr", segments_from_languages[1]._aligned_paragraphs[0].text_cleaned)
