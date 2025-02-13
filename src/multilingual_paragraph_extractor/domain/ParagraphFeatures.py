@@ -51,17 +51,23 @@ class ParagraphFeatures(BaseModel):
         return self
 
     def split_paragraph(self, splitter_word: str) -> ("ParagraphFeatures", "ParagraphFeatures"):
-        paragraph_text_1 = self.original_text.split(splitter_word)[0]
+        paragraph_text_1 = self.original_text.split(splitter_word)[0].strip()
         text_cleaned = " ".join(unidecode(paragraph_text_1).split())
         words = paragraph_text_1.split()
         numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
+        half_bounding_box = Rectangle.from_coordinates(
+            self.bounding_box.left,
+            self.bounding_box.top,
+            self.bounding_box.right,
+            self.bounding_box.top + 0.5 * self.bounding_box.height,
+        )
         paragraph_1 = ParagraphFeatures(
             index=self.index,
             page_height=self.page_height,
             page_width=self.page_width,
             paragraph_type=self.paragraph_type,
             page_number=self.page_number,
-            bounding_box=self.bounding_box,
+            bounding_box=half_bounding_box,
             text_cleaned=text_cleaned,
             original_text=paragraph_text_1,
             words=words,
@@ -78,13 +84,19 @@ class ParagraphFeatures(BaseModel):
         text_cleaned = " ".join(unidecode(paragraph_text_2).split())
         words = paragraph_text_2.split()
         numbers_by_spaces, numbers = ParagraphFeatures.get_numbers(words)
+        half_bounding_box = Rectangle.from_coordinates(
+            self.bounding_box.left,
+            self.bounding_box.top + 0.5 * self.bounding_box.height,
+            self.bounding_box.right,
+            self.bounding_box.bottom,
+        )
         paragraph_2 = ParagraphFeatures(
             index=self.index,
             page_height=self.page_height,
             page_width=self.page_width,
             paragraph_type=self.paragraph_type,
             page_number=self.page_number,
-            bounding_box=self.bounding_box,
+            bounding_box=half_bounding_box,
             text_cleaned=text_cleaned,
             original_text=paragraph_text_2,
             words=words,
