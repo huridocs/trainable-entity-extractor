@@ -10,7 +10,7 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 )
 from trainable_entity_extractor.use_cases.extractors.segment_selector.evaluate_config import PDF_LABELED_DATA_PATH
 
-from scripts.pdf_multi_option_classification_benchmark import get_multi_option_benchmark_data
+from trainable_entity_extractor.drivers.pdf_multi_option_classification_benchmark import get_multi_option_benchmark_data
 
 
 def show_mistakes(prediction_samples):

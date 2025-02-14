@@ -19,7 +19,7 @@ from trainable_entity_extractor.config import ROOT_PATH, DATA_PATH
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from trainable_entity_extractor.domain.PdfData import PdfData
-from performance.Results import Results
+from trainable_entity_extractor.drivers.performance.Results import Results
 from trainable_entity_extractor.use_cases.extractors.segment_selector.Paragraphs import Paragraphs
 from trainable_entity_extractor.use_cases.extractors.segment_selector.evaluate_config import (
     SIZES,

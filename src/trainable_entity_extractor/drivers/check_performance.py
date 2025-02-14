@@ -4,7 +4,7 @@ from typing import Type
 import pandas as pd
 from datetime import datetime
 
-from performance.Results import Results
+from trainable_entity_extractor.drivers.performance.Results import Results
 from trainable_entity_extractor.extractors.text_to_text_extractor.TextToTextMethod import BaseMethod
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.MT5TrueCaseEnglishSpanishMethod import (
     MT5TrueCaseEnglishSpanishMethod,
