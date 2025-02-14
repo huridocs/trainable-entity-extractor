@@ -314,7 +314,8 @@ class ParagraphsFromLanguage(BaseModel):
                 paragraphs_to_be_remove.extend(to_remove)
 
         for paragraph in paragraphs_to_be_remove:
-            self.paragraphs.remove(paragraph)
+            if paragraph in self.paragraphs:
+                self.paragraphs.remove(paragraph)
 
         return len(paragraphs_to_be_remove) != 0 or main_paragraphs_count != len(self._main_language_paragraphs)
 
