@@ -27,12 +27,12 @@ class ParagraphsFromLanguage(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+    def replace_paragraphs_to_aligned(self):
+        self.paragraphs = self._aligned_paragraphs
+
     def set_as_main_language(self):
         self.is_main_language = True
         self._aligned_paragraphs = self.paragraphs
-
-    def get_aligned_paragraphs(self):
-        return self._aligned_paragraph
 
     def align(self, main_language: "ParagraphsFromLanguage"):
         self._main_language_paragraphs = main_language.paragraphs

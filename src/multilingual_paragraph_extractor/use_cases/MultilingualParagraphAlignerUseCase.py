@@ -25,6 +25,8 @@ class MultilingualParagraphAlignerUseCase:
                 other_language_paragraphs.align(main_language)
 
         main_language.set_as_main_language()
+        for other_language_paragraphs in other_languages:
+            other_language_paragraphs.replace_paragraphs_to_aligned()
 
     @staticmethod
     def fix_segmentation(main_language, other_languages):
