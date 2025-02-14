@@ -155,7 +155,10 @@ class ParagraphsFromLanguage(BaseModel):
         if to_fix.original_text.count(splitter_word) > 1:
             return False
 
-        if to_fix.original_text.startswith(splitter_word):
+        if to_fix.original_text.strip().startswith(splitter_word):
+            return False
+
+        if to_fix.original_text.strip().endswith(splitter_word):
             return False
 
         try:
