@@ -74,7 +74,7 @@ class ParagraphFeatures(BaseModel):
             numbers=numbers,
             numbers_by_spaces=numbers_by_spaces,
             non_alphanumeric_characters=ParagraphFeatures.get_aphanumeric(paragraph_text_1),
-            first_word=words[0] if words else "",
+            first_word=words[0],
             font=self.font,
             first_token_bounding_box=self.first_token_bounding_box,
             last_token_bounding_box=self.last_token_bounding_box,

@@ -155,6 +155,9 @@ class ParagraphsFromLanguage(BaseModel):
         if to_fix.original_text.count(splitter_word) > 1:
             return False
 
+        if to_fix.original_text.startswith(splitter_word):
+            return False
+
         try:
             index = paragraph_list.index(to_fix)
         except ValueError:
