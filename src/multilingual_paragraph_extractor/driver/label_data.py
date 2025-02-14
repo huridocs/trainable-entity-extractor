@@ -113,14 +113,17 @@ def get_paragraphs(pdf_name: str):
 
 
 def loop_combinations():
-    pdf_languages: dict[str, set[str]] = {}
+    pdf_languages: dict[str, list[str]] = {}
 
-    for pdf_path in Path(LABELED_DATA_PATH, "pdfs").iterdir():
+    pdfs = list(Path(LABELED_DATA_PATH, "pdfs").iterdir())
+    for pdf_path in sorted(pdfs):
         if pdf_path.name.endswith(".pdf"):
             base_name, language = pdf_path.name.rsplit("_", 1)
-            pdf_languages.setdefault(base_name, set()).add(language[:2])
+            pdf_languages.setdefault(base_name, list()).append(language[:2])
+            pdf_languages[base_name] = sorted(pdf_languages[base_name])
 
-    for pdf_name, languages in pdf_languages.items():
+    sorted_pdf_languages = [(k, v) for k, v in sorted(pdf_languages.items(), key=lambda item: str(item[0]) + str(item[1]))]
+    for pdf_name, languages in sorted_pdf_languages:
         if len(languages) < 2:
             continue
 
@@ -226,7 +229,6 @@ def get_algorithm_labels(file_filter: list[str] = None):
     labels_list: list[Labels] = list()
 
     for pdf_name, main_paragraphs, other_paragraphs in loop_combinations():
-
         base_json_name = pdf_name + "_" + main_paragraphs.language + "_" + other_paragraphs.language
 
         if file_filter and base_json_name not in file_filter:

@@ -28,7 +28,7 @@ class MultilingualParagraphAlignerUseCase:
 
     @staticmethod
     def fix_segmentation(main_language, other_languages):
-        for i in range(3):
+        for i in range(4):
             main_paragraphs_changed = False
             for other_language_paragraphs in other_languages:
                 if other_language_paragraphs.fix_segments(main_language):
