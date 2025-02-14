@@ -28,5 +28,10 @@ class XmlFile:
     def delete(self):
         if not self.xml_file_name:
             return
+
         file_path = Path(f"{self.xml_folder_path}/{self.xml_file_name}")
-        file_path.unlink()
+
+        if file_path.is_dir():
+            return
+
+        file_path.unlink(missing_ok=True)
