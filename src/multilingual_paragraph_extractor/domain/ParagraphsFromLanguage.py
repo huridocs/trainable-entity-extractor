@@ -73,11 +73,13 @@ class ParagraphsFromLanguage(BaseModel):
         self.paragraphs = [p for p in self.paragraphs if p not in header_paragraphs]
 
     @staticmethod
-    def is_top_of_page(paragraph: ParagraphFeatures, page_height: int):
-        return paragraph.bounding_box.top < page_height * TOP_OF_PAGE_THRESHOLD
+    def is_top_or_bottom_of_page(paragraph: ParagraphFeatures, page_height: int):
+        on_top = paragraph.bounding_box.top < page_height * TOP_OF_PAGE_THRESHOLD
+        on_bottom = paragraph.bounding_box.bottom > page_height * (1 - TOP_OF_PAGE_THRESHOLD)
+        return on_top or on_bottom
 
     def find_headers_with_similarities(self):
-        paragraphs_on_top = [x for x in self.paragraphs if self.is_top_of_page(x, self.paragraphs[0].page_height)]
+        paragraphs_on_top = [x for x in self.paragraphs if self.is_top_or_bottom_of_page(x, self.paragraphs[0].page_height)]
         pages_number = max([x.page_number for x in self.paragraphs])
         headers = {}
         for paragraph in paragraphs_on_top:
