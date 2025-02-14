@@ -15,12 +15,12 @@ from multilingual_paragraph_extractor.driver.Labels import Labels
 from multilingual_paragraph_extractor.use_cases.MultilingualParagraphAlignerUseCase import (
     MultilingualParagraphAlignerUseCase,
 )
-from trainable_entity_extractor.XmlFile import XmlFile
+from trainable_entity_extractor.use_cases.XmlFile import XmlFile
 from trainable_entity_extractor.config import ROOT_PATH, APP_PATH
-from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.data.PdfData import PdfData
-from trainable_entity_extractor.data.SegmentBox import SegmentBox
-from trainable_entity_extractor.data.SegmentationData import SegmentationData
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.PdfData import PdfData
+from trainable_entity_extractor.domain.SegmentBox import SegmentBox
+from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 
 PARAGRAPH_EXTRACTION_PATH = Path(ROOT_PATH, "data", "paragraph_extraction")
 EXTRACTION_IDENTIFIER = ExtractionIdentifier(run_name="paragraph", extraction_name="id")

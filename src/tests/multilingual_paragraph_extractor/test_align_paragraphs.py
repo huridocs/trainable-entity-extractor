@@ -5,7 +5,7 @@ from multilingual_paragraph_extractor.use_cases.MultilingualParagraphAlignerUseC
     MultilingualParagraphAlignerUseCase,
 )
 from multilingual_paragraph_extractor.domain.ParagraphsFromLanguage import ParagraphsFromLanguage
-from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 
 
 class TestAlignParagraphs(TestCase):

@@ -6,8 +6,8 @@ from pdf_token_type_labels.TokenType import TokenType
 from pydantic import BaseModel
 from unidecode import unidecode
 
-from trainable_entity_extractor.data.PdfData import PdfData
-from trainable_entity_extractor.data.PdfDataSegment import PdfDataSegment
+from trainable_entity_extractor.domain.PdfData import PdfData
+from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 
 TO_AVOID_BEING_MERGED = [
     TokenType.FORMULA,

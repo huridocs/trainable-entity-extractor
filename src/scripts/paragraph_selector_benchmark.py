@@ -16,12 +16,12 @@ from pdf_token_type_labels.TaskMistakes import TaskMistakes
 from sklearn.metrics import f1_score
 
 from trainable_entity_extractor.config import ROOT_PATH, DATA_PATH
-from trainable_entity_extractor.data.SegmentBox import SegmentBox
-from trainable_entity_extractor.data.SegmentationData import SegmentationData
-from trainable_entity_extractor.data.PdfData import PdfData
+from trainable_entity_extractor.domain.SegmentBox import SegmentBox
+from trainable_entity_extractor.domain.SegmentationData import SegmentationData
+from trainable_entity_extractor.domain.PdfData import PdfData
 from performance.Results import Results
-from trainable_entity_extractor.extractors.segment_selector.Paragraphs import Paragraphs
-from trainable_entity_extractor.extractors.segment_selector.evaluate_config import (
+from trainable_entity_extractor.use_cases.extractors.segment_selector.Paragraphs import Paragraphs
+from trainable_entity_extractor.use_cases.extractors.segment_selector.evaluate_config import (
     SIZES,
     SEED,
     LABELED_DATA_TO_USE,

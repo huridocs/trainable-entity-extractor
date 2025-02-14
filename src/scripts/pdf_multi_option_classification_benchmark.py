@@ -9,24 +9,26 @@ import rich
 from sklearn.metrics import f1_score
 
 from trainable_entity_extractor.config import ROOT_PATH, APP_PATH
-from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.data.LabeledData import LabeledData
-from trainable_entity_extractor.data.Option import Option
-from trainable_entity_extractor.data.PdfData import PdfData
-from trainable_entity_extractor.data.PredictionSample import PredictionSample
-from trainable_entity_extractor.extractors.ExtractorBase import ExtractorBase
-from trainable_entity_extractor.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import PdfMultiOptionMethod
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.LabeledData import LabeledData
+from trainable_entity_extractor.domain.Option import Option
+from trainable_entity_extractor.domain.PdfData import PdfData
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.use_cases.extractors.ExtractorBase import ExtractorBase
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
+    PdfMultiOptionMethod,
+)
 
-from trainable_entity_extractor.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
     PdfToMultiOptionExtractor,
 )
-from trainable_entity_extractor.data.ExtractionData import ExtractionData
-from trainable_entity_extractor.data.TrainingSample import TrainingSample
-from trainable_entity_extractor.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FuzzyFirstCleanLabel import (
+from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FuzzyFirstCleanLabel import (
     FuzzyFirstCleanLabel,
 )
 
-from trainable_entity_extractor.extractors.pdf_to_multi_option_extractor.results import (
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.results import (
     get_results_table,
     add_row,
     add_prediction_row,

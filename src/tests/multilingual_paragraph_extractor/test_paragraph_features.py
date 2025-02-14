@@ -4,12 +4,12 @@ from unittest import TestCase
 from pdf_token_type_labels.TokenType import TokenType
 
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
-from trainable_entity_extractor.XmlFile import XmlFile
+from trainable_entity_extractor.use_cases.XmlFile import XmlFile
 from trainable_entity_extractor.config import APP_PATH
-from trainable_entity_extractor.data.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.data.PdfData import PdfData
-from trainable_entity_extractor.data.SegmentBox import SegmentBox
-from trainable_entity_extractor.data.SegmentationData import SegmentationData
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.PdfData import PdfData
+from trainable_entity_extractor.domain.SegmentBox import SegmentBox
+from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 
 
 class TestParagraphFeatures(TestCase):
