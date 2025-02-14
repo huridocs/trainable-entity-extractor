@@ -24,3 +24,9 @@ class XmlFile:
             return join(self.extraction_identifier.get_path(), "xml_to_train")
 
         return join(self.extraction_identifier.get_path(), "xml_to_predict")
+
+    def delete(self):
+        if not self.xml_file_name:
+            return
+        file_path = Path(f"{self.xml_folder_path}/{self.xml_file_name}")
+        file_path.unlink()
