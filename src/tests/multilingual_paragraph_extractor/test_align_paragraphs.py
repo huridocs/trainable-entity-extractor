@@ -179,10 +179,10 @@ class TestAlignParagraphs(TestCase):
         self.assertEqual("a 0. tr", paragraphs_from_languages[1]._aligned_paragraphs[0].text_cleaned)
 
         self.assertEqual("b 1: en", paragraphs_from_languages[0]._aligned_paragraphs[1].text_cleaned)
-        self.assertEqual("b 1: tr c 2! tr", paragraphs_from_languages[1]._aligned_paragraphs[1].text_cleaned)
+        self.assertEqual("b 1: tr", paragraphs_from_languages[1]._aligned_paragraphs[1].text_cleaned)
 
         self.assertEqual("c 2! en", paragraphs_from_languages[0]._aligned_paragraphs[2].text_cleaned)
-        self.assertEqual("", paragraphs_from_languages[1]._aligned_paragraphs[2].text_cleaned)
+        self.assertEqual("c 2! tr", paragraphs_from_languages[1]._aligned_paragraphs[2].text_cleaned)
 
     def test_align_paragraphs_when_one_paragraph_corresponds_to_two(self):
         paragraphs = self.get_paragraphs("en")
