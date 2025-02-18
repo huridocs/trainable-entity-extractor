@@ -99,23 +99,32 @@ class ParagraphsFromLanguage(BaseModel):
 
     @staticmethod
     def is_paragraph_separators(text: str) -> bool:
+        text = text.strip()
+
+        # General pattern for common list markers
         patterns = [
-            r"(?:^|\s+)(\d+)\.",  # Matches numbers followed by a dot
-            r"(?:^|\s+)(\d+)",  # Matches numbers
-            r"(?:^|\s+)\((\d+)\)",  # Matches numbers inside parentheses
-            r"(?:^|\s+)([a-z])\)",  # Matches lowercase letters followed by a closing parenthesis
-            r"(?:^|\s+)([A-Z])\)",  # Matches uppercase letters followed by a closing parenthesis
-            r"^[a-fA-F]$",  # Matches single characters a-f or A-F
-            r"(?:^|\s+)([ivx]+)",  # Matches Roman numerals in lowercase
-            r"(?:^|\s+)([IVXLC]+)",  # Matches Roman numerals in uppercase
-            r"(?:^|\s+)([•*•-])",  # Matches bullet points
+            # Numbers with different decorators: 1. 1) (1) 1- etc.
+            r"^\d+[\.\)\-]?$",
+            r"^\(\d+\)$",
+            # Letters with different decorators: a. a) (a) A. A) (A) etc.
+            r"^[a-zA-Z][\.\)\-]?$",
+            r"^\([a-zA-Z]\)$",
+            # Roman numerals (both cases) with different decorators: i. I. (i) (I) etc.
+            r"^(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|xiii|xiv|xv)[\.\)\-]?$",
+            r"^(?:I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV)[\.\)\-]?$",
+            r"^\((?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|xiii|xiv|xv)\)$",
+            r"^\((?:I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV)\)$",
+            # Common bullet points and decorative markers
+            r"^[-–—•∙◦○●\*\+]$",
+            # Square brackets: [1] [a] etc.
+            r"^\[\d+\]$",
+            r"^\[[a-zA-Z]\]$",
+            # Additional common separators
+            r"^§\s*\d+$",  # Section symbol with number
+            r"^¶\s*\d+$",  # Paragraph symbol with number
         ]
 
-        for pattern in patterns:
-            for _ in re.finditer(pattern, text):
-                return True
-
-        return False
+        return any(re.match(pattern, text, re.IGNORECASE) for pattern in patterns)
 
     def fix_segmentation(self):
         previous_paragraph_count = len(self.paragraphs)
@@ -363,3 +372,7 @@ class ParagraphsFromLanguage(BaseModel):
         if not self._aligned_paragraphs:
             return False
         return len(self._aligned_paragraphs) == len(main_language.paragraphs)
+
+
+if __name__ == "__main__":
+    print(ParagraphsFromLanguage.is_paragraph_separators("(vi)"))
