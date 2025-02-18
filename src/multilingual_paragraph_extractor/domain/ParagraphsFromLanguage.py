@@ -47,11 +47,14 @@ class ParagraphsFromLanguage(BaseModel):
 
     def fix_segments(self, main_language: "ParagraphsFromLanguage") -> bool:
         self.align(main_language)
-        segmentation_fixed = self.fix_segmentation()
+        segmentation_fixed = self.fix_other_language_segmentation()
         if segmentation_fixed:
             self.align(main_language)
-        main_segmentation_fixed = self.assign_unmatch_paragraphs_merging_it_with_other()
-        if segmentation_fixed or main_segmentation_fixed:
+        main_segmentation_fixed = self.fix_main_language_when_other_language_not_assigned()
+        if main_segmentation_fixed:
+            self.align(main_language)
+        main_segmentation_fixed_2 = self.fix_main_language_when_main_language_not_assigned()
+        if segmentation_fixed or main_segmentation_fixed or main_segmentation_fixed_2:
             return True
         return False
 
@@ -126,7 +129,7 @@ class ParagraphsFromLanguage(BaseModel):
 
         return any(re.match(pattern, text, re.IGNORECASE) for pattern in patterns)
 
-    def fix_segmentation(self):
+    def fix_other_language_segmentation(self):
         previous_paragraph_count = len(self.paragraphs)
         for main_unassigned_paragraph in reversed(self._main_language_paragraphs):
             if main_unassigned_paragraph in self._alignment_scores:
@@ -303,7 +306,7 @@ class ParagraphsFromLanguage(BaseModel):
 
             self._aligned_paragraphs[idx] = paragraph
 
-    def assign_unmatch_paragraphs_merging_it_with_other(self):
+    def fix_main_language_when_other_language_not_assigned(self):
         inverse_alignment_scores = {score.other_paragraph: score for score in self._alignment_scores.values()}
         main_paragraphs_count = len(self._main_language_paragraphs)
         paragraphs_to_be_remove = list()
@@ -333,6 +336,46 @@ class ParagraphsFromLanguage(BaseModel):
         for paragraph in paragraphs_to_be_remove:
             if paragraph in self.paragraphs:
                 self.paragraphs.remove(paragraph)
+
+        return len(paragraphs_to_be_remove) != 0 or main_paragraphs_count != len(self._main_language_paragraphs)
+
+    def fix_main_language_when_main_language_not_assigned(self):
+        main_paragraphs_count = len(self._main_language_paragraphs)
+        paragraphs_to_be_remove = list()
+        for paragraph_to_be_merged in reversed(self._main_language_paragraphs):
+            if paragraph_to_be_merged in self._alignment_scores:
+                continue
+
+            idx = self._main_language_paragraphs.index(paragraph_to_be_merged)
+            previous_paragraph = self._main_language_paragraphs[idx - 1] if idx > 0 else None
+            if previous_paragraph in self._alignment_scores:
+                score = self._alignment_scores[previous_paragraph].score
+                other_to_compare = self._alignment_scores[previous_paragraph].other_paragraph
+                if self.should_merge_paragraphs(other_to_compare, score, previous_paragraph, paragraph_to_be_merged):
+                    merged = previous_paragraph.merge(paragraph_to_be_merged)
+                    self._main_language_paragraphs[idx - 1] = merged
+                    self._alignment_scores[merged] = AlignmentScore(
+                        main_paragraph=merged,
+                        other_paragraph=other_to_compare,
+                        score=score,
+                    )
+                    paragraphs_to_be_remove.append(paragraph_to_be_merged)
+                    continue
+
+            next_paragraph = (
+                self._main_language_paragraphs[idx + 1] if idx + 1 < len(self._main_language_paragraphs) else None
+            )
+            if next_paragraph not in self._alignment_scores:
+                continue
+            other_to_compare = self._alignment_scores[next_paragraph].other_paragraph
+            score = self._alignment_scores[next_paragraph].score
+            if self.should_merge_paragraphs(other_to_compare, score, paragraph_to_be_merged, next_paragraph):
+                self._main_language_paragraphs[idx + 1] = paragraph_to_be_merged.merge(next_paragraph)
+                paragraphs_to_be_remove.append(next_paragraph)
+
+        for paragraph in paragraphs_to_be_remove:
+            if paragraph in self._main_language_paragraphs:
+                self._main_language_paragraphs.remove(paragraph)
 
         return len(paragraphs_to_be_remove) != 0 or main_paragraphs_count != len(self._main_language_paragraphs)
 
