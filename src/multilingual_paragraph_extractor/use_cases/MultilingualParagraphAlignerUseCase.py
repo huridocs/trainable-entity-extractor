@@ -10,6 +10,19 @@ class MultilingualParagraphAlignerUseCase:
         if not paragraphs_from_languages:
             return []
 
+        self.clean_paragraphs(paragraphs_from_languages)
+        main_language, other_languages = self.get_main_and_other_languages(paragraphs_from_languages)
+        self.fix_segmentation(main_language, other_languages)
+
+        for other_language_paragraphs in other_languages:
+            other_language_paragraphs.align(main_language)
+
+        main_language.set_as_main_language()
+        for other_language_paragraphs in other_languages:
+            other_language_paragraphs.replace_paragraphs_to_aligned()
+
+    @staticmethod
+    def clean_paragraphs(paragraphs_from_languages):
         for paragraphs_from_language in paragraphs_from_languages:
             paragraphs_from_language.remove_big_no_text_paragraphs()
             paragraphs_from_language.remove_no_text_paragraphs()
@@ -17,27 +30,15 @@ class MultilingualParagraphAlignerUseCase:
             paragraphs_from_language.merge_paragraphs_spanning_two_pages()
             paragraphs_from_language.remove_no_text_types()
 
-        main_language, other_languages = self.get_main_and_other_languages(paragraphs_from_languages)
-
-        self.fix_segmentation(main_language, other_languages)
-
-        if not self.are_aligned(main_language, other_languages):
-            for other_language_paragraphs in other_languages:
-                other_language_paragraphs.align(main_language)
-
-        main_language.set_as_main_language()
-        for other_language_paragraphs in other_languages:
-            other_language_paragraphs.replace_paragraphs_to_aligned()
-
     @staticmethod
     def fix_segmentation(main_language, other_languages):
         for i in range(4):
-            main_paragraphs_changed = False
+            paragraphs_changed = False
             for other_language_paragraphs in other_languages:
                 if other_language_paragraphs.fix_segments(main_language):
-                    main_paragraphs_changed = True
+                    paragraphs_changed = True
 
-            if not main_paragraphs_changed:
+            if not paragraphs_changed:
                 break
 
     @staticmethod

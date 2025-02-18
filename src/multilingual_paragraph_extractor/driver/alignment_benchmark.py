@@ -157,6 +157,6 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True, file_fi
 if __name__ == "__main__":
     model_name = "vgt"
     show_mistakes = False
-    # file_filter = ["ohchr_1_en_ru"]
+    # file_filter = ["ohchr_2_en_fr"]
     file_filter = []
     get_alignment_benchmark(model_name, show_mistakes, file_filter)

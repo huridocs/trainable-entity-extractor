@@ -12,7 +12,7 @@ from multilingual_paragraph_extractor.domain.ParagraphMatchScore import Paragrap
 BLOCK_SIZE = 10
 THRESHOLD = [0.9, 0.86, 0.82, 0.78]
 HEADER_SIMILARITY_THRESHOLD = 90
-TOP_OF_PAGE_THRESHOLD = 0.1
+TOP_OF_PAGE_THRESHOLD = 0.2
 REPEATED_HEADER_THRESHOLD = 0.2
 
 
@@ -22,7 +22,7 @@ class ParagraphsFromLanguage(BaseModel):
     is_main_language: bool
     _aligned_paragraphs: list[ParagraphFeatures] = list()
     _alignment_scores: dict[ParagraphFeatures, AlignmentScore] = dict()
-    _main_language_paragraphs = list[ParagraphFeatures]
+    _main_language_paragraphs: list[ParagraphFeatures] = list()
 
     class Config:
         arbitrary_types_allowed = True
@@ -47,16 +47,10 @@ class ParagraphsFromLanguage(BaseModel):
 
     def fix_segments(self, main_language: "ParagraphsFromLanguage") -> bool:
         self.align(main_language)
-        segmentation_fixed = self.fix_other_language_segmentation()
-        if segmentation_fixed:
-            self.align(main_language)
-        main_segmentation_fixed = self.fix_main_language_when_other_language_not_assigned()
-        if main_segmentation_fixed:
-            self.align(main_language)
-        main_segmentation_fixed_2 = self.fix_main_language_when_main_language_not_assigned()
-        if segmentation_fixed or main_segmentation_fixed or main_segmentation_fixed_2:
-            return True
-        return False
+        segmentation_changed = self.fix_other_language_segmentation()
+        segmentation_changed = self.fix_main_language_when_other_language_not_assigned() or segmentation_changed
+        segmentation_changed = self.fix_main_language_when_main_language_not_assigned() or segmentation_changed
+        return segmentation_changed
 
     def remove_no_text_types(self):
         text_content_types = [
@@ -427,7 +421,3 @@ class ParagraphsFromLanguage(BaseModel):
                 and paragraph.bounding_box.area() / len(paragraph.original_text) > 120
             )
         ]
-
-
-if __name__ == "__main__":
-    print(ParagraphsFromLanguage.is_paragraph_separators("(vi)"))
