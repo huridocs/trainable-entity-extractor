@@ -127,10 +127,20 @@ class ParagraphFeatures(BaseModel):
         if not next_segment.text_cleaned[0].isalnum():
             return False
 
-        if self.last_token_bounding_box.right < self.bounding_box.right - 0.1 * self.bounding_box.width:
+        if (
+            self.last_token_bounding_box
+            and self.last_token_bounding_box.right < self.bounding_box.right - 0.15 * self.bounding_box.width
+        ):
             return False
 
-        if self.last_token_bounding_box.right < self.page_width - 0.2 * self.page_width:
+        if self.last_token_bounding_box and self.last_token_bounding_box.right < self.page_width - 0.3 * self.page_width:
+            return False
+
+        if (
+            self.first_token_bounding_box
+            and next_segment.first_token_bounding_box
+            and 0.1 * self.page_width < abs(self.first_token_bounding_box.left - next_segment.first_token_bounding_box.left)
+        ):
             return False
 
         return True

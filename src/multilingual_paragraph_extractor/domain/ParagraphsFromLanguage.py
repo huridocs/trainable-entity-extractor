@@ -416,6 +416,18 @@ class ParagraphsFromLanguage(BaseModel):
             return False
         return len(self._aligned_paragraphs) == len(main_language.paragraphs)
 
+    def remove_big_no_text_paragraphs(self):
+        threshold_area = 0.2 * self.paragraphs[0].page_width * self.paragraphs[0].page_height
+        self.paragraphs = [
+            paragraph
+            for paragraph in self.paragraphs
+            if not (
+                paragraph.bounding_box.area() > threshold_area
+                and len(paragraph.original_text)
+                and paragraph.bounding_box.area() / len(paragraph.original_text) > 120
+            )
+        ]
+
 
 if __name__ == "__main__":
     print(ParagraphsFromLanguage.is_paragraph_separators("(vi)"))

@@ -22,6 +22,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
             text_cleaned="Text.",
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
+            first_token_bounding_box=last_token_bounding_box,
         )
         beginning_paragraphs = ParagraphFeatures(
             page_number=1,
@@ -29,6 +30,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
             text_cleaned="Text to be continued",
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
+            first_token_bounding_box=last_token_bounding_box,
         )
         end_paragraphs = ParagraphFeatures(
             page_number=2,
@@ -36,6 +38,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
             text_cleaned="here",
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
+            first_token_bounding_box=last_token_bounding_box,
         )
         regular_paragraph_2 = ParagraphFeatures(
             page_number=2,
@@ -43,6 +46,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
             text_cleaned="Text.",
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
+            first_token_bounding_box=last_token_bounding_box,
         )
 
         return regular_paragraph_1, beginning_paragraphs, end_paragraphs, regular_paragraph_2
