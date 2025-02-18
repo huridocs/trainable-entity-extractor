@@ -9,6 +9,8 @@ from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScor
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from multilingual_paragraph_extractor.domain.ParagraphMatchScore import ParagraphMatchScore
 
+from ollama import Client
+
 BLOCK_SIZE = 10
 THRESHOLD = [0.9, 0.86, 0.82, 0.78]
 HEADER_SIMILARITY_THRESHOLD = 90
@@ -26,6 +28,95 @@ class ParagraphsFromLanguage(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+    @staticmethod
+    def get_llm_paragraph_comparison_content(paragraph_1: ParagraphFeatures, paragraph_2: ParagraphFeatures):
+        #         return f"""You are going to receive two paragraphs from different languages.
+        # Your task is to determine if these two paragraphs contains the same information or not.
+        # If these paragraphs contains the same information, reply "True"
+        # If these paragraphs contains different information, reply "False"
+        #
+        # ### PARAGRAPH 1:
+        # {paragraph_1.original_text}
+        #
+        # ### PARAGRAPH 2:
+        # {paragraph_2.original_text}
+        #
+        # ### ANSWER (True/False):
+        # """
+        return f"""You are an expert in multilingual text analysis. You will receive two paragraphs written in different languages.
+
+Your task is to determine if these two paragraphs convey the *same core information* or not. Focus on the meaning and intent of the paragraphs, not on their literal wording or structure.
+
+### Instructions:
+1. If the two paragraphs convey the same core information, regardless of differences in phrasing or language, reply "True".
+2. If the two paragraphs convey different information, reply "False".
+3. Do not provide any additional explanation or commentary—only reply with "True" or "False".
+
+### PARAGRAPH 1:
+{paragraph_1.original_text}
+
+### PARAGRAPH 2:
+{paragraph_2.original_text}
+
+### ANSWER (True/False):
+"""
+
+    def get_paragraphs_between(self, main_paragraph: ParagraphFeatures):
+        current_main_paragraph_index = self._main_language_paragraphs.index(main_paragraph)
+        previous_assigned_main_paragraph_index = 0
+        next_assigned_main_paragraph_index = len(self._main_language_paragraphs) - 1
+
+        for paragraph_index in range(current_main_paragraph_index - 1, -1, -1):
+            if self._main_language_paragraphs[paragraph_index] in self._alignment_scores:
+                previous_assigned_main_paragraph_index = paragraph_index
+                break
+
+        for paragraph_index in range(current_main_paragraph_index + 1, len(self._main_language_paragraphs)):
+            if self._main_language_paragraphs[paragraph_index] in self._alignment_scores:
+                next_assigned_main_paragraph_index = paragraph_index
+                break
+
+        previous_assigned_main_paragraph = self._main_language_paragraphs[previous_assigned_main_paragraph_index]
+        next_assigned_main_paragraph = self._main_language_paragraphs[next_assigned_main_paragraph_index]
+
+        previous_assigned_paragraph_index = 0
+        next_assigned_paragraph_index = len(self.paragraphs) - 1
+
+        if previous_assigned_main_paragraph in self._alignment_scores:
+            other_paragraph = self._alignment_scores[previous_assigned_main_paragraph].other_paragraph
+            previous_assigned_paragraph_index = self.paragraphs.index(other_paragraph)
+
+        if next_assigned_main_paragraph in self._alignment_scores:
+            other_paragraph = self._alignment_scores[next_assigned_main_paragraph].other_paragraph
+            next_assigned_paragraph_index = self.paragraphs.index(other_paragraph)
+
+        paragraphs_between = self.paragraphs[previous_assigned_paragraph_index:next_assigned_paragraph_index]
+
+        return [x for x in paragraphs_between if x not in self._aligned_paragraphs]
+
+    def align_hanging_paragraphs_with_llm(self):
+        client = Client(host=f"http://localhost:11434")
+        for main_paragraph in self._main_language_paragraphs:
+            if main_paragraph in self._alignment_scores:
+                continue
+            # not_assigned_paragraphs = [x for x in self.paragraphs if x not in self._aligned_paragraphs]
+            not_assigned_paragraphs = self.get_paragraphs_between(main_paragraph)
+
+            for paragraph in not_assigned_paragraphs:
+
+                content = self.get_llm_paragraph_comparison_content(main_paragraph, paragraph)
+                response = client.chat(model="qwen2.5:32b", messages=[{"role": "user", "content": content}])
+                answer = response["message"]["content"]
+
+                if "True" in answer:
+                    alignment_score = AlignmentScore(
+                        main_paragraph=main_paragraph,
+                        other_paragraph=paragraph,
+                        score=11.1,
+                    )
+                    self._aligned_paragraphs.append(paragraph)
+                    self._alignment_scores[main_paragraph] = alignment_score
 
     def replace_paragraphs_to_aligned(self):
         self.paragraphs = self._aligned_paragraphs
