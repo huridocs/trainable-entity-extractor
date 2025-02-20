@@ -412,12 +412,23 @@ class ParagraphsFromLanguage(BaseModel):
 
     def remove_big_no_text_paragraphs(self):
         threshold_area = 0.2 * self.paragraphs[0].page_width * self.paragraphs[0].page_height
-        self.paragraphs = [
-            paragraph
-            for paragraph in self.paragraphs
-            if not (
-                paragraph.bounding_box.area() > threshold_area
-                and len(paragraph.original_text)
-                and paragraph.bounding_box.area() / len(paragraph.original_text) > 120
-            )
-        ]
+        fixed_paragraphs = list()
+
+        for paragraph in self.paragraphs:
+            if not len(paragraph.original_text):
+                continue
+
+            if paragraph.bounding_box.area() < threshold_area:
+                fixed_paragraphs.append(paragraph)
+                continue
+            if paragraph.font.font_size > 10:
+                font_size_corrector = 1 + abs(paragraph.font.font_size - 10) / 10
+            else:
+                font_size_corrector = 1 - abs(paragraph.font.font_size - 10) / 10
+
+            if paragraph.bounding_box.area() / (len(paragraph.original_text) * font_size_corrector) > 100:
+                continue
+
+            fixed_paragraphs.append(paragraph)
+
+        self.paragraphs = fixed_paragraphs

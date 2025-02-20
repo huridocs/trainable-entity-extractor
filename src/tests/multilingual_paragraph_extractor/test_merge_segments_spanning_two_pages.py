@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+from pdf_features.PdfFont import PdfFont
 from pdf_features.Rectangle import Rectangle
 
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
@@ -16,6 +17,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
     @staticmethod
     def get_paragraphs():
         last_token_bounding_box = Rectangle.from_coordinates(0, 0, 100, 100)
+        font = PdfFont(font_id="0", font_size=10, bold=False, italics=False, color="#000000")
         regular_paragraph_1 = ParagraphFeatures(
             page_number=1,
             original_text="Text.",
@@ -23,6 +25,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
             first_token_bounding_box=last_token_bounding_box,
+            font=font,
         )
         beginning_paragraphs = ParagraphFeatures(
             page_number=1,
@@ -31,6 +34,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
             first_token_bounding_box=last_token_bounding_box,
+            font=font,
         )
         end_paragraphs = ParagraphFeatures(
             page_number=2,
@@ -39,6 +43,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
             first_token_bounding_box=last_token_bounding_box,
+            font=font,
         )
         regular_paragraph_2 = ParagraphFeatures(
             page_number=2,
@@ -47,6 +52,7 @@ class TestMergeSegmentsSpanningTwoPages(TestCase):
             page_width=100,
             last_token_bounding_box=last_token_bounding_box,
             first_token_bounding_box=last_token_bounding_box,
+            font=font,
         )
 
         return regular_paragraph_1, beginning_paragraphs, end_paragraphs, regular_paragraph_2
