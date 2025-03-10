@@ -49,7 +49,7 @@ def get_segmentation_data(pdf_path: Path):
         "-X",
         "POST",
         "-F",
-        "fast=false",
+        "fast=true",
         "-F",
         f"file=@{pdf_path}",
         "localhost:5060",
@@ -92,6 +92,9 @@ def save_pdfs_data():
             continue
 
         pdf_data = get_pdf_data(xml_path.name.replace(".xml", ""))
+
+        if not pdf_data_pickle.parent.exists():
+            pdf_data_pickle.parent.mkdir(parents=True)
 
         with open(pdf_data_pickle, "wb") as f:
             pickle.dump(pdf_data, f)
