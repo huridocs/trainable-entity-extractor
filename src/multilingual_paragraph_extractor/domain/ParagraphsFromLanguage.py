@@ -432,3 +432,10 @@ class ParagraphsFromLanguage(BaseModel):
             fixed_paragraphs.append(paragraph)
 
         self.paragraphs = fixed_paragraphs
+
+    def to_db(self):
+        return ParagraphsFromLanguage(
+            language=self.language,
+            paragraphs=[x.to_db() for x in self.paragraphs],
+            is_main_language=self.is_main_language,
+        )

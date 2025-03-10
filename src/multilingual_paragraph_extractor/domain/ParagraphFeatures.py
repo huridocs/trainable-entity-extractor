@@ -256,3 +256,15 @@ class ParagraphFeatures(BaseModel):
             return 0
 
         return (next_paragraph.first_token_bounding_box.top - self.last_token_bounding_box.bottom) / self.page_height
+
+    def to_db(self):
+        return ParagraphFeatures(
+            index=self.index,
+            page_height=self.page_height,
+            page_width=self.page_width,
+            paragraph_type=self.paragraph_type,
+            page_number=self.page_number,
+            bounding_box=self.bounding_box,
+            text_cleaned=self.text_cleaned,
+            original_text=self.original_text,
+        )
