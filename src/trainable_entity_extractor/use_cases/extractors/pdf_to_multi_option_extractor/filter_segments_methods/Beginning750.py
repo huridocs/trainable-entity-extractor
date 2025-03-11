@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import Optional
 
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.FilterSegmentsMethod import (
@@ -22,7 +23,7 @@ class Beginning750(FilterSegmentsMethod):
         return filtered_segments
 
     @staticmethod
-    def get_segment(pdf_data_segment: PdfDataSegment, character_limit: int):
+    def get_segment(pdf_data_segment: PdfDataSegment, character_limit: int) -> Optional[PdfDataSegment]:
         if character_limit <= 0:
             return None
 

@@ -109,8 +109,8 @@ class AvoidingWords:
 
         avoiding_words = Counter()
         for segment in [segment for segment in self.segments if segment.pdf_segment.ml_label]:
-            text_tokens = word_tokenize(segment.next_segment.text_cleaned) if segment.next_segment else []
-            text_tokens += word_tokenize(segment.previous_segment.text_cleaned) if segment.previous_segment else []
+            text_tokens = word_tokenize(segment.next_segment.text_content) if segment.next_segment else []
+            text_tokens += word_tokenize(segment.previous_segment.text_content) if segment.previous_segment else []
             avoiding_words.update(
                 [
                     word.lower()

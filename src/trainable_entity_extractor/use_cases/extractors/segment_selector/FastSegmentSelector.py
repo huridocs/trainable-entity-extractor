@@ -150,8 +150,8 @@ class FastSegmentSelector(SegmentSelectorBase):
             return []
 
         model = lgb.Booster(model_file=self.model_path)
-        predictions = model.predict(x)
-
+        predictions_array = model.predict(x)
+        predictions = list(predictions_array) if predictions_array is not None else []
         return self.predictions_scores_to_segments(segments, predictions)
 
     def predictions_scores_to_segments(self, segments: list[PdfDataSegment], prediction_scores: list[float]):

@@ -14,7 +14,7 @@ class End750(Beginning750):
             if not pdf_data_segment_copy:
                 break
 
-            total_text += " " + pdf_data_segment_copy.text_cleaned
+            total_text += " " + pdf_data_segment_copy.text_content
             filtered_segments.append(pdf_data_segment_copy)
 
         return list(reversed(filtered_segments))
