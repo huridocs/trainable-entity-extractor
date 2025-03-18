@@ -74,7 +74,7 @@ def cache_pdf_data(pdf_name: str, pickle_path: Path):
 
     segments: list[SegmentBox] = [SegmentBox(**segment_box) for segment_box in results.json()]
 
-    pdf_data = PdfData(pdf_features, file_name=pdf_name)
+    pdf_data = PdfData(pdf_features=pdf_features, file_name=pdf_name)
     segmentation_data = SegmentationData(
         page_width=segments[0].page_width,
         page_height=segments[0].page_height,

@@ -3,6 +3,7 @@ from typing import Optional
 from pdf_features.PdfToken import PdfToken
 from pdf_features.Rectangle import Rectangle
 from pdf_token_type_labels.TokenType import TokenType
+from pydantic import BaseModel
 
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from pdf_features.PdfFeatures import PdfFeatures
@@ -12,16 +13,16 @@ from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.use_cases.XmlFile import XmlFile
 
 
-class PdfData:
-    def __init__(self, pdf_features: Optional[PdfFeatures], file_name="", file_type: str = ""):
-        self.pdf_features: PdfFeatures = pdf_features
-        if not file_name and pdf_features:
-            self.file_name = pdf_features.file_name
-        else:
-            self.file_name = file_name
-        self.file_type = file_type
-        self.pdf_path = ""
-        self.pdf_data_segments: list[PdfDataSegment] = list()
+class PdfData(BaseModel):
+    pdf_features: Optional[PdfFeatures] = None
+    file_name: str = ""
+    file_type: str = ""
+    pdf_data_segments: list[PdfDataSegment] = list()
+    pdf_path: str = ""
+
+    def model_post_init(self, ctx):
+        if not self.file_name and self.pdf_features:
+            self.file_name = self.pdf_features.file_name
 
     def set_segments_from_segmentation_data(self, segmentation_data: SegmentationData):
         segments_tokens: dict[PdfDataSegment, list[PdfToken]] = dict()
@@ -70,7 +71,7 @@ class PdfData:
 
     @staticmethod
     def get_blank():
-        return PdfData(None)
+        return PdfData()
 
     @staticmethod
     def from_xml_file(xml_file: XmlFile, segmentation_data: SegmentationData, pages_to_keep: list[int] = None) -> "PdfData":
@@ -89,7 +90,7 @@ class PdfData:
         if not pdf_features:
             return PdfData.get_blank()
 
-        pdf_data = PdfData(pdf_features)
+        pdf_data = PdfData(pdf_features=pdf_features)
         pdf_data.set_segments_from_segmentation_data(segmentation_data)
         pdf_data.set_ml_label_from_segmentation_data(segmentation_data)
         pdf_data.clean_text()
@@ -97,7 +98,7 @@ class PdfData:
 
     @staticmethod
     def from_texts(texts: list[str]):
-        pdf_data = PdfData(None)
+        pdf_data = PdfData()
         pdf_data.pdf_data_segments = PdfDataSegment.from_texts(texts)
         return pdf_data
 

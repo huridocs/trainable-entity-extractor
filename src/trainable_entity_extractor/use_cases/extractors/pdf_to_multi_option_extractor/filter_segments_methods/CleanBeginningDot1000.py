@@ -25,7 +25,7 @@ class CleanBeginningDot1000(FilterSegmentsMethod):
             filtered_segments.append(pdf_data_segment_copy)
 
         if not pdf_data_segments or "".join([x.text_content.strip() for x in filtered_segments]) == "":
-            return [PdfDataSegment(1, Rectangle.from_coordinates(0, 0, 0, 0), "no text")]
+            return [PdfDataSegment.from_values(1, Rectangle.from_coordinates(0, 0, 0, 0), "no text")]
 
         return filtered_segments
 

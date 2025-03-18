@@ -3,17 +3,27 @@ from statistics import mode
 from pdf_features.Rectangle import Rectangle
 from pdf_token_type_labels.TokenType import TokenType
 from pdf_features.PdfToken import PdfToken
+from pydantic import BaseModel
 
 
-class PdfDataSegment:
-    def __init__(
-        self, page_number: int, bounding_box: Rectangle, text_content: str, segment_type: TokenType = TokenType.TEXT
-    ):
-        self.page_number = page_number
-        self.bounding_box = bounding_box
-        self.text_content = text_content
-        self.ml_label = 0
-        self.segment_type: TokenType = segment_type
+class PdfDataSegment(BaseModel):
+    page_number: int
+    bounding_box: Rectangle
+    text_content: str
+    ml_label: int = 0
+    segment_type: TokenType = TokenType.TEXT
+
+    def __hash__(self):
+        return hash((self.page_number, self.bounding_box, self.text_content))
+
+    @staticmethod
+    def from_values(page_number: int, bounding_box: Rectangle, text_content: str, segment_type: TokenType = TokenType.TEXT):
+        return PdfDataSegment(
+            page_number=page_number,
+            bounding_box=bounding_box,
+            text_content=text_content,
+            segment_type=segment_type,
+        )
 
     def is_selected(self, bounding_box: Rectangle):
         if bounding_box.bottom < self.bounding_box.top or self.bounding_box.bottom < bounding_box.top:
@@ -44,7 +54,9 @@ class PdfDataSegment:
         text: str = " ".join([pdf_token.content for pdf_token in pdf_tokens])
         bounding_boxes = [pdf_token.bounding_box for pdf_token in pdf_tokens]
         segment_type = mode([token.token_type for token in pdf_tokens])
-        return PdfDataSegment(pdf_tokens[0].page_number, Rectangle.merge_rectangles(bounding_boxes), text, segment_type)
+        return PdfDataSegment.from_values(
+            pdf_tokens[0].page_number, Rectangle.merge_rectangles(bounding_boxes), text, segment_type
+        )
 
     @staticmethod
     def from_list_to_merge(pdf_segments_to_merge: list["PdfDataSegment"]):
@@ -64,8 +76,14 @@ class PdfDataSegment:
 
     @staticmethod
     def from_texts(texts: list[str]):
-        return [PdfDataSegment(i + 1, Rectangle.from_coordinates(0, 0, 0, 0), text) for i, text in enumerate(texts)]
+        return [
+            PdfDataSegment.from_values(i + 1, Rectangle.from_coordinates(0, 0, 0, 0), text) for i, text in enumerate(texts)
+        ]
 
     @staticmethod
     def from_text(text: str):
-        return PdfDataSegment(0, Rectangle.from_coordinates(0, 0, 0, 0), text)
+        return PdfDataSegment(
+            page_number=1,
+            bounding_box=Rectangle.from_coordinates(0, 0, 0, 0),
+            text_content=text,
+        )

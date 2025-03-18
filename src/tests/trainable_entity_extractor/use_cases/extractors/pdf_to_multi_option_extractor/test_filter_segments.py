@@ -81,7 +81,7 @@ class TestFilterSegments(TestCase):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
 
-        pdf_data_1 = PdfData(pdf_features=None)
+        pdf_data_1 = PdfData()
 
         samples = [
             TrainingSample(pdf_data_1, LabeledData(values=[options[0]])),

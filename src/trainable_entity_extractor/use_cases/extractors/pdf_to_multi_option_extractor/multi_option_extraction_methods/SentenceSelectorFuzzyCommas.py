@@ -92,6 +92,6 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
             sentence_segment.text_content = sentence
             sentence_segments.append(sentence_segment)
 
-        sentence_pdf_data = PdfData(pdf_features=None, file_name=sample.pdf_data.file_name)
+        sentence_pdf_data = PdfData(file_name=sample.pdf_data.file_name)
         sentence_pdf_data.pdf_data_segments = sentence_segments
         return TrainingSample(pdf_data=sentence_pdf_data, labeled_data=sample.labeled_data)

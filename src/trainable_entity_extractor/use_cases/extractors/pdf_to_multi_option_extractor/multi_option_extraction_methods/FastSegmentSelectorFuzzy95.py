@@ -58,7 +58,7 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
 
             self.mark_segments_for_context(selected_segments)
 
-            pdf_data = PdfData(None, file_name=sample.pdf_data.file_name)
+            pdf_data = PdfData(file_name=sample.pdf_data.file_name)
             pdf_data.pdf_data_segments = selected_segments
 
             training_sample = TrainingSample(pdf_data=pdf_data, labeled_data=sample.labeled_data)

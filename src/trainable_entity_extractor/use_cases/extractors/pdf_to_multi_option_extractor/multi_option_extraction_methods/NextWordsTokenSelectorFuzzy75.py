@@ -45,7 +45,7 @@ class NextWordsTokenSelectorFuzzy75(FastSegmentSelectorFuzzy95):
                 for page in sample.pdf_data.pdf_features.pages:
                     token_segments.extend([PdfDataSegment.from_pdf_token(token) for token in page.tokens])
 
-            pdf_data = PdfData(None, file_name=sample.pdf_data.file_name)
+            pdf_data = PdfData(file_name=sample.pdf_data.file_name)
             pdf_data.pdf_data_segments = token_segments
 
             training_sample = TrainingSample(pdf_data=pdf_data, labeled_data=sample.labeled_data)

@@ -15,9 +15,9 @@ class TestPDFData(TestCase):
         bounding_box = Rectangle.from_width_height(left, 0, 0, 0)
         token = PdfToken(
             page_number=1,
-            tag_id="tag",
+            id="tag",
             content=content,
-            pdf_font=font_12,
+            font=font_12,
             reading_order_no=0,
             bounding_box=bounding_box,
             token_type=TokenType.TEXT,

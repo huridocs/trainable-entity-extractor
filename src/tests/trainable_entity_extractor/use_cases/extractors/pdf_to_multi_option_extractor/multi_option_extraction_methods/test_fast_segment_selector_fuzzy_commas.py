@@ -136,7 +136,7 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
 
         prediction_samples = [
             TrainingSample(pdf_data_1, LabeledData(values=[])),
-            TrainingSample(PdfData(None), LabeledData(values=[])),
+            TrainingSample(PdfData(), LabeledData(values=[])),
             TrainingSample(PdfData.from_texts([]), LabeledData(values=[])),
             TrainingSample(PdfData.from_texts([""]), LabeledData(values=[])),
         ]
