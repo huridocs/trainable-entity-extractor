@@ -101,7 +101,7 @@ class ParagraphsFromLanguage(BaseModel):
         # General pattern for common list markers
         patterns = [
             # Numbers with different decorators: 1. 1) (1) 1- etc.
-            r"^\d+[\.\)\-]?$",
+            r"^\d+[\.\)\-]?\d*$",
             r"^\(\d+\)$",
             # Letters with different decorators: a. a) (a) A. A) (A) etc.
             r"^[a-zA-Z][\.\)\-]?$",

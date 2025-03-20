@@ -40,6 +40,10 @@ def get_paths(pdf_name):
     pdf_name = pdf_name + ".pdf"
     xml_path = Path(PARAGRAPH_EXTRACTION_PATH, "xmls", xml_name)
     pdf_path = Path(LABELED_DATA_PATH, "pdfs", pdf_name)
+
+    if not pdf_path.exists():
+        pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, "pdfs", pdf_name)
+
     return pdf_path, xml_path
 
 
@@ -49,7 +53,7 @@ def get_segmentation_data(pdf_path: Path):
         "-X",
         "POST",
         "-F",
-        "fast=true",
+        "fast=false",
         "-F",
         f"file=@{pdf_path}",
         "localhost:5060",

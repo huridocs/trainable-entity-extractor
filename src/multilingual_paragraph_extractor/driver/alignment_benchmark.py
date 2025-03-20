@@ -47,6 +47,9 @@ def add_annotation(annotator: PdfAnnotator, paragraph_features: ParagraphFeature
 
 def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
     pdf_path = Path(LABELED_DATA_PATH, "pdfs", truth_labels.get_main_pdf_name())
+    if not pdf_path.exists():
+        pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, "pdfs", truth_labels.get_main_pdf_name())
+
     output_pdf_path = Path(PARAGRAPH_EXTRACTION_PATH, "mistakes", truth_labels.get_mistakes_pdf_name())
 
     annotator = PdfAnnotator(str(pdf_path))
@@ -155,8 +158,8 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True, file_fi
 
 
 if __name__ == "__main__":
-    model_name = "lightgbm"
-    show_mistakes = False
+    model_name = "vgt"
+    show_mistakes = True
     # file_filter = ["ohchr_1_en_ru"]
     file_filter = []
     get_alignment_benchmark(model_name, show_mistakes, file_filter)
