@@ -59,8 +59,8 @@ def save_mistakes_paragraphs(paragraphs_from_languages):
         other.is_main_language = False
         MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_language, other])
         labels = get_labels(FILE_NAME, main_language, other)
-        # for label in labels:
-        #     save_mistakes(label, label)
+        for label in labels:
+            save_mistakes(label, label)
 
 
 if __name__ == "__main__":
