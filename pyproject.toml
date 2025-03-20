@@ -1,6 +1,6 @@
 [project]
 name = "trainable-entity-extractor"
-version = "2025.03.20.02"
+version = "2025.03.20.03"
 description = "This tool is a trainable text/PDF to entity extractor"
 license = { file = "LICENSE" }
 authors = [{ name = "HURIDOCS" }]
@@ -24,7 +24,7 @@ dependencies = [
     "rapidfuzz==3.8.1",
     "setfit==1.0.3",
     "fuzzywuzzy==0.18.0",
-    "pydantic==2.8.2",
+    "pydantic==2.10.6",
     "scikit-learn==1.5.1",
     "numpy==1.26.4",
     "lightgbm==4.5.0",
