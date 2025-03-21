@@ -35,9 +35,9 @@ class TestFuzzyMethods(TestCase):
         pdf_data_3 = PdfData.from_texts(["blah. item 10, item 1. blah"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[2]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[0], options[2]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[2]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[0], options[2]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -61,8 +61,8 @@ class TestFuzzyMethods(TestCase):
         pdf_data_2 = PdfData.from_texts(["blah, 10 item, item 1, blah"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[2]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[2]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -93,7 +93,7 @@ class TestFuzzyMethods(TestCase):
         pdf_data_1.pdf_data_segments[0].ml_label = 1
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -119,9 +119,9 @@ We are a human rights organisation too, and our ultimate vision is a world where
         pdf_data_3 = PdfData.from_texts(["foo", "var", "mark 1", "item 10", text])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0], options[1], options[2]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[1]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[2]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0], options[1], options[2]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[2]])),
         ] * 5
 
         multi_option_data = ExtractionData(
@@ -160,7 +160,7 @@ We are a human rights organisation too, and our ultimate vision is a world where
         pdf_data_1 = PdfData.from_texts(["blah. item 1. blah"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -183,9 +183,9 @@ We are a human rights organisation too, and our ultimate vision is a world where
         pdf_data_3 = PdfData.from_texts(["blah. item 10, item 1. blah"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[2]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[0], options[2]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[2]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[0], options[2]])),
         ]
 
         multi_option_data = ExtractionData(

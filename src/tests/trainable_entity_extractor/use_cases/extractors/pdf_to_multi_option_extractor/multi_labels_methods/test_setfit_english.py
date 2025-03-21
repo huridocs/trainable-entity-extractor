@@ -44,11 +44,11 @@ class TestSetFitEnglishMethod(TestCase):
         pdf_data_5 = PdfData.from_texts(["point 5"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[1], options[2]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[2]])),
-            TrainingSample(pdf_data_4, LabeledData(values=[options[3], options[0]])),
-            TrainingSample(pdf_data_5, LabeledData(values=[options[4]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[1], options[2]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[2]])),
+            TrainingSample(pdf_data=pdf_data_4, labeled_data=LabeledData(values=[options[3], options[0]])),
+            TrainingSample(pdf_data=pdf_data_5, labeled_data=LabeledData(values=[options[4]])),
         ]
 
         samples = samples * 2

@@ -28,10 +28,10 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         pdf_data_4 = PdfData.from_texts(["2, 3"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0], options[1]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[1]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[2], options[0]])),
-            TrainingSample(pdf_data_4, LabeledData(values=[options[1], options[2]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[2], options[0]])),
+            TrainingSample(pdf_data=pdf_data_4, labeled_data=LabeledData(values=[options[1], options[2]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -52,10 +52,10 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         pdf_data_4 = PdfData.from_texts(["4"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0], options[1]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[1]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[2], options[0]])),
-            TrainingSample(pdf_data_4, LabeledData(values=[options[1], options[2]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[2], options[0]])),
+            TrainingSample(pdf_data=pdf_data_4, labeled_data=LabeledData(values=[options[1], options[2]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -82,10 +82,10 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         pdf_data_5 = PdfData.from_texts(["4, 3"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0], options[1]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[1]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[2], options[0]])),
-            TrainingSample(pdf_data_4, LabeledData(values=[options[1], options[2]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[2], options[0]])),
+            TrainingSample(pdf_data=pdf_data_4, labeled_data=LabeledData(values=[options[1], options[2]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -96,8 +96,8 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         fast_segment_selector_fuzzy_commas.train(multi_option_data)
 
         prediction_samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[])),
-            TrainingSample(pdf_data_5, LabeledData(values=[])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[])),
+            TrainingSample(pdf_data=pdf_data_5, labeled_data=LabeledData(values=[])),
         ]
         prediction_multi_option_data = ExtractionData(
             multi_value=True, options=options, samples=prediction_samples, extraction_identifier=self.extraction_identifier
@@ -122,9 +122,9 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         pdf_data_3 = PdfData.from_texts(["3, 1"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0], options[1]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[1]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[2], options[0]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0], options[1]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[2], options[0]])),
         ]
 
         multi_option_data = ExtractionData(
@@ -135,10 +135,10 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         fast_segment_selector_fuzzy_commas.train(multi_option_data)
 
         prediction_samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[])),
-            TrainingSample(PdfData(), LabeledData(values=[])),
-            TrainingSample(PdfData.from_texts([]), LabeledData(values=[])),
-            TrainingSample(PdfData.from_texts([""]), LabeledData(values=[])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[])),
+            TrainingSample(pdf_data=PdfData(), labeled_data=LabeledData(values=[])),
+            TrainingSample(pdf_data=PdfData.from_texts([]), labeled_data=LabeledData(values=[])),
+            TrainingSample(pdf_data=PdfData.from_texts([""]), labeled_data=LabeledData(values=[])),
         ]
         prediction_multi_option_data = ExtractionData(
             multi_value=True, options=options, samples=prediction_samples, extraction_identifier=self.extraction_identifier

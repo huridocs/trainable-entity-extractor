@@ -72,7 +72,9 @@ class ToTextExtractorMethod:
         samples = performance_test_set.samples
         predictions = self.predict(
             [
-                PredictionSample(pdf_data=deepcopy(x.pdf_data), segment_selector_texts=x.segment_selector_texts)
+                PredictionSample(
+                    pdf_data=x.pdf_data.model_copy() if x.pdf_data else None, segment_selector_texts=x.segment_selector_texts
+                )
                 for x in samples
             ]
         )

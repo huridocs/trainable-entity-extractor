@@ -49,14 +49,22 @@ class TestSetFitEnglishMethod(TestCase):
         pdf_data_8 = PdfData.from_texts(["point 8"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[self.options[0]], language_iso="en")),
-            TrainingSample(pdf_data_2, LabeledData(values=[self.options[1], self.options[2]], language_iso="es")),
-            TrainingSample(pdf_data_3, LabeledData(values=[self.options[2], self.options[3]], language_iso="en")),
-            TrainingSample(pdf_data_4, LabeledData(values=[self.options[3]], language_iso="fr")),
-            TrainingSample(pdf_data_5, LabeledData(values=[self.options[4], self.options[0]], language_iso="en")),
-            TrainingSample(pdf_data_6, LabeledData(values=[self.options[5]], language_iso="en")),
-            TrainingSample(pdf_data_7, LabeledData(values=[self.options[6], self.options[5]], language_iso="ru")),
-            TrainingSample(pdf_data_8, LabeledData(values=[self.options[7]], language_iso="ru")),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[self.options[0]], language_iso="en")),
+            TrainingSample(
+                pdf_data=pdf_data_2, labeled_data=LabeledData(values=[self.options[1], self.options[2]], language_iso="es")
+            ),
+            TrainingSample(
+                pdf_data=pdf_data_3, labeled_data=LabeledData(values=[self.options[2], self.options[3]], language_iso="en")
+            ),
+            TrainingSample(pdf_data=pdf_data_4, labeled_data=LabeledData(values=[self.options[3]], language_iso="fr")),
+            TrainingSample(
+                pdf_data=pdf_data_5, labeled_data=LabeledData(values=[self.options[4], self.options[0]], language_iso="en")
+            ),
+            TrainingSample(pdf_data=pdf_data_6, labeled_data=LabeledData(values=[self.options[5]], language_iso="en")),
+            TrainingSample(
+                pdf_data=pdf_data_7, labeled_data=LabeledData(values=[self.options[6], self.options[5]], language_iso="ru")
+            ),
+            TrainingSample(pdf_data=pdf_data_8, labeled_data=LabeledData(values=[self.options[7]], language_iso="ru")),
         ]
 
         self.extraction_data_english_multi = ExtractionData(

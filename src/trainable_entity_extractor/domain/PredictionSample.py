@@ -1,13 +1,14 @@
-from dataclasses import dataclass
+from typing import Optional
+
+from pydantic import BaseModel
 
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 
 
-@dataclass
-class PredictionSample:
-    pdf_data: PdfData = None
-    segment_selector_texts: list[str] = None
+class PredictionSample(BaseModel):
+    pdf_data: Optional[PdfData] = None
+    segment_selector_texts: Optional[list[str]] = None
     source_text: str = ""
     entity_name: str = ""
 

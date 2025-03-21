@@ -1,21 +1,19 @@
-from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 from pdf_features.PdfFeatures import PdfFeatures
-from pdf_features.Rectangle import Rectangle
+from pydantic import BaseModel
 
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
-from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 
 
-@dataclass
-class TrainingSample:
-    pdf_data: PdfData = None
-    labeled_data: LabeledData = None
-    segment_selector_texts: list[str] = None
+class TrainingSample(BaseModel):
+    pdf_data: Optional[PdfData] = None
+    labeled_data: Optional[LabeledData] = None
+    segment_selector_texts: Optional[list[str]] = None
 
     def get_text(self):
         texts = list()

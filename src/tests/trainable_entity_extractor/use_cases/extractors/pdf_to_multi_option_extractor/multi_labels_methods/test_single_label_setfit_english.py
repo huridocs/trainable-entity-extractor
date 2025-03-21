@@ -36,9 +36,9 @@ class TestSetFitSingleLabelEnglishMethod(TestCase):
         pdf_data_3 = PdfData.from_texts(["point 3"])
 
         samples = [
-            TrainingSample(pdf_data_1, LabeledData(values=[options[0]])),
-            TrainingSample(pdf_data_2, LabeledData(values=[options[1]])),
-            TrainingSample(pdf_data_3, LabeledData(values=[options[2]])),
+            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
+            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[1]])),
+            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[2]])),
         ]
 
         extraction_data = ExtractionData(
