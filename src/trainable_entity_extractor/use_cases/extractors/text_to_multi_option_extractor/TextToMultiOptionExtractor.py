@@ -11,6 +11,9 @@ from trainable_entity_extractor.use_cases.extractors.ExtractorBase import Extrac
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
+from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.FirstWordRegex import (
+    FirstWordRegex,
+)
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextFastTextMethod import (
     TextFastTextMethod,
 )
@@ -55,6 +58,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     METHODS: list[Type[TextToMultiOptionMethod]] = [
         NaiveTextToMultiOptionMethod,
+        FirstWordRegex,
         TextFuzzyFirst,
         TextFuzzyFirstCleanLabels,
         TextFuzzyLast,

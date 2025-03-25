@@ -59,6 +59,117 @@ class TestTextToMultiOptionExtraction(TestCase):
         self.assertEqual([Option(id="3", label="3")], suggestions[1].values)
         self.assertEqual("entity_name_3", suggestions[1].entity_name)
 
+    def test_first_word_regex(self):
+        extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name="first_word_regex")
+        options = [Option(id="yes", label="yes"), Option(id="no", label="no")]
+
+        samples = [
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[0]],
+                    source_text="""139.1
+Finalize the ratification of the ILO Violence and Harassment
+Convention, 2019 (No. 190) (Democratic Republic of the Congo);""",
+                )
+            ),
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[0]],
+                    source_text="""139.6
+Continue enhancing its national mechanism for the implementation,
+reporting and follow-up of human rights recommendations (Angola);""",
+                )
+            ),
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[0]],
+                    source_text="""140.30
+Take specific measures, including strengthening the legal framework,
+to eliminate discrimination, hate speech and violence against lesbian, bisexual
+and transgender women, including by prosecuting and adequately punishing
+perpetrators, and adopt awareness-raising measures to address stigma within
+society (Liechtenstein);""",
+                )
+            ),
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[0]],
+                    source_text="""
+            140.46
+Consider introducing a universal basic income in order to better
+combat poverty and reduce inequalities, and improve the existing social
+protection system (Haiti);""",
+                )
+            ),
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[1]],
+                    source_text="""62.
+Viet Nam commended the strong commitment of Fiji to the advancement of the
+rights of women and children, especially in the context of mitigating the negative impact of
+climate change.""",
+                )
+            ),
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[1]],
+                    source_text="""35.
+The Republic of Korea appreciated efforts to protect persons with disabilities and
+welcomed the ratification of the remaining six human rights treaties.""",
+                )
+            ),
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[1]],
+                    source_text="""
+            Report of the Working Group on the Universal Periodic
+Review*""",
+                )
+            ),
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[1]],
+                    source_text="""
+            Original: English""",
+                )
+            ),
+            TrainingSample(
+                labeled_data=LabeledData(
+                    values=[options[1]],
+                    source_text="""
+            Human Rights Council
+Forty-third session
+24 February–20 March 2020
+Agenda item 6
+Universal periodic review""",
+                )
+            ),
+        ]
+
+        multi_option_data = ExtractionData(
+            multi_value=False, options=options, samples=samples, extraction_identifier=extraction_identifier
+        )
+
+        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
+        multi_option_extraction.create_model(multi_option_data)
+
+        prediction_sample_1 = PredictionSample(
+            source_text="""139.16
+Continue working with all stakeholders, including the International
+Labour Organization, to progress issues raised in the joint implementation
+report (Australia);""",
+            entity_name="entity_name_1",
+        )
+        prediction_sample_2 = PredictionSample(
+            source_text="""H.E. Ms. Nazhat Shameem Khan, Ambassador and Permanent Representative;""",
+            entity_name="entity_name_2",
+        )
+        suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_2])
+
+        self.assertEqual(2, len(suggestions))
+        self.assertEqual([options[0]], suggestions[0].values)
+        self.assertEqual([options[1]], suggestions[1].values)
+
     def test_multi_value(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
         options = [Option(id="0", label="0"), Option(id="1", label="1"), Option(id="2", label="2")]

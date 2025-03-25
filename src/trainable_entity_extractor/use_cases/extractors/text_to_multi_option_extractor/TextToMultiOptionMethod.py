@@ -24,17 +24,19 @@ class TextToMultiOptionMethod:
     def get_name(self):
         return self.__class__.__name__
 
+    def get_path(self, file_name) -> Path:
+        return Path(self.extraction_identifier.get_path(), self.get_name(), file_name)
+
     def save_json(self, file_name: str, data: any):
-        path = join(self.extraction_identifier.get_path(), self.get_name(), file_name)
-        if not exists(Path(path).parent):
-            os.makedirs(Path(path).parent)
+        path = self.get_path(file_name)
+        if not exists(path.parent):
+            os.makedirs(path.parent)
 
         with open(path, "w") as file:
             json.dump(data, file)
 
     def load_json(self, file_name: str):
-        path = join(self.extraction_identifier.get_path(), self.get_name(), file_name)
-
+        path = self.get_path(file_name)
         with open(path, "r") as file:
             return json.load(file)
 
