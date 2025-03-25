@@ -24,10 +24,10 @@ class TestExtractorTextToMultiOption(TestCase):
         options = [Option(id="1", label="abc"), Option(id="2", label="dfg"), Option(id="3", label="hij")]
 
         values_1 = [Option(id="1", label="abc"), Option(id="2", label="dfg")]
-        labeled_data_1 = LabeledData(language_iso="en", values=values_1, source_text="abc dfg")
+        labeled_data_1 = LabeledData(language_iso="en", values=values_1, source_text="foo abc dfg")
 
         values_2 = [Option(id="2", label="dfg"), Option(id="3", label="hij")]
-        labeled_data_2 = LabeledData(language_iso="en", values=values_2, source_text="dfg hij")
+        labeled_data_2 = LabeledData(language_iso="en", values=values_2, source_text="foo dfg hij")
 
         sample = [TrainingSample(labeled_data=labeled_data_1), TrainingSample(labeled_data=labeled_data_2)]
         extraction_data = ExtractionData(
