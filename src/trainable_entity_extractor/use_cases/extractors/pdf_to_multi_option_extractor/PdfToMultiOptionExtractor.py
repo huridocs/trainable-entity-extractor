@@ -193,6 +193,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
             if performance == 100:
                 send_logs(self.extraction_identifier, performance_log)
                 send_logs(self.extraction_identifier, f"Best method {method.get_name()} with {performance}%")
+                self.extraction_identifier.save_content("performance_log.txt", performance_log)
                 return method
 
             if performance > best_performance:
@@ -201,6 +202,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
 
         send_logs(self.extraction_identifier, performance_log)
         send_logs(self.extraction_identifier, f"Best method {best_method_instance.get_name()}")
+        self.extraction_identifier.save_content("performance_log.txt", performance_log)
         return best_method_instance
 
     def get_method_performance(

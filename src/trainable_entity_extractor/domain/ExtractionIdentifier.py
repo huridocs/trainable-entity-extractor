@@ -40,7 +40,9 @@ class ExtractionIdentifier(BaseModel):
         if not exists(path.parent):
             os.makedirs(path.parent, exist_ok=True)
 
-        if type(content) == list:
+        if type(content) == str:
+            path.write_text(content)
+        elif type(content) == list:
             path.write_text(json.dumps([x.model_dump() for x in content]))
         else:
             path.write_text(json.dumps(content))

@@ -106,6 +106,7 @@ class ToTextExtractor(ExtractorBase):
             if performance == 100:
                 send_logs(self.extraction_identifier, performance_log)
                 send_logs(self.extraction_identifier, f"Best method {method_instance.get_name()} with {performance}%")
+                self.extraction_identifier.save_content("performance_log.txt", performance_log)
                 return method_instance
 
             if performance > best_performance:
@@ -114,4 +115,5 @@ class ToTextExtractor(ExtractorBase):
 
         send_logs(self.extraction_identifier, performance_log)
         send_logs(self.extraction_identifier, f"Best method {best_method_instance.get_name()} with {best_performance}%")
+        self.extraction_identifier.save_content("performance_log.txt", performance_log)
         return best_method_instance

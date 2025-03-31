@@ -51,6 +51,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextSingleLabelSetFitMultilingual import (
     TextSingleLabelSetFitMultilingual,
 )
+from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 
 class TextToMultiOptionExtractor(ExtractorBase):
@@ -123,6 +124,8 @@ class TextToMultiOptionExtractor(ExtractorBase):
     def get_best_method(self, extraction_data: ExtractionData):
         best_performance = 0
         best_method_instance = self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
+        performance_log = "Performance aggregation:\n"
+
         for method in self.METHODS:
             method_instance = method(self.extraction_identifier, self.options, self.multi_value)
 
@@ -133,14 +136,21 @@ class TextToMultiOptionExtractor(ExtractorBase):
                 continue
 
             performance = self.get_performance(extraction_data, method_instance)
+            performance_log += f"{method_instance.get_name()}: {round(performance, 2)}%\n"
+
             if performance == 100:
-                config_logger.info(f"\nBest method {method_instance.get_name()} with {performance}%")
+                send_logs(self.extraction_identifier, performance_log)
+                send_logs(self.extraction_identifier, f"Best method {method_instance.get_name()} with {performance}%")
+                self.extraction_identifier.save_content("performance_log.txt", performance_log)
                 return method_instance
 
             if performance > best_performance:
                 best_performance = performance
                 best_method_instance = method_instance
 
+        send_logs(self.extraction_identifier, performance_log)
+        send_logs(self.extraction_identifier, f"Best method {best_method_instance.get_name()} with {best_performance}%")
+        self.extraction_identifier.save_content("performance_log.txt", performance_log)
         return best_method_instance
 
     @staticmethod
