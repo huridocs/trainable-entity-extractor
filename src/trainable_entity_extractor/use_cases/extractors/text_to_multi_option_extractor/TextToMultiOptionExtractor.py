@@ -14,7 +14,6 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.FirstWordRegex import (
     FirstWordRegex,
 )
-from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextBert import TextBert
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextFastTextMethod import (
     TextFastTextMethod,
 )
@@ -60,20 +59,19 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     METHODS: list[Type[TextToMultiOptionMethod]] = [
         NaiveTextToMultiOptionMethod,
-        # FirstWordRegex,
-        # TextFuzzyFirst,
-        # TextFuzzyFirstCleanLabels,
-        # TextFuzzyLast,
-        # TextFuzzyLastCleanLabels,
-        # TextFuzzyAll100,
-        # TextFuzzyAll88,
-        # TextFuzzyAll75,
-        # TextFastTextMethod,
-        # TextSetFit,
-        # TextSetFitMultilingual,
-        # TextSingleLabelSetFit,
-        # TextSingleLabelSetFitMultilingual,
-        TextBert,
+        FirstWordRegex,
+        TextFuzzyFirst,
+        TextFuzzyFirstCleanLabels,
+        TextFuzzyLast,
+        TextFuzzyLastCleanLabels,
+        TextFuzzyAll100,
+        TextFuzzyAll88,
+        TextFuzzyAll75,
+        TextFastTextMethod,
+        TextSetFit,
+        TextSetFitMultilingual,
+        TextSingleLabelSetFit,
+        TextSingleLabelSetFitMultilingual
     ]
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):
