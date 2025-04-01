@@ -61,22 +61,20 @@ class TextToMultiOptionExtractor(ExtractorBase):
     SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 
     METHODS: list[Type[TextToMultiOptionMethod]] = [
-        # NaiveTextToMultiOptionMethod,
-        # FirstWordRegex,
-        # TextFuzzyFirst,
-        # TextFuzzyFirstCleanLabels,
-        # TextFuzzyLast,
-        # TextFuzzyLastCleanLabels,
-        # TextFuzzyAll100,
-        # TextFuzzyAll88,
-        # TextFuzzyAll75,
-        # TextFastTextMethod,
-        # TextSetFit,
-        # TextSetFitMultilingual,
-        # TextSingleLabelSetFit,
-        # TextSingleLabelSetFitMultilingual,
-        TextBert,
-        TextSingleLabelBert
+        NaiveTextToMultiOptionMethod,
+        FirstWordRegex,
+        TextFuzzyFirst,
+        TextFuzzyFirstCleanLabels,
+        TextFuzzyLast,
+        TextFuzzyLastCleanLabels,
+        TextFuzzyAll100,
+        TextFuzzyAll88,
+        TextFuzzyAll75,
+        TextFastTextMethod,
+        TextSetFit,
+        TextSetFitMultilingual,
+        TextSingleLabelSetFit,
+        TextSingleLabelSetFitMultilingual,
     ]
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):
