@@ -71,7 +71,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         TextSetFit,
         TextSetFitMultilingual,
         TextSingleLabelSetFit,
-        TextSingleLabelSetFitMultilingual
+        TextSingleLabelSetFitMultilingual,
     ]
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):

@@ -118,3 +118,30 @@ class TestParagraphMatchScore(TestCase):
         self.assertEqual(0.5, match_score.font_style)
         self.assertEqual(0.5, match_score.font_size)
         self.assertTrue(0.4 < match_score.overall_score < 0.6)
+
+    def test_match_example(self):
+        p1, p2 = ParagraphFeatures.from_texts(
+            [
+                """118.1
+Ratify the remaining core international human rights treaties
+(Ukraine);""",
+                """118.1
+Ratifier ceux des principaux instruments internationaux relatifs aux
+droits de l’homme auxquels le pays n’est pas encore partie (Ukraine) ;""",
+            ]
+        )
+
+        p3, p4 = ParagraphFeatures.from_texts(
+            [
+                """118.11
+Consider the ratification of the Optional Protocol to the Convention on
+the Elimination of All Forms of Discrimination against Women (Chile);""",
+                """118.1
+Ratifier ceux des principaux instruments internationaux relatifs aux
+droits de l’homme auxquels le pays n’est pas encore partie (Ukraine) ;""",
+            ]
+        )
+
+        score_1 = ParagraphMatchScore.from_paragraphs_features(p1, p2).overall_score
+        score_2 = ParagraphMatchScore.from_paragraphs_features(p3, p4).overall_score
+        self.assertGreater(score_1, score_2)

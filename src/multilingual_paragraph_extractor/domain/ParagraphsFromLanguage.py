@@ -9,8 +9,8 @@ from multilingual_paragraph_extractor.domain.AlignmentScore import AlignmentScor
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
 from multilingual_paragraph_extractor.domain.ParagraphMatchScore import ParagraphMatchScore
 
-BLOCK_SIZE = 10
-THRESHOLD = [0.9, 0.86, 0.82, 0.78]
+BLOCK_SIZE = 50
+THRESHOLD = [0.9, 0.86, 0.82, 0.78, 0.74, 0.7]
 HEADER_SIMILARITY_THRESHOLD = 90
 TOP_OF_PAGE_THRESHOLD = 0.2
 REPEATED_HEADER_THRESHOLD = 0.2

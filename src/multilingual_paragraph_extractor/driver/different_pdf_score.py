@@ -1,5 +1,6 @@
 from multilingual_paragraph_extractor.domain.ParagraphsFromLanguage import ParagraphsFromLanguage
 from multilingual_paragraph_extractor.driver.Labels import Labels
+from multilingual_paragraph_extractor.driver.alignment_benchmark import save_mistakes
 from multilingual_paragraph_extractor.driver.label_data import get_paragraphs, EXTRACTION_IDENTIFIER
 from multilingual_paragraph_extractor.use_cases.MultilingualParagraphAlignerUseCase import (
     MultilingualParagraphAlignerUseCase,
@@ -20,7 +21,7 @@ def different_pdf_score(pdf_name_1: str, pdf_name_2: str):
     MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_paragraphs, other_paragraphs])
 
     label = get_label(main_paragraphs, other_paragraphs, pdf_name_1)
-    # save_mistakes(label, label)
+    save_mistakes(label, label)
     match_percentage = 100 * (
         1 - (len(main_paragraphs.paragraphs) - len(label.paragraphs)) / len(main_paragraphs.paragraphs)
     )
@@ -46,4 +47,4 @@ def get_label(main_paragraphs, other_paragraphs, pdf_name_1):
 
 
 if __name__ == "__main__":
-    different_pdf_score("ihrda_1_en", "ihrda_2_fr")
+    different_pdf_score("0ci6xjzev597_eng", "0ci6xjzev597_fra")
