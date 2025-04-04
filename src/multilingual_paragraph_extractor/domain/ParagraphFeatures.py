@@ -48,6 +48,8 @@ class ParagraphFeatures(BaseModel):
         self.numbers += paragraph_features.numbers
         self.numbers_by_spaces += paragraph_features.numbers_by_spaces
         self.non_alphanumeric_characters += paragraph_features.non_alphanumeric_characters
+        if self.page_number == paragraph_features.page_number:
+            self.bounding_box = Rectangle.merge_rectangles([self.bounding_box, paragraph_features.bounding_box])
         return self
 
     def split_paragraph(self, splitter_word: str) -> ("ParagraphFeatures", "ParagraphFeatures"):
@@ -144,6 +146,9 @@ class ParagraphFeatures(BaseModel):
             return False
 
         return True
+
+    def is_inside(self, bounding_box: Rectangle) -> bool:
+        return self.bounding_box.get_intersection_percentage(bounding_box) > 10
 
     @staticmethod
     def get_empty():

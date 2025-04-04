@@ -59,6 +59,35 @@ class ParagraphsFromLanguage(BaseModel):
         ]
         self.paragraphs = [x for x in self.paragraphs if x.paragraph_type in text_content_types]
 
+    def merge_colliding_segments(self):
+        fixed_paragraphs = []
+        index = 0
+
+        while index < len(self.paragraphs):
+            paragraph = self.paragraphs[index]
+
+            if index + 1 >= len(self.paragraphs):
+                fixed_paragraphs.append(paragraph)
+                index += 1
+                continue
+
+            if paragraph.is_inside(self.paragraphs[index + 1].bounding_box):
+                merged_segment = paragraph.merge(self.paragraphs[index + 1])
+                fixed_paragraphs.append(merged_segment)
+                index += 2
+                continue
+
+            if self.paragraphs[index + 1].is_inside(paragraph.bounding_box):
+                merged_segment = self.paragraphs[index + 1].merge(paragraph)
+                fixed_paragraphs.append(merged_segment)
+                index += 2
+                continue
+
+            fixed_paragraphs.append(paragraph)
+            index += 1
+
+        self.paragraphs = fixed_paragraphs
+
     def remove_no_text_paragraphs(self):
         self.paragraphs = [x for x in self.paragraphs if x.text_cleaned]
         self.paragraphs = [x for x in self.paragraphs if any(char.isalnum() for char in x.text_cleaned)]

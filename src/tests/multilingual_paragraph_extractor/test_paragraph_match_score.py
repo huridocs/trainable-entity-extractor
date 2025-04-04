@@ -145,3 +145,38 @@ droits de l’homme auxquels le pays n’est pas encore partie (Ukraine) ;""",
         score_1 = ParagraphMatchScore.from_paragraphs_features(p1, p2).overall_score
         score_2 = ParagraphMatchScore.from_paragraphs_features(p3, p4).overall_score
         self.assertGreater(score_1, score_2)
+
+    def test_match_example_2(self):
+        p1, p2 = ParagraphFeatures.from_texts(
+            [
+                """88.1
+Ratify the Optional Protocol to the International Covenant on Civil
+and Political Rights and the Second Optional Protocol to the International
+Covenant on Civil and Political Rights, aiming at the abolition of the death
+penalty (Cyprus);""",
+                """88.1
+Ratifier le Protocole facultatif se rapportant au Pacte international
+relatif aux droits civils et politiques et le deuxième Protocole facultatif se
+rapportant au Pacte international relatif aux droits civils et politiques, visant à
+abolir la peine de mort (Chypre) ;""",
+            ]
+        )
+
+        p3, p4 = ParagraphFeatures.from_texts(
+            [
+                """88.1
+Ratify the Optional Protocol to the International Covenant on Civil
+and Political Rights and the Second Optional Protocol to the International
+Covenant on Civil and Political Rights, aiming at the abolition of the death
+penalty (Cyprus);""",
+                """88.11
+Instaurer un moratoire de jure sur la peine de mort et ratifier le
+deuxième Protocole facultatif se rapportant au Pacte international relatif aux
+droits civils et politiques, visant à abolir la peine de mort (Italie) ;""",
+            ]
+        )
+
+        score_1 = ParagraphMatchScore.from_paragraphs_features(p1, p2).overall_score
+        score_2 = ParagraphMatchScore.from_paragraphs_features(p3, p4).overall_score
+        print(score_1, score_2)
+        self.assertGreater(score_1, score_2)

@@ -47,4 +47,4 @@ def get_label(main_paragraphs, other_paragraphs, pdf_name_1):
 
 
 if __name__ == "__main__":
-    different_pdf_score("0ci6xjzev597_eng", "0ci6xjzev597_fra")
+    different_pdf_score("1dcf1hho0p6_eng", "1dcf1hho0p6_fra")
