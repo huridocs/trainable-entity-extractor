@@ -12,7 +12,7 @@ from multilingual_paragraph_extractor.use_cases.MultilingualParagraphAlignerUseC
 from trainable_entity_extractor.config import ROOT_PATH
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 
-FILE_NAME = "ba"
+FILE_NAME = "0ci6xjzev597"
 EXTRACTION_IDENTIFIER = ExtractionIdentifier(extraction_name="run_alignment")
 
 

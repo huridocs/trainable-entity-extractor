@@ -30,7 +30,7 @@ class ParagraphMatchScore(BaseModel):
                     self.text_fuzzy_match,
                     self.number_of_words,
                     self.numbers,
-                    2 * self.first_word,
+                    2.5 * self.first_word,
                     self.special_characters,
                     self.alignment,
                     self.indentation,
