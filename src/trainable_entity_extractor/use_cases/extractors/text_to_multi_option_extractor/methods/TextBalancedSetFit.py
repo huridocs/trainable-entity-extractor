@@ -24,7 +24,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 class TextBalancedSetFit(TextToMultiOptionMethod):
 
     model_name = "sentence-transformers/paraphrase-mpnet-base-v2"
-    MAX_SAMPLES = 750
+    MAX_SAMPLES = 300
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if not extraction_data.multi_value:
@@ -62,7 +62,7 @@ class TextBalancedSetFit(TextToMultiOptionMethod):
 
     def get_balanced_data(self, data: list[tuple[str, list[int]]]):
         balanced_data = list()
-        rows_added = list()
+        rows_added = set()
         columns_counts = {i: 0 for i in range(len(data[0][1]))}
 
         self.add_rows_to_balanced_data(balanced_data, columns_counts, data, rows_added, self.MAX_SAMPLES / 5)
@@ -77,20 +77,14 @@ class TextBalancedSetFit(TextToMultiOptionMethod):
             if row_index in rows_added:
                 continue
 
-            for i, label in enumerate(labels):
-                if not label:
-                    continue
+            if any(label and columns_counts[i] < max_samples for i, label in enumerate(labels)):
+                for i, label in enumerate(labels):
+                    if label:
+                        columns_counts[i] += 1
 
-                if columns_counts[i] >= max_samples:
-                    continue
-
-                for k in range(len(labels)):
-                    if labels[k]:
-                        columns_counts[k] += 1
-
-                rows_added.append(row_index)
+                rows_added.add(row_index)
                 balanced_data.append((text, labels))
-                break
+                rows_added.append(row_index)
 
     def get_dataset_from_data(self, extraction_data: ExtractionData):
         data = list()
