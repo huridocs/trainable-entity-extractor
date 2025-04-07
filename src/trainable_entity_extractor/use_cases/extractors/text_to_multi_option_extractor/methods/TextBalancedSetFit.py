@@ -84,7 +84,6 @@ class TextBalancedSetFit(TextToMultiOptionMethod):
 
                 rows_added.add(row_index)
                 balanced_data.append((text, labels))
-                rows_added.append(row_index)
 
     def get_dataset_from_data(self, extraction_data: ExtractionData):
         data = list()
