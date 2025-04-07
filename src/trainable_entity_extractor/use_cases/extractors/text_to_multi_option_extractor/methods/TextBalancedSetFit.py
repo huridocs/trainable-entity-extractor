@@ -24,7 +24,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 class TextBalancedSetFit(TextToMultiOptionMethod):
 
     model_name = "sentence-transformers/paraphrase-mpnet-base-v2"
-    MAX_SAMPLES = 1000
+    MAX_SAMPLES = 750
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if not extraction_data.multi_value:
@@ -90,6 +90,25 @@ class TextBalancedSetFit(TextToMultiOptionMethod):
                 if i not in columns_counts:
                     columns_counts[i] = 0
                 columns_counts[i] += 1
+
+        for j, (text, labels) in enumerate(data):
+            if j in rows_included:
+                continue
+            for i, label in enumerate(labels):
+                if not label:
+                    continue
+                if i in columns_under_limit:
+                    continue
+
+                if columns_counts[i] >= self.MAX_SAMPLES:
+                    continue
+
+                rows_included.append(j)
+                for k in range(len(labels)):
+                    if labels[k]:
+                        columns_counts[k] += 1
+                balanced_data.append((text, labels))
+                break
 
         return balanced_data
 

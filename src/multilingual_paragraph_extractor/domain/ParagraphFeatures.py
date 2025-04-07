@@ -154,7 +154,7 @@ class ParagraphFeatures(BaseModel):
         if self.bounding_box.top <= 0:
             return False
 
-        return self.bounding_box.get_intersection_percentage(paragraph.bounding_box) > 10
+        return self.bounding_box.get_intersection_percentage(paragraph.bounding_box) > 0
 
     @staticmethod
     def get_empty():
