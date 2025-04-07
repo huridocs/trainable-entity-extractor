@@ -71,14 +71,8 @@ class ParagraphsFromLanguage(BaseModel):
                 index += 1
                 continue
 
-            if paragraph.is_inside(self.paragraphs[index + 1].bounding_box):
+            if paragraph.collide(self.paragraphs[index + 1]):
                 merged_segment = paragraph.merge(self.paragraphs[index + 1])
-                fixed_paragraphs.append(merged_segment)
-                index += 2
-                continue
-
-            if self.paragraphs[index + 1].is_inside(paragraph.bounding_box):
-                merged_segment = self.paragraphs[index + 1].merge(paragraph)
                 fixed_paragraphs.append(merged_segment)
                 index += 2
                 continue

@@ -147,8 +147,14 @@ class ParagraphFeatures(BaseModel):
 
         return True
 
-    def is_inside(self, bounding_box: Rectangle) -> bool:
-        return self.bounding_box.get_intersection_percentage(bounding_box) > 10
+    def collide(self, paragraph: "ParagraphFeatures") -> bool:
+        if paragraph.page_number != self.page_number:
+            return False
+
+        if self.bounding_box.top <= 0:
+            return False
+
+        return self.bounding_box.get_intersection_percentage(paragraph.bounding_box) > 10
 
     @staticmethod
     def get_empty():
