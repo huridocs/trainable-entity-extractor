@@ -14,6 +14,9 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.FirstWordRegex import (
     FirstWordRegex,
 )
+from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextBalancedSetFit import (
+    TextBalancedSetFit,
+)
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextFastTextMethod import (
     TextFastTextMethod,
 )
@@ -41,7 +44,6 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextFuzzyLastCleanLabels import (
     TextFuzzyLastCleanLabels,
 )
-from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextSetFit import TextSetFit
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextSetFitMultilingual import (
     TextSetFitMultilingual,
 )
@@ -68,7 +70,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         TextFuzzyAll88,
         TextFuzzyAll75,
         TextFastTextMethod,
-        TextSetFit,
+        TextBalancedSetFit,
         TextSetFitMultilingual,
         TextSingleLabelSetFit,
         TextSingleLabelSetFitMultilingual,
