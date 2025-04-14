@@ -27,6 +27,7 @@ class MultilingualParagraphAlignerUseCase:
             paragraphs_from_language.remove_big_no_text_paragraphs()
             paragraphs_from_language.remove_no_text_paragraphs()
             paragraphs_from_language.remove_headers_and_footers()
+            paragraphs_from_language.remove_duplicated_text()
             paragraphs_from_language.merge_colliding_segments()
             paragraphs_from_language.merge_paragraphs_spanning_two_pages()
             paragraphs_from_language.remove_no_text_types()

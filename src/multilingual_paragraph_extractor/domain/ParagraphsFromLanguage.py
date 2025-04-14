@@ -83,8 +83,36 @@ class ParagraphsFromLanguage(BaseModel):
         self.paragraphs = fixed_paragraphs
 
     def remove_no_text_paragraphs(self):
-        self.paragraphs = [x for x in self.paragraphs if x.text_cleaned]
-        self.paragraphs = [x for x in self.paragraphs if any(char.isalnum() for char in x.text_cleaned)]
+        cleaned_paragraphs = list()
+        for paragraph in self.paragraphs:
+            if not paragraph.text_cleaned:
+                continue
+
+            if not any(char.isalnum() for char in paragraph.text_cleaned):
+                continue
+
+            regular_characters_regex = (
+                r"[^a-zA-Z0-9\sа-яА-Яά-ωΑ-Ω\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]"
+            )
+            regular_characters = re.sub(regular_characters_regex, "", paragraph.text_cleaned)
+
+            if len(regular_characters) <= 1:
+                continue
+
+            cleaned_paragraphs.append(paragraph)
+
+        return cleaned_paragraphs
+
+    def remove_duplicated_text(self):
+        cleaned_paragraphs = list()
+        for paragraph, next_paragraph in zip(self.paragraphs, self.paragraphs[1:]):
+            if paragraph.text_cleaned == next_paragraph.text_cleaned:
+                continue
+
+            cleaned_paragraphs.append(paragraph)
+
+        cleaned_paragraphs.append(self.paragraphs[-1])
+        return cleaned_paragraphs
 
     def remove_headers_and_footers(self):
         types = [TokenType.FOOTNOTE, TokenType.PAGE_HEADER, TokenType.PAGE_FOOTER]
