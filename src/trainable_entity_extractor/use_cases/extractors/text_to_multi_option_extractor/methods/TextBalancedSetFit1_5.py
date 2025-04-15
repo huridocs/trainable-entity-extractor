@@ -21,7 +21,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 )
 
 
-class TextBalancedSetFit(TextToMultiOptionMethod):
+class TextBalancedSetFit1_5(TextToMultiOptionMethod):
 
     model_name = "sentence-transformers/paraphrase-mpnet-base-v2"
     MAX_SAMPLES = 300
@@ -130,7 +130,7 @@ class TextBalancedSetFit(TextToMultiOptionMethod):
         args = TrainingArguments(
             output_dir=self.get_model_path(),
             batch_size=batch_size,
-            max_steps=get_max_steps(len(extraction_data.samples)),
+            max_steps=int(get_max_steps(len(extraction_data.samples)) * 1.5),
             evaluation_strategy="steps",
             save_strategy="steps",
             eval_steps=200,
