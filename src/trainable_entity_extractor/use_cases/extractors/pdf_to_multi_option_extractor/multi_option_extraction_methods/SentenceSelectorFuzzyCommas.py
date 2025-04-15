@@ -37,7 +37,7 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
         )
 
     def get_sentence_segment_list(self, pdf_data_segments) -> list[(str, PdfDataSegment)]:
-        text_segments = [segment for segment in pdf_data_segments if segment.paragraph_type in self.text_types]
+        text_segments = [segment for segment in pdf_data_segments if segment.segment_type in self.text_types]
         merged_sentences = self.get_segments_merged(text_segments)
 
         sentence_segment_list = []

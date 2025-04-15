@@ -10,7 +10,7 @@ class PreviousWordsSegmentSelector(FastSegmentSelector):
         self.save_predictive_common_words(self.text_segments)
 
     def predict(self, segments):
-        self.text_segments = [x for x in segments if x.paragraph_type in self.text_types]
+        self.text_segments = [x for x in segments if x.segment_type in self.text_types]
         self.load_repeated_words()
 
         predicted_segments = []

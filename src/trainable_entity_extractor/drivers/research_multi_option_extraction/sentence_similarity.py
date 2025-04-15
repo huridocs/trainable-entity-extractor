@@ -49,9 +49,9 @@ def get_features(option, pdfs_labels: list[PdfLabels]):
         pdf_segments = [PdfSegment.from_pdf_tokens(paragraph.tokens) for paragraph in pdf_labels.paragraphs]
         pdf_segments = [x for x in pdf_segments if x.page_number < 4]
         texts_types = [
-            (pdf_segment.text_cleaned, pdf_segment.paragraph_type)
+            (pdf_segment.text_cleaned, pdf_segment.segment_type)
             for pdf_segment in pdf_segments
-            if pdf_segment.paragraph_type in valid_types
+            if pdf_segment.segment_type in valid_types
         ]
         similarities_types = [(get_similarity(option, text), type) for text, type in texts_types]
         similarities_titles = [score for score, sentence_type in similarities_types if sentence_type == TokenType.TITLE]
