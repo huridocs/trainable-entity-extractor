@@ -9,7 +9,8 @@ from trainable_entity_extractor.use_cases.XmlFile import XmlFile
 
 
 class TestXmlFile(TestCase):
-    test_file_path = f"{APP_PATH}/tests/trainable_entity_extractor/test_files/test.xml"
+    TEST_XML_PATH = APP_PATH / "trainable_entity_extractor" / "tests" / "test_files"
+    test_file_path = TEST_XML_PATH / "test.xml"
 
     def test_save_xml_to_train(self):
         tenant = "tenant_save"

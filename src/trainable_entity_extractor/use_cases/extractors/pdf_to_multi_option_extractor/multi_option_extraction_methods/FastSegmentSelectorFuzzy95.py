@@ -2,6 +2,7 @@ import math
 import unicodedata
 from collections import Counter
 from copy import deepcopy
+from time import time
 
 from pdf_token_type_labels.TokenType import TokenType
 from rapidfuzz import fuzz
@@ -38,17 +39,29 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
         return list(dict.fromkeys(appearances))
 
     def train(self, multi_option_data: ExtractionData):
+        start = time()
+        print("marked_segments")
         self.set_parameters(multi_option_data)
         marked_segments = list()
         for sample in multi_option_data.samples:
             marked_segments.extend(self.get_marked_segments(sample))
-
+        print("time", round(time() - start, 2), "s")
+        print("create model")
         FastSegmentSelector(self.extraction_identifier, self.get_name()).create_model(marked_segments)
+        print("time", round(time() - start, 2), "s")
 
     def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+        start = time()
+        print("get_prediction_data")
+
         self.set_parameters(multi_option_data)
         self.extraction_data = self.get_prediction_data(multi_option_data)
-        return FuzzyAll95().predict(self.extraction_data)
+        print("time", round(time() - start, 2), "s")
+        start = time()
+        print("predict")
+        predictions = FuzzyAll95().predict(self.extraction_data)
+        print("time", round(time() - start, 2), "s")
+        return predictions
 
     def get_prediction_data(self, extraction_data: ExtractionData) -> ExtractionData:
         fast_segment_selector = FastSegmentSelector(self.extraction_identifier, self.get_name())

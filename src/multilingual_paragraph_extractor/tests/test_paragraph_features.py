@@ -14,11 +14,10 @@ from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 
 class TestParagraphFeatures(TestCase):
     identifier = ExtractionIdentifier(run_name="paragraph", extraction_name="id")
+    xml_path = APP_PATH / "multilingual_paragraph_extractor" / "tests" / "resources" / "test.xml"
 
     def test_extract_paragraphs(self):
-        xml_path = Path(APP_PATH, "tests", "multilingual_paragraph_extractor", "resources", "test.xml")
-
-        with open(xml_path, "rb") as file:
+        with open(self.xml_path, "rb") as file:
             xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
             xml_file.save(file_content=file.read())
 
@@ -66,9 +65,7 @@ class TestParagraphFeatures(TestCase):
         self.assertEqual(False, paragraph.font.italics)
 
     def test_extract_other_paragraphs(self):
-        xml_path = Path(APP_PATH, "tests", "multilingual_paragraph_extractor", "resources", "test.xml")
-
-        with open(xml_path, "rb") as file:
+        with open(self.xml_path, "rb") as file:
             xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
             xml_file.save(file_content=file.read())
 
@@ -106,9 +103,7 @@ class TestParagraphFeatures(TestCase):
         self.assertEqual(False, paragraph.font.italics)
 
     def test_super_index(self):
-        xml_path = Path(APP_PATH, "tests", "multilingual_paragraph_extractor", "resources", "test.xml")
-
-        with open(xml_path, "rb") as file:
+        with open(self.xml_path, "rb") as file:
             xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
             xml_file.save(file_content=file.read())
 

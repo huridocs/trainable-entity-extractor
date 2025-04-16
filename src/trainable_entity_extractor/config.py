@@ -7,7 +7,7 @@ import graypy
 
 APP_PATH = Path(__file__).parent.parent.absolute()
 ROOT_PATH = Path(__file__).parent.parent.parent.absolute()
-DATA_PATH = join(ROOT_PATH, "models_data")
+DATA_PATH = Path(ROOT_PATH, "models_data")
 GRAYLOG_IP = os.environ.get("GRAYLOG_IP")
 
 HUGGINGFACE_PATH = join(ROOT_PATH, "huggingface")
