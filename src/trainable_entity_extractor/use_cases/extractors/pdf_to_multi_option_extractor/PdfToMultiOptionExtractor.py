@@ -100,7 +100,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         NextWordsTokenSelectorFuzzy75(),
         PreviousWordsSentenceSelectorFuzzyCommas(),
         FastSegmentSelectorFuzzy95(),
-        FastSegmentSelectorFuzzyCommas(),l
+        FastSegmentSelectorFuzzyCommas(),
         FuzzySegmentSelector(),
         PdfMultiOptionMethod(CleanBeginningDotDigits500, FastTextMethod),
         PdfMultiOptionMethod(CleanEndDotDigits1000, FastTextMethod),
