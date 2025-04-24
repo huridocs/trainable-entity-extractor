@@ -14,13 +14,16 @@ class PreviousWordsSegmentSelector(FastSegmentSelector):
         self.load_repeated_words()
 
         predicted_segments = []
-        for segment in self.text_segments:
 
-            index = self.text_segments.index(segment)
-            previous_segment_texts = self.clean_texts(self.text_segments[index - 1]) if index > 0 else []
+        for i, segment in enumerate(self.text_segments):
+            if i > 0:
+                previous_segment_texts = self.clean_texts(self.text_segments[i - 1])
+                previous_segment_text = " ".join(previous_segment_texts)
+            else:
+                previous_segment_text = ""
 
             for word in self.previous_words:
-                if fuzz.partial_ratio(word, " ".join(previous_segment_texts)) >= 90:
+                if fuzz.partial_ratio(word, previous_segment_text) >= 90:
                     predicted_segments.append(segment)
                     break
 

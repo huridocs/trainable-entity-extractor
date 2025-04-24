@@ -20,7 +20,6 @@ class PreviousWordsSentenceSelectorFuzzyCommas(SentenceSelectorFuzzyCommas):
         marked_segments = list()
         for sample in extraction_data_by_sentences.samples:
             marked_segments.extend(self.get_marked_segments(sample))
-
         PreviousWordsSegmentSelector(self.extraction_identifier).create_model(marked_segments)
         FuzzyCommas().train(extraction_data_by_sentences)
 
@@ -28,14 +27,15 @@ class PreviousWordsSentenceSelectorFuzzyCommas(SentenceSelectorFuzzyCommas):
         extraction_data_by_sentences = self.get_extraction_data_by_sentence(multi_option_data)
         self.set_parameters(extraction_data_by_sentences)
         self.extraction_data = self.get_prediction_data(extraction_data_by_sentences)
-        return FuzzyCommas().predict(self.extraction_data)
+        prediction = FuzzyCommas().predict(self.extraction_data)
+        return prediction
 
     def get_prediction_data(self, extraction_data: ExtractionData) -> ExtractionData:
         segment_selector = PreviousWordsSegmentSelector(self.extraction_identifier)
         predict_samples = list()
         for sample in extraction_data.samples:
-            selected_segments = segment_selector.predict(self.fix_two_pages_segments(sample))
-
+            segments = self.fix_two_pages_segments(sample)
+            selected_segments = segment_selector.predict(segments)
             self.mark_segments_for_context(selected_segments)
 
             pdf_data = PdfData(file_name=sample.pdf_data.file_name)

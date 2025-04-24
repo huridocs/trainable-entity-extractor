@@ -2,7 +2,7 @@ import math
 import unicodedata
 from collections import Counter
 from copy import deepcopy
-from time import time
+from typing import Type
 
 from pdf_token_type_labels.TokenType import TokenType
 from rapidfuzz import fuzz
@@ -11,6 +11,10 @@ from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.FilterSegmentsMethod import (
+    FilterSegmentsMethod,
+)
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
 )
@@ -26,6 +30,12 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
 
     text_types = [TokenType.TEXT, TokenType.LIST_ITEM, TokenType.TITLE, TokenType.SECTION_HEADER, TokenType.CAPTION]
 
+    def __init__(
+        self, filter_segments_method: Type[FilterSegmentsMethod] = None, multi_label_method: Type[MultiLabelMethod] = None
+    ):
+        super().__init__(filter_segments_method, multi_label_method)
+        self._remove_accents_cache = {}
+
     def get_appearances(self, pdf_segment: PdfDataSegment, options: list[str]) -> list[str]:
         appearances = []
 
@@ -39,28 +49,16 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
         return list(dict.fromkeys(appearances))
 
     def train(self, multi_option_data: ExtractionData):
-        start = time()
-        print("marked_segments")
         self.set_parameters(multi_option_data)
         marked_segments = list()
         for sample in multi_option_data.samples:
             marked_segments.extend(self.get_marked_segments(sample))
-        print("time", round(time() - start, 2), "s")
-        print("create model")
         FastSegmentSelector(self.extraction_identifier, self.get_name()).create_model(marked_segments)
-        print("time", round(time() - start, 2), "s")
 
     def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
-        start = time()
-        print("get_prediction_data")
-
         self.set_parameters(multi_option_data)
         self.extraction_data = self.get_prediction_data(multi_option_data)
-        print("time", round(time() - start, 2), "s")
-        start = time()
-        print("predict")
         predictions = FuzzyAll95().predict(self.extraction_data)
-        print("time", round(time() - start, 2), "s")
         return predictions
 
     def get_prediction_data(self, extraction_data: ExtractionData) -> ExtractionData:
@@ -84,11 +82,14 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
             extraction_identifier=self.extraction_identifier,
         )
 
-    @staticmethod
-    def remove_accents(text: str):
+    def remove_accents(self, text: str) -> str:
+        if text in self._remove_accents_cache:
+            return self._remove_accents_cache[text]
+
         nfkd_form = unicodedata.normalize("NFKD", text)
-        only_ascii = nfkd_form.encode("ASCII", "ignore")
-        return only_ascii.decode()
+        only_ascii = nfkd_form.encode("ASCII", "ignore").decode("utf-8")
+        self._remove_accents_cache[text] = only_ascii
+        return only_ascii
 
     def get_cleaned_options(self, options: list[Option]) -> list[str]:
         options_labels = [self.remove_accents(x.label.lower()) for x in options]
@@ -96,18 +97,14 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
         for option_label in options_labels:
             words_counter.update(option_label.split())
 
-        clean_options = list()
+        clean_options = []
+        most_common_words = words_counter.most_common()
         for option_label in options_labels:
-            clean_options.append(option_label)
-            for word, count in words_counter.most_common():
-                if count == 1:
-                    continue
-
-                if word not in option_label:
-                    continue
-
-                if len(clean_options[-1].replace(word, "").strip()) > 3:
-                    clean_options[-1] = clean_options[-1].replace(word, "").strip()
+            cleaned_label = option_label
+            for word, count in most_common_words:
+                if count > 1 and word in cleaned_label and len(cleaned_label.replace(word, "").strip()) > 3:
+                    cleaned_label = cleaned_label.replace(word, "").strip()
+            clean_options.append(cleaned_label)
 
         return clean_options
 
@@ -121,43 +118,50 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
         fixed_segments = self.fix_two_pages_segments(training_sample)
 
         for segment in fixed_segments:
-            appearances = len(self.get_appearances(segment, cleaned_values))
-
-            if appearances_threshold <= appearances:
+            if len(self.get_appearances(segment, cleaned_values)) >= appearances_threshold:
                 segment.ml_label = 1
 
         return fixed_segments
 
     def fix_two_pages_segments(self, training_sample: TrainingSample) -> list[PdfDataSegment]:
-        text_type_segments = [x for x in training_sample.pdf_data.pdf_data_segments if x.segment_type in self.text_types]
+        pdf_data_segments = training_sample.pdf_data.pdf_data_segments
+        text_type_segments = [s for s in pdf_data_segments if s.segment_type in self.text_types]
+        text_type_segments_set = set(text_type_segments)
 
-        fixed_segments = list()
+        fixed_segments = []
         merged_segment = None
-        for segment in training_sample.pdf_data.pdf_data_segments:
+
+        for i, segment in enumerate(pdf_data_segments):
             if segment == merged_segment:
                 merged_segment = None
                 continue
 
-            if not merged_segment:
-                segment, merged_segment = FastSegmentSelectorFuzzy95.fix_segment(segment, text_type_segments)
-
-            fixed_segments.append(segment)
+            new_segment, merged_segment = self._fix_segment(
+                segment, text_type_segments, text_type_segments_set, i, pdf_data_segments
+            )
+            fixed_segments.append(new_segment)
 
         return fixed_segments
 
-    @staticmethod
-    def fix_segment(segment: PdfDataSegment, text_type_segments: list[PdfDataSegment]):
-        if segment not in text_type_segments or not segment.text_content or segment.text_content[-1] != ",":
-            return segment, None
+    def _fix_segment(
+        self,
+        segment: PdfDataSegment,
+        text_type_segments: list[PdfDataSegment],
+        text_type_segments_set: set[PdfDataSegment],
+        index: int,
+        pdf_data_segments: list[PdfDataSegment],
+    ):
+        if segment in text_type_segments_set and segment.text_content and segment.text_content[-1] == ",":
+            segment_index = text_type_segments.index(segment)
+            if (
+                segment_index + 1 < len(text_type_segments)
+                and segment.page_number < text_type_segments[segment_index + 1].page_number
+            ):
+                new_segment = deepcopy(segment)
+                new_segment.text_content += " " + text_type_segments[segment_index + 1].text_content
+                return new_segment, text_type_segments[segment_index + 1]
 
-        index = text_type_segments.index(segment)
-        if index + 1 == len(text_type_segments) or segment.page_number >= text_type_segments[index + 1].page_number:
-            return segment, None
-
-        segment = deepcopy(segment)
-        segment.text_content += " " + text_type_segments[index + 1].text_content
-
-        return segment, text_type_segments[index + 1]
+        return segment, None
 
     @staticmethod
     def mark_segments_for_context(segments: list[PdfDataSegment]):
