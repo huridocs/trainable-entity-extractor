@@ -73,32 +73,32 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
     PreviousWordsTokenSelectorFuzzy75,
 )
 
-TENANT = "multi_option_extraction_test"
-extraction_id = "extraction_id"
+TENANT = "performance_pdf_multi_option"
+extraction_id = "performance_pdf_multi_option"
 extraction_identifier = ExtractionIdentifier(run_name=TENANT, extraction_name=extraction_id)
 
 
 def run():
     methods: list[PdfMultiOptionMethod] = [
-        FuzzyFirst(),
-        FuzzyLast(),
-        FuzzyFirstCleanLabel(),
-        FuzzyLastCleanLabel(),
-        FuzzyAll100(),
-        FuzzyAll88(),
-        FuzzyAll75(),
-        PreviousWordsTokenSelectorFuzzy75(),
-        NextWordsTokenSelectorFuzzy75(),
-        PreviousWordsSentenceSelectorFuzzyCommas(),
+        # FuzzyFirst(),
+        # FuzzyLast(),
+        # FuzzyFirstCleanLabel(),
+        # FuzzyLastCleanLabel(),
+        # FuzzyAll100(),
+        # FuzzyAll88(),
+        # FuzzyAll75(),
+        # PreviousWordsTokenSelectorFuzzy75(),
+        # NextWordsTokenSelectorFuzzy75(),
+        # PreviousWordsSentenceSelectorFuzzyCommas(),
         FastSegmentSelectorFuzzy95(),
         FastSegmentSelectorFuzzyCommas(),
         FuzzySegmentSelector(),
-        PdfMultiOptionMethod(CleanBeginningDotDigits500, FastTextMethod),
-        PdfMultiOptionMethod(CleanEndDotDigits1000, FastTextMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, SetFitEnglishMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, SetFitMultilingualMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, SingleLabelSetFitEnglishMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, SingleLabelSetFitMultilingualMethod),
+        # PdfMultiOptionMethod(CleanBeginningDotDigits500, FastTextMethod),
+        # PdfMultiOptionMethod(CleanEndDotDigits1000, FastTextMethod),
+        # PdfMultiOptionMethod(CleanBeginningDot1000, SetFitEnglishMethod),
+        # PdfMultiOptionMethod(CleanBeginningDot1000, SetFitMultilingualMethod),
+        # PdfMultiOptionMethod(CleanBeginningDot1000, SingleLabelSetFitEnglishMethod),
+        # PdfMultiOptionMethod(CleanBeginningDot1000, SingleLabelSetFitMultilingualMethod),
     ]
 
     options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]

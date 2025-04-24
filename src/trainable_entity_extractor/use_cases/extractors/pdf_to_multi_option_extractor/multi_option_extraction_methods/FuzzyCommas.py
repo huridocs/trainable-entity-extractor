@@ -31,10 +31,14 @@ class FuzzyCommas(PdfMultiOptionMethod):
         self, pdf_segments: list[PdfDataSegment], aliases: dict[str, list[str]]
     ) -> tuple[list[str], list[str]]:
         appearances = []
-        not_found_texts = list()
+        not_found_texts = []
+
         for pdf_segment in pdf_segments:
             text = pdf_segment.text_content
-            texts_separated_by_comma = self.clean_texts(re.split(",|:| and ", text), False)
+            texts_separated_by_comma = [
+                cleaned_text for piece in re.split(",|:| and ", text) if (cleaned_text := self.clean_text(piece, False))
+            ]
+
             for one_piece_text in texts_separated_by_comma:
                 appearance = self.get_appearances_one_segment(one_piece_text, aliases)
 
@@ -47,15 +51,16 @@ class FuzzyCommas(PdfMultiOptionMethod):
         return appearances, not_found_texts
 
     def get_appearances_one_segment(self, text: str, aliases: dict[str, list[str]]) -> str:
+        cleaned_text = self.clean_text(text, True)
         for option_cleaned in self.options_cleaned_words_sorted_by_length:
             if len(text) < len(option_cleaned) * 0.92 or len(text) > len(option_cleaned) * 1.2:
                 continue
 
-            if fuzz.partial_ratio(option_cleaned, self.clean_text(text, True)) >= self.threshold:
+            if fuzz.partial_ratio(option_cleaned, cleaned_text) >= self.threshold:
                 return self.options_cleaned[self.options_cleaned_words_sorted.index(option_cleaned)]
 
         for option_cleaned in self.options_cleaned_by_length:
-            if not aliases or option_cleaned not in aliases:
+            if option_cleaned not in aliases:
                 continue
 
             for alias in aliases[option_cleaned]:
@@ -123,10 +128,9 @@ class FuzzyCommas(PdfMultiOptionMethod):
 
     def get_aliases(self, sample: TrainingSample) -> dict[str, str]:
         segments = [segment for segment in sample.pdf_data.pdf_data_segments if segment.ml_label]
-        appearances, not_found_texts = self.get_appearances_for_segments(segments, dict())
-        values_ids = [option.id for option in sample.labeled_data.values]
-        values_labels = [option.label for option in self.options if option.id in values_ids]
-        truth_options = self.clean_texts(values_labels, False)
+        appearances, not_found_texts = self.get_appearances_for_segments(segments, {})
+        values_ids = {option.id for option in sample.labeled_data.values}
+        truth_options = self.clean_texts([option.label for option in self.options if option.id in values_ids], False)
         not_found_options = [option for option in truth_options if option not in appearances]
         return self.find_aliases(not_found_options, not_found_texts)
 

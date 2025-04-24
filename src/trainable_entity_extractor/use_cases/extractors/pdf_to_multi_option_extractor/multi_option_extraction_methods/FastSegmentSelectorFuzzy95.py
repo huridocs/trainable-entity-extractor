@@ -50,6 +50,10 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
 
     def train(self, multi_option_data: ExtractionData):
         self.set_parameters(multi_option_data)
+
+        if len(multi_option_data.samples) > 200:
+            return
+
         marked_segments = list()
         for sample in multi_option_data.samples:
             marked_segments.extend(self.get_marked_segments(sample))
