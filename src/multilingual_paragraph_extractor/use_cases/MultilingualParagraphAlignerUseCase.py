@@ -8,7 +8,7 @@ class MultilingualParagraphAlignerUseCase:
 
     def align_languages(self, paragraphs_from_languages: list[ParagraphsFromLanguage]):
         if not paragraphs_from_languages:
-            return []
+            return
 
         self.clean_paragraphs(paragraphs_from_languages)
         main_language, other_languages = self.get_main_and_other_languages(paragraphs_from_languages)

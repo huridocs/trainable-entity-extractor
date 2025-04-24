@@ -64,6 +64,46 @@ class TestAlignParagraphs(TestCase):
         self.assertEqual("English text", paragraphs_from_languages[0].paragraphs[0].text_cleaned)
         self.assertEqual("French text", paragraphs_from_languages[1].paragraphs[0].text_cleaned)
 
+    def test_align_paragraphs_when_no_paragraph_in_one_language(self):
+        language_paragraph_1 = ParagraphsFromLanguage(language="en", paragraphs=[], is_main_language=True)
+
+        pdf_data_paragraphs_2 = ParagraphFeatures.from_texts(texts=["French text"])
+        language_paragraph_2 = ParagraphsFromLanguage(
+            language="fr", paragraphs=pdf_data_paragraphs_2, is_main_language=False
+        )
+
+        multilingual_paragraph_extractor = MultilingualParagraphAlignerUseCase(
+            extractor_identifier=self.extraction_identifier
+        )
+        paragraphs_from_languages = [language_paragraph_1, language_paragraph_2]
+        multilingual_paragraph_extractor.align_languages(paragraphs_from_languages)
+
+        self.assertEqual(2, len(paragraphs_from_languages))
+        self.assertEqual(0, len(paragraphs_from_languages[0].paragraphs))
+        self.assertEqual(0, len(paragraphs_from_languages[1].paragraphs))
+
+    def test_align_paragraphs_when_no_paragraph_in_other_language(self):
+        pdf_data_paragraphs_1 = ParagraphFeatures.from_texts(texts=["English text"])
+        language_paragraph_1 = ParagraphsFromLanguage(language="en", paragraphs=pdf_data_paragraphs_1, is_main_language=True)
+
+        language_paragraph_2 = ParagraphsFromLanguage(language="fr", paragraphs=[], is_main_language=False)
+
+        multilingual_paragraph_extractor = MultilingualParagraphAlignerUseCase(
+            extractor_identifier=self.extraction_identifier
+        )
+        paragraphs_from_languages = [language_paragraph_1, language_paragraph_2]
+        multilingual_paragraph_extractor.align_languages(paragraphs_from_languages)
+
+        self.assertEqual(2, len(paragraphs_from_languages))
+        self.assertEqual(1, len(paragraphs_from_languages[0].paragraphs))
+        self.assertEqual(1, len(paragraphs_from_languages[1].paragraphs))
+
+        self.assertEqual("en", paragraphs_from_languages[0].language)
+        self.assertEqual("fr", paragraphs_from_languages[1].language)
+
+        self.assertEqual("English text", paragraphs_from_languages[0].paragraphs[0].text_cleaned)
+        self.assertEqual("", paragraphs_from_languages[1].paragraphs[0].text_cleaned)
+
     @staticmethod
     def get_paragraphs(language: str):
         paragraphs = ParagraphFeatures.from_texts(texts=[f"a 0. {language}", f"b 1: {language}", f"c 2! {language}"])

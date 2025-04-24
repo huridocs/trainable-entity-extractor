@@ -111,7 +111,9 @@ class ParagraphsFromLanguage(BaseModel):
 
             cleaned_paragraphs.append(paragraph)
 
-        cleaned_paragraphs.append(self.paragraphs[-1])
+        if self.paragraphs:
+            cleaned_paragraphs.append(self.paragraphs[-1])
+
         return cleaned_paragraphs
 
     def remove_headers_and_footers(self):
@@ -128,7 +130,7 @@ class ParagraphsFromLanguage(BaseModel):
 
     def find_headers_with_similarities(self):
         paragraphs_on_top = [x for x in self.paragraphs if self.is_top_or_bottom_of_page(x, self.paragraphs[0].page_height)]
-        pages_number = max([x.page_number for x in self.paragraphs])
+        pages_number = max([x.page_number for x in self.paragraphs]) if self.paragraphs else 1
         headers = {}
         for paragraph in paragraphs_on_top:
             found_match = False
@@ -259,7 +261,7 @@ class ParagraphsFromLanguage(BaseModel):
         unmatched_2 = set(range(len(self.paragraphs)))
 
         indexes_matching: dict[int, int] = dict()
-        scores: dict[(ParagraphFeatures, ParagraphFeatures), float] = dict()
+        scores: dict[tuple[ParagraphFeatures, ParagraphFeatures], float] = dict()
 
         for threshold in THRESHOLD:
             last_idx2_inserted = 0
@@ -313,6 +315,8 @@ class ParagraphsFromLanguage(BaseModel):
 
     def is_same_pdf(self):
         paragraph_count = len(self._main_language_paragraphs)
+        if not paragraph_count:
+            return True
         unmatched_paragraphs = [x for x in self._main_language_paragraphs if x not in self._alignment_scores]
         match_percentage = 100 * (paragraph_count - len(unmatched_paragraphs)) / paragraph_count
         return 50 < match_percentage
@@ -462,7 +466,7 @@ class ParagraphsFromLanguage(BaseModel):
         return len(self._aligned_paragraphs) == len(main_language.paragraphs)
 
     def remove_big_no_text_paragraphs(self):
-        threshold_area = 0.2 * self.paragraphs[0].page_width * self.paragraphs[0].page_height
+        threshold_area = 0.2 * self.paragraphs[0].page_width * self.paragraphs[0].page_height if self.paragraphs else 0
         fixed_paragraphs = list()
 
         for paragraph in self.paragraphs:
