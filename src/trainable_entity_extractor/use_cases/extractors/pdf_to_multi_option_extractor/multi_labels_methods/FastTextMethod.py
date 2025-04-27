@@ -19,8 +19,9 @@ class FastTextMethod(MultiLabelMethod):
     def clean_label(label: str):
         return "_".join(label.split()).lower().replace(",", "")
 
-    def clean_labels(self, options: list[Option]):
-        return [self.clean_label(option.label) for option in options]
+    def clean_labels(self, values: list[Option], id_labels: dict[int, str]):
+        real_labels = [id_labels[x.id] for x in values if x.id in id_labels]
+        return [self.clean_label(x) for x in real_labels]
 
     def get_data_path(self):
         model_folder_path = join(self.extraction_identifier.get_path(), self.get_name())
@@ -41,8 +42,10 @@ class FastTextMethod(MultiLabelMethod):
     def prepare_data(self, multi_option_data: ExtractionData):
         texts = [sample.pdf_data.get_text() for sample in multi_option_data.samples]
         texts = [text.replace("\n", " ") for text in texts]
+        id_labels = {option.id: option.label for option in self.options}
+
         labels = [
-            "__label__" + " __label__".join(self.clean_labels(sample.labeled_data.values))
+            "__label__" + " __label__".join(self.clean_labels(sample.labeled_data.values, id_labels))
             for sample in multi_option_data.samples
         ]
         data = [f"{label} {text}" for label, text in zip(labels, texts)]
@@ -69,7 +72,8 @@ class FastTextMethod(MultiLabelMethod):
         texts = [text.replace("\n", " ") for text in texts]
 
         model = fasttext.load_model(self.get_model_path())
-        labels = self.clean_labels(self.options)
+        id_labels = {option.id: option.label for option in self.options}
+        labels = self.clean_labels(self.options, id_labels)
 
         if self.multi_value:
             prediction_labels_scores = model.predict(texts, k=len(labels))
