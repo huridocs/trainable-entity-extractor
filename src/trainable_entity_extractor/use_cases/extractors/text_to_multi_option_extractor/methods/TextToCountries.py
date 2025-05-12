@@ -2,7 +2,6 @@ import json
 import re
 import unicodedata
 
-import pycountry
 from pydantic import BaseModel
 from country_named_entity_recognition import find_countries
 
@@ -25,7 +24,7 @@ class TextToCountries(TextToMultiOptionMethod):
     OPTION_LABELS_FILE_NAME = "option_labels.json"
 
     @staticmethod
-    def _find_countries(text: str) -> list[pycountry.db.Country]:
+    def _find_countries(text: str) -> list:
         return [x[0] for x in find_countries(text, is_ignore_case=True)]
 
     @staticmethod
