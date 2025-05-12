@@ -7,6 +7,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
+
 from trainable_entity_extractor.use_cases.extractors.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
@@ -53,6 +54,9 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextSingleLabelSetFitMultilingual import (
     TextSingleLabelSetFitMultilingual,
 )
+from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextToCountries import (
+    TextToCountries,
+)
 from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 
@@ -61,6 +65,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     METHODS: list[Type[TextToMultiOptionMethod]] = [
         NaiveTextToMultiOptionMethod,
+        TextToCountries,
         FirstWordRegex,
         TextFuzzyFirst,
         TextFuzzyFirstCleanLabels,
