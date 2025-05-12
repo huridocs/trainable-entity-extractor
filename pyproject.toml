@@ -1,6 +1,6 @@
 [project]
 name = "trainable-entity-extractor"
-version = "2025.5.12.1"
+version = "2025.5.12.2"
 description = "This tool is a trainable text/PDF to entity extractor"
 license = { file = "LICENSE" }
 authors = [{ name = "HURIDOCS" }]
@@ -38,6 +38,5 @@ dependencies = [
     "flair==0.14.0",
     "graypy==2.1.0",
     "Unidecode==1.3.8",
-    "pycountry==24.6.1",
     "country_named_entity_recognition==0.4"
 ]
