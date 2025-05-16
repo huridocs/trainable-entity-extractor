@@ -260,58 +260,129 @@ class ParagraphsFromLanguage(BaseModel):
         unmatched_1 = set(range(len(self._main_language_paragraphs)))
         unmatched_2 = set(range(len(self.paragraphs)))
 
+        # Stores final idx1 -> idx2 for all successful matches
         indexes_matching: dict[int, int] = dict()
-        scores: dict[tuple[ParagraphFeatures, ParagraphFeatures], float] = dict()
+        # Cache for (paragraph_feature1, paragraph_feature2) -> score
+        scores_cache: dict[tuple[ParagraphFeatures, ParagraphFeatures], float] = dict()
 
-        for threshold in THRESHOLD:
-            last_idx2_inserted = 0
-            threshold_block_size = BLOCK_SIZE
+        # Ensure thresholds are processed from high to low
+        # The original THRESHOLD constant is assumed to be iterable.
+        sorted_thresholds = sorted(THRESHOLD, reverse=True)
 
-            for idx1 in list(unmatched_1):
-                if idx1 - 1 in indexes_matching:
-                    last_idx2_inserted = indexes_matching[idx1 - 1]
-                start_j = max(0, last_idx2_inserted - threshold_block_size)
-                end_j = min(len(self.paragraphs), last_idx2_inserted + threshold_block_size)
-                current_block2 = list(unmatched_2 & set(range(start_j, end_j)))
+        for threshold_index, threshold in enumerate(sorted_thresholds):
+            # This variable tracks the 'center' for the sliding window search (first pass)
+            # or is updated by confirmed matches. It's reset for each threshold pass.
+            current_pass_search_pivot_idx2 = 0
 
-                after_indexes = sorted([x for x in current_block2 if x > last_idx2_inserted])
-                before_indexes = sorted([x for x in current_block2 if x not in after_indexes], reverse=True)
-                current_block2 = after_indexes + before_indexes
+            # Iterate over all main language paragraph indices to correctly handle
+            # current_pass_search_pivot_idx2 and process paragraphs in their natural order.
+            for idx1 in range(len(self._main_language_paragraphs)):
+                if idx1 not in unmatched_1: # If already matched (e.g., by a higher threshold)
+                    # If this paragraph (idx1) IS matched, its corresponding idx2 can serve as
+                    # the pivot for the *next* paragraph (idx1+1) in the first threshold pass.
+                    if idx1 in indexes_matching: # Check if current idx1 *is* a committed match
+                         current_pass_search_pivot_idx2 = indexes_matching[idx1]
+                    continue # Move to the next idx1
 
-                best_match = None
-                best_score = threshold
+                # At this point, idx1 is in unmatched_1 and needs processing for the current threshold.
 
-                for idx2 in current_block2:
-                    if (self._main_language_paragraphs[idx1], self.paragraphs[idx2]) in scores:
-                        score = scores[(self._main_language_paragraphs[idx1], self.paragraphs[idx2])]
-                    else:
-                        match = ParagraphMatchScore.from_paragraphs_features(
-                            self._main_language_paragraphs[idx1], self.paragraphs[idx2]
-                        )
-                        score = match.overall_score
-                        scores[(self._main_language_paragraphs[idx1], self.paragraphs[idx2])] = score
+                # Determine the search pivot for the current idx1's window (if first pass).
+                # This is either inherited from the previous idx1's processing or set by idx1-1's match.
+                pivot_for_idx1_search = current_pass_search_pivot_idx2
+                if idx1 > 0 and (idx1 - 1) in indexes_matching:
+                    pivot_for_idx1_search = indexes_matching[idx1 - 1]
 
-                    main_first_word = self._main_language_paragraphs[idx1].first_word
-                    other_first_word = self.paragraphs[idx2].first_word
-                    if score > best_score:
-                        best_score = score
-                        best_match = idx2
-                        if score > 0.95:
+                potential_matches_idx2_list: list[int] = []
+
+                if threshold_index == 0: # Highest threshold: use original windowing logic
+                    start_j_window = max(0, pivot_for_idx1_search - BLOCK_SIZE)
+                    end_j_window = min(len(self.paragraphs), pivot_for_idx1_search + BLOCK_SIZE)
+
+
+                    window_candidates_idx2 = list(unmatched_2 & set(range(start_j_window, end_j_window)))
+
+                    after_pivot = sorted([p_idx for p_idx in window_candidates_idx2 if p_idx > pivot_for_idx1_search])
+                    before_pivot = sorted([p_idx for p_idx in window_candidates_idx2 if p_idx <= pivot_for_idx1_search], reverse=True)
+                    potential_matches_idx2_list = after_pivot + before_pivot
+
+                else: # Lower thresholds: search only in gaps defined by `indexes_matching`
+                    sorted_matched_main_indices = sorted(indexes_matching.keys())
+
+                    prev_anchor_main_idx = -1
+                    for k in sorted_matched_main_indices:
+                        if k < idx1:
+                            prev_anchor_main_idx = k
+                        else:
                             break
 
-                if best_match is not None:
-                    last_idx2_inserted = best_match
-                    indexes_matching[idx1] = best_match
-                    alignment_score = AlignmentScore(
+                    next_anchor_main_idx = -1
+                    for k in sorted_matched_main_indices:
+                        if k > idx1:
+                            next_anchor_main_idx = k
+                            break
+
+                    gap_search_start_idx2 = 0
+                    if prev_anchor_main_idx != -1:
+                        gap_search_start_idx2 = indexes_matching[prev_anchor_main_idx] + 1
+
+                    gap_search_end_idx2 = len(self.paragraphs)
+                    if next_anchor_main_idx != -1:
+                        gap_search_end_idx2 = indexes_matching[next_anchor_main_idx]
+
+                    if gap_search_start_idx2 < gap_search_end_idx2:
+                        gap_candidates_idx2 = list(unmatched_2 & set(range(gap_search_start_idx2, gap_search_end_idx2)))
+                        potential_matches_idx2_list = sorted(gap_candidates_idx2)
+                    else:
+                        potential_matches_idx2_list = []
+
+                best_match_this_idx1_idx2 = None
+                current_best_score_for_idx1 = threshold
+
+                for idx2_candidate in potential_matches_idx2_list:
+                    para1_features = self._main_language_paragraphs[idx1]
+                    para2_features = self.paragraphs[idx2_candidate]
+
+                    if (para1_features, para2_features) in scores_cache:
+                        score = scores_cache[(para1_features, para2_features)]
+                    else:
+                        match_obj = ParagraphMatchScore.from_paragraphs_features(
+                            para1_features, para2_features
+                        )
+                        score = match_obj.overall_score
+                        scores_cache[(para1_features, para2_features)] = score
+
+                    if score > current_best_score_for_idx1:
+                        current_best_score_for_idx1 = score
+                        best_match_this_idx1_idx2 = idx2_candidate
+                        if score > 0.95: # High-confidence optimization
+                            break
+
+                if best_match_this_idx1_idx2 is not None:
+                    indexes_matching[idx1] = best_match_this_idx1_idx2
+
+                    alignment_score_obj = AlignmentScore(
                         main_paragraph=self._main_language_paragraphs[idx1],
-                        other_paragraph=self.paragraphs[best_match],
-                        score=best_score,
+                        other_paragraph=self.paragraphs[best_match_this_idx1_idx2],
+                        score=current_best_score_for_idx1,
                     )
-                    self._alignment_scores[self._main_language_paragraphs[idx1]] = alignment_score
-                    unmatched_2.remove(best_match)
+                    self._alignment_scores[self._main_language_paragraphs[idx1]] = alignment_score_obj
+
                     unmatched_1.remove(idx1)
-                else:
-                    last_idx2_inserted += 1
+                    if best_match_this_idx1_idx2 in unmatched_2: # Should be true
+                        unmatched_2.remove(best_match_this_idx1_idx2)
+
+                    current_pass_search_pivot_idx2 = best_match_this_idx1_idx2
+                else: # No match found for idx1 at this threshold
+                    if threshold_index == 0: # Only adjust pivot this way in the first (windowed) pass
+                        current_pass_search_pivot_idx2 = pivot_for_idx1_search + 1
+                        if len(self.paragraphs) > 0:
+                            current_pass_search_pivot_idx2 = min(current_pass_search_pivot_idx2, len(self.paragraphs) - 1)
+                        else:
+                            current_pass_search_pivot_idx2 = 0
+                        current_pass_search_pivot_idx2 = max(0, current_pass_search_pivot_idx2)
+
+        # self._alignment_scores is now populated
+        # No explicit return needed if it's modifying a class member
 
     def is_same_pdf(self):
         paragraph_count = len(self._main_language_paragraphs)
