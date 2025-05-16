@@ -24,7 +24,12 @@ def add_annotation(annotator: PdfAnnotator, paragraph_features: ParagraphFeature
         paragraph_features.page_height - paragraph_features.bounding_box.bottom,
     )
 
-    text_box_size = 20 * 8 + 8
+    text_box_size = len(text) * 8 + 8  # Adjust text_box_size based on text length
+    text_box_height = 10  # Define the height of the text box
+
+    # Adjust the y1 coordinate to position the text box slightly above the highlighted area
+    text_y1 = top + text_box_height  # Position the top of the text box above the highlighted area
+    text_y2 = top
 
     annotator.add_annotation(
         "square",
@@ -34,13 +39,13 @@ def add_annotation(annotator: PdfAnnotator, paragraph_features: ParagraphFeature
 
     annotator.add_annotation(
         "square",
-        Location(x1=left, y1=top, x2=left + text_box_size, y2=top + 10, page=paragraph_features.page_number - 1),
+        Location(x1=left, y1=text_y2, x2=left + text_box_size, y2=text_y1, page=paragraph_features.page_number - 1),
         Appearance(fill=hex_color_to_rgb(color)),
     )
 
     annotator.add_annotation(
         "text",
-        Location(x1=left, y1=top, x2=left + text_box_size, y2=top + 10, page=paragraph_features.page_number - 1),
+        Location(x1=left, y1=text_y2, x2=left + text_box_size, y2=text_y1, page=paragraph_features.page_number - 1),
         Appearance(content=text, font_size=8, fill=(1, 1, 1), stroke_width=3),
     )
 
@@ -57,6 +62,8 @@ def save_mistakes(truth_labels: Labels, prediction_labels: Labels):
     for prediction_paragraph, alignment_score in zip(prediction_labels.paragraphs, prediction_labels.get_alignment_scores()):
         text = str(int(100 * alignment_score.score)) + "% "
         text += " ".join([x for x in alignment_score.other_paragraph.text_cleaned.split()][:3])
+        text = text.replace(")", "_")
+        text = text.replace("(", "_")
 
         is_mistake = True
         for truth_paragraph in truth_labels.paragraphs:
