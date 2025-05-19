@@ -10,7 +10,7 @@ from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphF
 from multilingual_paragraph_extractor.domain.ParagraphMatchScore import ParagraphMatchScore
 
 BLOCK_SIZE = 50
-THRESHOLD = [0.9, 0.86, 0.82, 0.78, 0.74, 0.7]
+THRESHOLD = 0.7
 HEADER_SIMILARITY_THRESHOLD = 90
 TOP_OF_PAGE_THRESHOLD = 0.2
 REPEATED_HEADER_THRESHOLD = 0.2
@@ -42,8 +42,6 @@ class ParagraphsFromLanguage(BaseModel):
         if not self.is_same_pdf():
             self._aligned_paragraphs = [ParagraphFeatures.get_empty() for _ in range(len(self._main_language_paragraphs))]
             return
-
-        self.assign_missing_in_both_languages()
 
     def fix_segments(self, main_language: "ParagraphsFromLanguage") -> bool:
         self.align(main_language)
@@ -96,12 +94,12 @@ class ParagraphsFromLanguage(BaseModel):
             )
             regular_characters = re.sub(regular_characters_regex, "", paragraph.text_cleaned)
 
-            if len(regular_characters) <= 1:
+            if len(regular_characters.strip()) <= 1:
                 continue
 
             cleaned_paragraphs.append(paragraph)
 
-        return cleaned_paragraphs
+        self.paragraphs = cleaned_paragraphs
 
     def remove_duplicated_text(self):
         cleaned_paragraphs = list()
@@ -114,7 +112,7 @@ class ParagraphsFromLanguage(BaseModel):
         if self.paragraphs:
             cleaned_paragraphs.append(self.paragraphs[-1])
 
-        return cleaned_paragraphs
+        self.paragraphs = cleaned_paragraphs
 
     def remove_headers_and_footers(self):
         types = [TokenType.FOOTNOTE, TokenType.PAGE_HEADER, TokenType.PAGE_FOOTER]
@@ -256,62 +254,56 @@ class ParagraphsFromLanguage(BaseModel):
         self.paragraphs = fixed_paragraphs
 
     def set_alignment_scores(self):
+        # Needleman-Wunsch global alignment for paragraphs, strict matching
         self._alignment_scores = dict()
-        unmatched_1 = set(range(len(self._main_language_paragraphs)))
-        unmatched_2 = set(range(len(self.paragraphs)))
+        main = self._main_language_paragraphs
+        other = self.paragraphs
+        n = len(main)
+        m = len(other)
+        gap_penalty = -0.1
+        min_match_score = THRESHOLD
 
-        indexes_matching: dict[int, int] = dict()
-        scores: dict[tuple[ParagraphFeatures, ParagraphFeatures], float] = dict()
+        dp = [[0.0] * (m + 1) for _ in range(n + 1)]
+        traceback = [[None] * (m + 1) for _ in range(n + 1)]
 
-        for threshold in THRESHOLD:
-            last_idx2_inserted = 0
-            threshold_block_size = BLOCK_SIZE
+        for i in range(1, n + 1):
+            dp[i][0] = dp[i - 1][0] + gap_penalty
+            traceback[i][0] = "up"
+        for j in range(1, m + 1):
+            dp[0][j] = dp[0][j - 1] + gap_penalty
+            traceback[0][j] = "left"
 
-            for idx1 in list(unmatched_1):
-                if idx1 - 1 in indexes_matching:
-                    last_idx2_inserted = indexes_matching[idx1 - 1]
-                start_j = max(0, last_idx2_inserted - threshold_block_size)
-                end_j = min(len(self.paragraphs), last_idx2_inserted + threshold_block_size)
-                current_block2 = list(unmatched_2 & set(range(start_j, end_j)))
-
-                after_indexes = sorted([x for x in current_block2 if x > last_idx2_inserted])
-                before_indexes = sorted([x for x in current_block2 if x not in after_indexes], reverse=True)
-                current_block2 = after_indexes + before_indexes
-
-                best_match = None
-                best_score = threshold
-
-                for idx2 in current_block2:
-                    if (self._main_language_paragraphs[idx1], self.paragraphs[idx2]) in scores:
-                        score = scores[(self._main_language_paragraphs[idx1], self.paragraphs[idx2])]
-                    else:
-                        match = ParagraphMatchScore.from_paragraphs_features(
-                            self._main_language_paragraphs[idx1], self.paragraphs[idx2]
-                        )
-                        score = match.overall_score
-                        scores[(self._main_language_paragraphs[idx1], self.paragraphs[idx2])] = score
-
-                    main_first_word = self._main_language_paragraphs[idx1].first_word
-                    other_first_word = self.paragraphs[idx2].first_word
-                    if score > best_score:
-                        best_score = score
-                        best_match = idx2
-                        if score > 0.95:
-                            break
-
-                if best_match is not None:
-                    last_idx2_inserted = best_match
-                    indexes_matching[idx1] = best_match
-                    alignment_score = AlignmentScore(
-                        main_paragraph=self._main_language_paragraphs[idx1],
-                        other_paragraph=self.paragraphs[best_match],
-                        score=best_score,
-                    )
-                    self._alignment_scores[self._main_language_paragraphs[idx1]] = alignment_score
-                    unmatched_2.remove(best_match)
-                    unmatched_1.remove(idx1)
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                match_score = ParagraphMatchScore.from_paragraphs_features(main[i - 1], other[j - 1]).overall_score
+                match = dp[i - 1][j - 1] + match_score
+                delete = dp[i - 1][j] + gap_penalty
+                insert = dp[i][j - 1] + gap_penalty
+                max_score = max(match, delete, insert)
+                dp[i][j] = max_score
+                if max_score == match:
+                    traceback[i][j] = "diag"
+                elif max_score == delete:
+                    traceback[i][j] = "up"
                 else:
-                    last_idx2_inserted += 1
+                    traceback[i][j] = "left"
+
+        i, j = n, m
+        while i > 0 and j > 0:
+            if traceback[i][j] == "diag":
+                score = ParagraphMatchScore.from_paragraphs_features(main[i - 1], other[j - 1]).overall_score
+                if score >= min_match_score:
+                    self._alignment_scores[main[i - 1]] = AlignmentScore(
+                        main_paragraph=main[i - 1],
+                        other_paragraph=other[j - 1],
+                        score=score,
+                    )
+                i -= 1
+                j -= 1
+            elif traceback[i][j] == "up":
+                i -= 1
+            else:
+                j -= 1
 
     def is_same_pdf(self):
         paragraph_count = len(self._main_language_paragraphs)
@@ -330,30 +322,6 @@ class ParagraphsFromLanguage(BaseModel):
                 paragraph_to_add = ParagraphFeatures.get_empty()
 
             self._aligned_paragraphs.append(paragraph_to_add)
-
-    def assign_missing_in_both_languages(self):
-        for idx, main_paragraph in enumerate(self._main_language_paragraphs):
-            if main_paragraph in self._alignment_scores:
-                continue
-
-            main_previous = self._main_language_paragraphs[idx - 1] if idx > 0 else None
-            if main_previous not in self._alignment_scores:
-                continue
-
-            previous_index = self.paragraphs.index(self._alignment_scores[main_previous].other_paragraph)
-            paragraph = self.paragraphs[previous_index + 1] if previous_index + 1 < len(self.paragraphs) else None
-            if not paragraph or paragraph in self._aligned_paragraphs:
-                continue
-
-            alignment_score = ParagraphMatchScore.from_paragraphs_features(main_paragraph, paragraph)
-            if alignment_score.overall_score < THRESHOLD[-1] - 0.3:
-                continue
-
-            self._alignment_scores[main_paragraph] = AlignmentScore(
-                main_paragraph=main_paragraph, other_paragraph=paragraph, score=alignment_score.overall_score
-            )
-
-            self._aligned_paragraphs[idx] = paragraph
 
     def fix_main_language_when_other_language_not_assigned(self):
         inverse_alignment_scores = {score.other_paragraph: score for score in self._alignment_scores.values()}

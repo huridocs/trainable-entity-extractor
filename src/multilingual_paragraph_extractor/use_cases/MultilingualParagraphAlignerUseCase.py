@@ -12,7 +12,9 @@ class MultilingualParagraphAlignerUseCase:
 
         self.clean_paragraphs(paragraphs_from_languages)
         main_language, other_languages = self.get_main_and_other_languages(paragraphs_from_languages)
-        self.fix_segmentation(main_language, other_languages)
+
+        for other_language_paragraphs in other_languages:
+            other_language_paragraphs.fix_segments(main_language)
 
         for other_language_paragraphs in other_languages:
             other_language_paragraphs.align(main_language)
@@ -31,17 +33,6 @@ class MultilingualParagraphAlignerUseCase:
             paragraphs_from_language.merge_colliding_segments()
             paragraphs_from_language.merge_paragraphs_spanning_two_pages()
             paragraphs_from_language.remove_no_text_types()
-
-    @staticmethod
-    def fix_segmentation(main_language, other_languages):
-        for i in range(4):
-            paragraphs_changed = False
-            for other_language_paragraphs in other_languages:
-                if other_language_paragraphs.fix_segments(main_language):
-                    paragraphs_changed = True
-
-            if not paragraphs_changed:
-                break
 
     @staticmethod
     def get_main_and_other_languages(

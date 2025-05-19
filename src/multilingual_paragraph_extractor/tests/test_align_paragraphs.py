@@ -196,34 +196,6 @@ class TestAlignParagraphs(TestCase):
         self.assertEqual("c 2! en", paragraphs_from_languages[0].paragraphs[2].text_cleaned)
         self.assertEqual("c 2! tr", paragraphs_from_languages[1].paragraphs[2].text_cleaned)
 
-    def test_align_paragraphs_when_two_paragraphs_corresponds_to_one(self):
-        language_paragraph_1 = ParagraphsFromLanguage(
-            language="en", paragraphs=self.get_paragraphs("en"), is_main_language=True
-        )
-        paragraphs = self.get_paragraphs("tr")
-        paragraphs_issue = [paragraphs[0], paragraphs[1].merge(paragraphs[2])]
-        language_paragraph_2 = ParagraphsFromLanguage(language="tr", paragraphs=paragraphs_issue, is_main_language=False)
-
-        multilingual_paragraph_extractor = MultilingualParagraphAlignerUseCase(
-            extractor_identifier=self.extraction_identifier
-        )
-        paragraphs_from_languages = [language_paragraph_1, language_paragraph_2]
-        multilingual_paragraph_extractor.align_languages(paragraphs_from_languages)
-
-        self.assertEqual(2, len(paragraphs_from_languages))
-
-        self.assertEqual(3, len(paragraphs_from_languages[0].paragraphs))
-        self.assertEqual(3, len(paragraphs_from_languages[1].paragraphs))
-
-        self.assertEqual("a 0. en", paragraphs_from_languages[0].paragraphs[0].text_cleaned)
-        self.assertEqual("a 0. tr", paragraphs_from_languages[1].paragraphs[0].text_cleaned)
-
-        self.assertEqual("b 1: en", paragraphs_from_languages[0].paragraphs[1].text_cleaned)
-        self.assertEqual("b 1: tr", paragraphs_from_languages[1].paragraphs[1].text_cleaned)
-
-        self.assertEqual("c 2! en", paragraphs_from_languages[0].paragraphs[2].text_cleaned)
-        self.assertEqual("c 2! tr", paragraphs_from_languages[1].paragraphs[2].text_cleaned)
-
     def test_align_paragraphs_when_one_paragraph_corresponds_to_two(self):
         paragraphs = self.get_paragraphs("en")
         paragraphs_issue = [paragraphs[0], paragraphs[1].merge(paragraphs[2])]

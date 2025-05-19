@@ -21,7 +21,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.use_cases.XmlFile import XmlFile
 
-FILE_NAME = "g2400657"
+FILE_NAME = "N2432440"
 EXTRACTION_IDENTIFIER = ExtractionIdentifier(extraction_name="run_alignment")
 PDFS_PATH = ROOT_PATH / "data/paragraph_extraction/pdfs"
 
@@ -74,7 +74,8 @@ def save_mistakes_paragraphs(paragraphs_from_languages):
         main_language.is_main_language = True
         other.is_main_language = False
         start = time()
-        MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_language, other])
+        rest_languages = [x for x in others if x.language != other.language]
+        MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_language, other] + rest_languages)
         print("align in ", round(time() - start, 2), "s")
         labels = get_labels(FILE_NAME, main_language, other)
         for label in labels:
