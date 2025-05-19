@@ -21,7 +21,8 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.use_cases.XmlFile import XmlFile
 
-FILE_NAME = "N2432440"
+# FILE_FILTERS = ["plan3", "N2432440", "ba", "g2400657"]
+FILE_FILTERS = ["plan3"]
 EXTRACTION_IDENTIFIER = ExtractionIdentifier(extraction_name="run_alignment")
 PDFS_PATH = ROOT_PATH / "data/paragraph_extraction/pdfs"
 
@@ -48,21 +49,23 @@ def get_labels(
 
 def run_alignment():
     pdf_data_path = ROOT_PATH / "data/paragraph_extraction/pdf_data"
-    paragraphs_from_languages = list()
-    for pdf_file in pdf_data_path.iterdir():
-        if FILE_NAME not in pdf_file.name:
-            continue
+    for file_filter in FILE_FILTERS:
+        print("file_filter", file_filter)
+        paragraphs_from_languages = list()
+        for pdf_file in pdf_data_path.iterdir():
+            if file_filter not in pdf_file.name:
+                continue
 
-        language = pdf_file.stem.split("_")[1].split(".")[0]
-        paragraph_features = get_paragraphs(pdf_file.stem)
-        paragraphs_from_languages.append(
-            ParagraphsFromLanguage(language=language, paragraphs=paragraph_features, is_main_language=False)
-        )
+            language = pdf_file.stem.split("_")[1].split(".")[0]
+            paragraph_features = get_paragraphs(pdf_file.stem)
+            paragraphs_from_languages.append(
+                ParagraphsFromLanguage(language=language, paragraphs=paragraph_features, is_main_language=False)
+            )
 
-    save_mistakes_paragraphs(paragraphs_from_languages)
+        save_mistakes_paragraphs(paragraphs_from_languages, file_filter)
 
 
-def save_mistakes_paragraphs(paragraphs_from_languages):
+def save_mistakes_paragraphs(paragraphs_from_languages, file_name):
     english_paragraphs = [lang for lang in paragraphs_from_languages if lang.language in ["eng", "en"]]
     if not english_paragraphs:
         return
@@ -77,10 +80,9 @@ def save_mistakes_paragraphs(paragraphs_from_languages):
         rest_languages = [x for x in others if x.language != other.language]
         MultilingualParagraphAlignerUseCase(EXTRACTION_IDENTIFIER).align_languages([main_language, other] + rest_languages)
         print("align in ", round(time() - start, 2), "s")
-        labels = get_labels(FILE_NAME, main_language, other)
+        labels = get_labels(file_name, main_language, other)
         for label in labels:
             save_mistakes(label, label)
-        break
 
 
 def get_paths(pdf_name):
@@ -93,32 +95,33 @@ def get_paths(pdf_name):
 
 
 def create_pdf_data():
-    for pdf_file in PDFS_PATH.iterdir():
-        if FILE_NAME not in pdf_file.name:
-            continue
+    for file_filter in FILE_FILTERS:
+        for pdf_file in PDFS_PATH.iterdir():
+            if file_filter not in pdf_file.name:
+                continue
 
-        xml_path, pdf_data_path = get_paths(pdf_file.name.replace(".pdf", ".xml"))
+            xml_path, pdf_data_path = get_paths(pdf_file.name.replace(".pdf", ".xml"))
 
-        if not xml_path.exists():
-            subprocess.run(["pdftohtml", "-i", "-xml", "-zoom", "1.0", pdf_file, xml_path])
+            if not xml_path.exists():
+                subprocess.run(["pdftohtml", "-i", "-xml", "-zoom", "1.0", pdf_file, xml_path])
 
-        if pdf_data_path.exists():
-            continue
+            if pdf_data_path.exists():
+                continue
 
-        start = time()
-        print("start")
-        segmentation_data = get_segmentation_data(pdf_file, False)
-        print("segmentation per PDF", round(time() - start, 2), "s")
+            start = time()
+            print("start")
+            segmentation_data = get_segmentation_data(pdf_file, False)
+            print("segmentation per PDF", round(time() - start, 2), "s")
 
-        with open(xml_path, "rb") as file:
-            xml_file = XmlFile(extraction_identifier=EXTRACTION_IDENTIFIER, to_train=True, xml_file_name=xml_path.name)
-            xml_file.save(file_content=file.read())
-        pdf_data = PdfData.from_xml_file(xml_file=xml_file, segmentation_data=segmentation_data)
+            with open(xml_path, "rb") as file:
+                xml_file = XmlFile(extraction_identifier=EXTRACTION_IDENTIFIER, to_train=True, xml_file_name=xml_path.name)
+                xml_file.save(file_content=file.read())
+            pdf_data = PdfData.from_xml_file(xml_file=xml_file, segmentation_data=segmentation_data)
 
-        with open(pdf_data_path, "wb") as f:
-            pickle.dump(pdf_data, f)
+            with open(pdf_data_path, "wb") as f:
+                pickle.dump(pdf_data, f)
 
 
 if __name__ == "__main__":
-    # create_pdf_data()
+    create_pdf_data()
     run_alignment()

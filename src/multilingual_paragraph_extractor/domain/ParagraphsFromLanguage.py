@@ -10,7 +10,7 @@ from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphF
 from multilingual_paragraph_extractor.domain.ParagraphMatchScore import ParagraphMatchScore
 
 BLOCK_SIZE = 50
-THRESHOLD = 0.7
+THRESHOLD = 0.5
 HEADER_SIMILARITY_THRESHOLD = 90
 TOP_OF_PAGE_THRESHOLD = 0.2
 REPEATED_HEADER_THRESHOLD = 0.2
@@ -260,7 +260,7 @@ class ParagraphsFromLanguage(BaseModel):
         other = self.paragraphs
         n = len(main)
         m = len(other)
-        gap_penalty = -0.1
+        gap_penalty = -0.05
         min_match_score = THRESHOLD
 
         dp = [[0.0] * (m + 1) for _ in range(n + 1)]
