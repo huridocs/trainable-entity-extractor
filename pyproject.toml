@@ -1,6 +1,6 @@
 [project]
 name = "trainable-entity-extractor"
-version = "2025.5.26.1"
+version = "2025.5.26.2"
 description = "This tool is a trainable text/PDF to entity extractor"
 license = { file = "LICENSE" }
 authors = [{ name = "HURIDOCS" }]
@@ -39,6 +39,6 @@ dependencies = [
     "graypy==2.1.0",
     "Unidecode==1.3.8",
     "country_named_entity_recognition==0.4",
-    "protobuf==5.28.3",
+    "protobuf==5.27.3",
     "google-genai==1.16.1"
 ]
