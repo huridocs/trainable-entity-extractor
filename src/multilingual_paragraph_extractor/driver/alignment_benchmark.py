@@ -117,17 +117,17 @@ def get_scores(truth_labels: Labels, prediction_labels: Labels):
 
 def get_average(alignment_results: list[AlignmentResult]) -> AlignmentResult:
     total_paragraphs = sum([x.total_paragraphs for x in alignment_results])
-    seconds = sum([x.seconds for x in alignment_results]) / len(alignment_results)
+    seconds = sum([x.seconds for x in alignment_results]) / len(alignment_results) if alignment_results else 0
     total_precision = sum([x.precision for x in alignment_results])
     total_recall = sum([x.recall for x in alignment_results])
     total_f1_score = sum([x.f1_score for x in alignment_results])
 
     return AlignmentResult(
         name="Average",
-        algorithm=alignment_results[0].algorithm,
-        precision=round(total_precision / len(alignment_results), 2),
-        recall=round(total_recall / len(alignment_results), 2),
-        f1_score=round(total_f1_score / len(alignment_results), 2),
+        algorithm=alignment_results[0].algorithm if alignment_results else "",
+        precision=round(total_precision / len(alignment_results), 2) if alignment_results else 0,
+        recall=round(total_recall / len(alignment_results), 2) if alignment_results else 0,
+        f1_score=round(total_f1_score / len(alignment_results), 2) if alignment_results else 0,
         mistakes_number=sum([x.mistakes_number for x in alignment_results]),
         total_paragraphs=total_paragraphs,
         seconds=round(seconds, 2),
@@ -167,6 +167,6 @@ def get_alignment_benchmark(model_name: str, show_mistakes: bool = True, file_fi
 if __name__ == "__main__":
     model_name = "vgt"
     show_mistakes = True
-    # file_filter = ["ohchr_1_en_ru"]
+    # file_filter = ["ohchr_1"]
     file_filter = []
     get_alignment_benchmark(model_name, show_mistakes, file_filter)

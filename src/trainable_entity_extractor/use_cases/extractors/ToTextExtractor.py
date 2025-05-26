@@ -38,6 +38,8 @@ class ToTextExtractor(ExtractorBase):
         for suggestion, sample in zip(suggestions, predictions_samples):
             if sample.pdf_data:
                 suggestion.add_segments(sample.pdf_data)
+            else:
+                suggestion.segment_text = sample.segment_selector_texts[0] if sample.segment_selector_texts else ""
 
         return suggestions
 

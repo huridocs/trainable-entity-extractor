@@ -22,7 +22,7 @@ from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.use_cases.XmlFile import XmlFile
 
 # FILE_FILTERS = ["plan3", "N2432440", "ba", "g2400657"]
-FILE_FILTERS = ["plan3"]
+FILE_FILTERS = ["plan_2"]
 EXTRACTION_IDENTIFIER = ExtractionIdentifier(extraction_name="run_alignment")
 PDFS_PATH = ROOT_PATH / "data/paragraph_extraction/pdfs"
 
@@ -56,7 +56,7 @@ def run_alignment():
             if file_filter not in pdf_file.name:
                 continue
 
-            language = pdf_file.stem.split("_")[1].split(".")[0]
+            language = pdf_file.stem.split("_")[-1].split(".")[0]
             paragraph_features = get_paragraphs(pdf_file.stem)
             paragraphs_from_languages.append(
                 ParagraphsFromLanguage(language=language, paragraphs=paragraph_features, is_main_language=False)
@@ -123,5 +123,5 @@ def create_pdf_data():
 
 
 if __name__ == "__main__":
-    create_pdf_data()
+    # create_pdf_data()
     run_alignment()

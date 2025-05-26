@@ -133,16 +133,20 @@ def loop_combinations():
     for pdf_name, languages in sorted_pdf_languages:
         if len(languages) < 2:
             continue
+        try:
+            for main_language, other_language in itertools.permutations(languages, 2):
+                main_paragraphs = ParagraphsFromLanguage(
+                    language=main_language, paragraphs=get_paragraphs(f"{pdf_name}_{main_language}"), is_main_language=True
+                )
+                other_paragraphs = ParagraphsFromLanguage(
+                    language=other_language,
+                    paragraphs=get_paragraphs(f"{pdf_name}_{other_language}"),
+                    is_main_language=False,
+                )
 
-        for main_language, other_language in itertools.permutations(languages, 2):
-            main_paragraphs = ParagraphsFromLanguage(
-                language=main_language, paragraphs=get_paragraphs(f"{pdf_name}_{main_language}"), is_main_language=True
-            )
-            other_paragraphs = ParagraphsFromLanguage(
-                language=other_language, paragraphs=get_paragraphs(f"{pdf_name}_{other_language}"), is_main_language=False
-            )
-
-            yield pdf_name, main_paragraphs, other_paragraphs
+                yield pdf_name, main_paragraphs, other_paragraphs
+        except Exception as e:
+            continue
 
 
 def annotate_pdf(pdf_name: str, output_name: str, paragraphs: list[ParagraphFeatures], contents: list[str]):
