@@ -39,7 +39,7 @@ class ToTextExtractor(ExtractorBase):
             if sample.pdf_data:
                 suggestion.add_segments(sample.pdf_data)
             else:
-                suggestion.segment_text = sample.segment_selector_texts[0] if sample.segment_selector_texts else ""
+                suggestion.segment_text = sample.source_text if sample.source_text else ""
 
         return suggestions
 

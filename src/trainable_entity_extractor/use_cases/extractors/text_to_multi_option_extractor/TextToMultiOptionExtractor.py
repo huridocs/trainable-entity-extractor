@@ -101,6 +101,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
             suggestion = Suggestion.from_prediction_multi_option(
                 self.extraction_identifier, prediction_sample.entity_name, prediction
             )
+            suggestion.segment_text = prediction_sample.source_text if prediction_sample.source_text else ""
             suggestions.append(suggestion)
 
         return suggestions
@@ -196,6 +197,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
             suggestion = Suggestion.from_prediction_multi_option(
                 self.extraction_identifier, prediction_sample.entity_name, prediction
             )
+            suggestion.segment_text = prediction_sample.source_text if prediction_sample.source_text else ""
             suggestions.append(suggestion)
 
         return suggestions
