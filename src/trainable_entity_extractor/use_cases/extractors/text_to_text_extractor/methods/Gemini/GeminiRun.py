@@ -41,6 +41,12 @@ class GeminiRun(BaseModel):
         client = genai.Client(api_key=GEMINI_API_KEY)
 
         self.set_run_data(previous_run)
+
+        if len(self.training_samples) == len(previous_run.training_samples):
+            self.mistakes_samples = previous_run.mistakes_samples
+            self.code = previous_run.code
+            return
+
         self.set_code(client)
         self.set_mistakes_samples()
 
@@ -64,9 +70,9 @@ class GeminiRun(BaseModel):
         for sample_index, sample in enumerate(self.training_samples):
             prompt_parts.append(f"**Example {sample_index + 1}**\n")
             prompt_parts.append("Input:\n")
-            prompt_parts.append(f'"{sample.input_text}"\n\n')
+            prompt_parts.append(f"```{sample.input_text}```\n\n")
             prompt_parts.append("Output:\n")
-            prompt_parts.append(f"{sample.output_text}\n\n")
+            prompt_parts.append(f"```{sample.output_text}```\n\n")
 
         examples_string = "".join(prompt_parts)
 
@@ -104,7 +110,7 @@ class GeminiRun(BaseModel):
         except Exception:
             code_to_save = self.code.replace("\\n", "\n")
 
-        extraction_identifier.save_content(CODE_FILE_NAME, code_to_save)
+        extraction_identifier.save_content(CODE_FILE_NAME, code_to_save, False)
 
     @staticmethod
     def _get_empty_results(samples: list[GeminiSample]) -> list[str]:
@@ -112,15 +118,8 @@ class GeminiRun(BaseModel):
 
     def _load_extract_function(self):
         local_namespace = {}
-        if self.code.startswith('"') and self.code.endswith("'"):
-            self.code = self.code[1:-1]
-        elif self.code.startswith("'") and self.code.endswith("'"):
-            self.code = self.code[1:-1]
-        elif self.code.startswith('"') and self.code.endswith('"'):
-            self.code = self.code[1:-1]
 
         try:
-            # Ensure self.code is treated as a string that might contain Python-style escapes
             code_to_execute = codecs.decode(self.code.encode("utf-8", "backslashreplace"), "unicode-escape")
         except Exception:
             # Fallback if the above decoding fails for some reason
@@ -136,7 +135,15 @@ class GeminiRun(BaseModel):
             return None
 
     @staticmethod
-    def _process_samples_with_function(extract_func: callable, samples: list[GeminiSample]) -> list[str]:
+    def clean_outputs(text: str) -> str:
+        text = text.strip()
+        if text.startswith("```"):
+            text = text[3:].strip()
+        if text.endswith("```"):
+            text = text[:-3].strip()
+        return text
+
+    def _process_samples_with_function(self, extract_func: callable, samples: list[GeminiSample]) -> list[str]:
         outputs_texts = []
         for sample in samples:
             try:
@@ -144,6 +151,8 @@ class GeminiRun(BaseModel):
                 outputs_texts.append(str(result) if result is not None else "")
             except Exception:
                 outputs_texts.append("")
+
+        outputs_texts = [self.clean_outputs(text) for text in outputs_texts]
         return outputs_texts
 
     def run_code(self, samples: list[GeminiSample]) -> list[str]:
