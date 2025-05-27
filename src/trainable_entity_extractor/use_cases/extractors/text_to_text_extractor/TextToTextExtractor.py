@@ -57,9 +57,12 @@ class TextToTextExtractor(ToTextExtractor):
 
         return super().create_model(extraction_data)
 
-    def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
+    @staticmethod
+    def set_segment_selector_texts(predictions_samples):
         for sample in predictions_samples:
             if not sample.segment_selector_texts and sample.source_text:
                 sample.segment_selector_texts = [sample.source_text]
 
+    def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
+        self.set_segment_selector_texts(predictions_samples)
         return super().get_suggestions(predictions_samples)

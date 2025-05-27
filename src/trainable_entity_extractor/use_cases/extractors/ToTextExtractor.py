@@ -36,10 +36,12 @@ class ToTextExtractor(ExtractorBase):
             suggestions.append(Suggestion.from_prediction_text(self.extraction_identifier, entity_name, prediction))
 
         for suggestion, sample in zip(suggestions, predictions_samples):
-            if sample.pdf_data:
+            if sample.source_text:
+                suggestion.segment_text = sample.source_text
+            elif sample.pdf_data and sample.pdf_data.pdf_data_segments:
                 suggestion.add_segments(sample.pdf_data)
             else:
-                suggestion.segment_text = sample.source_text if sample.source_text else ""
+                suggestion.segment_text = ""
 
         return suggestions
 

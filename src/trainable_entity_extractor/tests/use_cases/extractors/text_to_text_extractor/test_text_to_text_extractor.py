@@ -47,24 +47,22 @@ class TestTextToTextExtractor(TestCase):
         self.assertEqual("test 2", suggestions[2].text)
 
     def test_predictions_two_samples(self):
-        sample_1 = [
-            TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en"), segment_selector_texts=["one two"])
-        ]
-        sample_2 = [
-            TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en"), segment_selector_texts=["one two"])
-        ]
+        sample_1 = [TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en", source_text="one two"))]
+        sample_2 = [TrainingSample(labeled_data=LabeledData(label_text="one", language_iso="en", source_text="one two"))]
         extraction_data = ExtractionData(samples=sample_1 + sample_2, extraction_identifier=extraction_identifier)
 
         text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier)
         text_to_text_extractor.create_model(extraction_data)
 
-        suggestions = text_to_text_extractor.get_suggestions([PredictionSample.from_text("one two", "entity_name")])
+        prediction_sample = PredictionSample(source_text="one two", entity_name="entity_name")
+        suggestions = text_to_text_extractor.get_suggestions([prediction_sample])
 
         self.assertEqual(1, len(suggestions))
         self.assertEqual(tenant, suggestions[0].tenant)
         self.assertEqual(extraction_id, suggestions[0].id)
         self.assertEqual("entity_name", suggestions[0].entity_name)
         self.assertEqual("one", suggestions[0].text)
+        self.assertEqual("one two", suggestions[0].segment_text)
 
     def test_predictions_input_without_spaces(self):
         sample = [

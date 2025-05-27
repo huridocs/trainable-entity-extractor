@@ -69,10 +69,12 @@ class TrainableEntityExtractor:
             if extractor_instance.get_name() != extractor_name:
                 continue
 
+            message = f"Using {extractor_instance.get_name()} to calculate {len(prediction_samples)} suggestions"
+            send_logs(self.extraction_identifier, message)
+
             suggestions = extractor_instance.get_suggestions(prediction_samples)
             suggestions = [suggestion.mark_suggestion_if_empty() for suggestion in suggestions]
-            message = f"Using {extractor_instance.get_name()} to calculate {len(suggestions)} suggestions"
-            send_logs(self.extraction_identifier, message)
+
             self.extraction_identifier.save_processing_finished(True)
             return suggestions
 
