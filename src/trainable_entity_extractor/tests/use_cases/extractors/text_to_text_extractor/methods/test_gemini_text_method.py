@@ -11,6 +11,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 
 
 class TestGeminiTextMethodWithRealAPI(TestCase):
+    @unittest.SkipTest
     def test_train(self):
         extraction_identifier = ExtractionIdentifier(extraction_name="gemini_text_test")
         gemini_text_method = GeminiTextMethod(extraction_identifier)
