@@ -7,8 +7,7 @@ from pydantic import BaseModel
 
 from trainable_entity_extractor.config import GEMINI_API_KEY
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.Gemini.GeminiSample import \
-    GeminiSample
+from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.Gemini.GeminiSample import GeminiSample
 
 CODE_FILE_NAME = "gemini_code.py"
 
@@ -32,17 +31,15 @@ class GeminiRun(BaseModel):
         self.training_samples = samples_previous_run + random.sample(previous_run.mistakes_samples, max_samples_to_add)
 
         training_samples_set = set(self.training_samples)
-        self.non_used_samples = [
-            sample for sample in previous_run.mistakes_samples if sample not in training_samples_set
-        ]
+        self.non_used_samples = [sample for sample in previous_run.mistakes_samples if sample not in training_samples_set]
         self.set_prompt()
 
     def run_training(self, previous_run: "GeminiRun"):
         if not self.max_training_size or not GEMINI_API_KEY:
             return
-        
+
         client = genai.Client(api_key=GEMINI_API_KEY)
-        
+
         self.set_run_data(previous_run)
         self.set_code(client)
         self.set_mistakes_samples()
@@ -50,7 +47,8 @@ class GeminiRun(BaseModel):
     def set_mistakes_samples(self):
         predictions = self.run_code(self.non_used_samples)
         self.mistakes_samples = [
-            sample for sample, prediction in zip(self.non_used_samples, predictions)
+            sample
+            for sample, prediction in zip(self.non_used_samples, predictions)
             if prediction.strip() != sample.output_text.strip()
         ]
 
@@ -59,7 +57,7 @@ class GeminiRun(BaseModel):
         answer: str = response.text
         code_start = "```python\n"
         code_end = "```"
-        self.code = answer[answer.find(code_start) + len(code_start): answer.rfind(code_end)]
+        self.code = answer[answer.find(code_start) + len(code_start) : answer.rfind(code_end)]
 
     def set_prompt(self):
         prompt_parts = ["**Examples**\n"]
@@ -102,15 +100,15 @@ class GeminiRun(BaseModel):
             return
 
         try:
-            code_to_save = codecs.decode(self.code.encode('utf-8', 'backslashreplace'), 'unicode-escape')
+            code_to_save = codecs.decode(self.code.encode("utf-8", "backslashreplace"), "unicode-escape")
         except Exception:
-            code_to_save = self.code.replace('\\n', '\n')
+            code_to_save = self.code.replace("\\n", "\n")
 
         extraction_identifier.save_content(CODE_FILE_NAME, code_to_save)
 
     @staticmethod
     def _get_empty_results(samples: list[GeminiSample]) -> list[str]:
-            return [""] * len(samples)
+        return [""] * len(samples)
 
     def _load_extract_function(self):
         local_namespace = {}
@@ -123,10 +121,10 @@ class GeminiRun(BaseModel):
 
         try:
             # Ensure self.code is treated as a string that might contain Python-style escapes
-            code_to_execute = codecs.decode(self.code.encode('utf-8', 'backslashreplace'), 'unicode-escape')
+            code_to_execute = codecs.decode(self.code.encode("utf-8", "backslashreplace"), "unicode-escape")
         except Exception:
             # Fallback if the above decoding fails for some reason
-            code_to_execute = self.code.replace('\\n', '\n')
+            code_to_execute = self.code.replace("\\n", "\n")
 
         try:
             exec(code_to_execute, {}, local_namespace)
@@ -157,7 +155,7 @@ class GeminiRun(BaseModel):
             return self._get_empty_results(samples)
 
         return self._process_samples_with_function(extract_func, samples)
-        
+
     @staticmethod
     def from_extractor_identifier(extraction_identifier: ExtractionIdentifier) -> "GeminiRun":
         path = Path(extraction_identifier.get_path()) / CODE_FILE_NAME

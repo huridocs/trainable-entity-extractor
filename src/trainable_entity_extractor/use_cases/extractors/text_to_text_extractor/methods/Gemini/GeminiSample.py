@@ -12,5 +12,6 @@ class GeminiSample(BaseModel):
 
     @staticmethod
     def from_training_sample(training_sample):
-        return GeminiSample(input_text=' '.join(training_sample.segment_selector_texts),
-                            output_text=training_sample.labeled_data.label_text)
+        return GeminiSample(
+            input_text=" ".join(training_sample.segment_selector_texts), output_text=training_sample.labeled_data.label_text
+        )
