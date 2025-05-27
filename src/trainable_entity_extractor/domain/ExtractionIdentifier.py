@@ -34,13 +34,15 @@ class ExtractionIdentifier(BaseModel):
 
         return json.loads(path.read_text())
 
-    def save_content(self, file_name: str, content: Any):
+    def save_content(self, file_name: str, content: Any, use_json: bool = True):
         path = Path(self.get_path(), file_name)
 
         if not exists(path.parent):
             os.makedirs(path.parent, exist_ok=True)
 
-        if type(content) == list:
+        if not use_json:
+            path.write_text(str(content))
+        elif type(content) == list:
             path.write_text(json.dumps([x.model_dump() for x in content]))
         else:
             path.write_text(json.dumps(content))
