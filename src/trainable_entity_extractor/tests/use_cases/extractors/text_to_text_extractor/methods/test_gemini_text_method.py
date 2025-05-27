@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
