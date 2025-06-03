@@ -8,10 +8,11 @@ class GeminiSample(BaseModel):
 
     @staticmethod
     def from_prediction_sample(prediction_sample):
-        return GeminiSample(input_text=prediction_sample.source_text)
+        return GeminiSample(input_text=prediction_sample.get_input_text())
 
     @staticmethod
     def from_training_sample(training_sample):
         return GeminiSample(
-            input_text=" ".join(training_sample.segment_selector_texts), output_text=training_sample.labeled_data.label_text
+            input_text=" ".join(training_sample.get_input_text_by_lines()),
+            output_text=training_sample.labeled_data.label_text,
         )

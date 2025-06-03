@@ -15,12 +15,30 @@ class TrainingSample(BaseModel):
     labeled_data: Optional[LabeledData] = None
     segment_selector_texts: Optional[list[str]] = None
 
-    def get_text(self):
+    def get_segments_text(self):
         texts = list()
         for pdf_metadata_segment in self.pdf_data.pdf_data_segments:
             texts.append(pdf_metadata_segment.text_content)
 
         return " ".join(texts)
+
+    def get_input_text(self) -> str:
+        if self.labeled_data and self.labeled_data.source_text:
+            return self.labeled_data.source_text
+
+        if self.segment_selector_texts:
+            return " ".join(self.segment_selector_texts)
+
+        return ""
+
+    def get_input_text_by_lines(self) -> list[str]:
+        if self.labeled_data and self.labeled_data.source_text:
+            return [self.labeled_data.source_text]
+
+        if self.segment_selector_texts:
+            return self.segment_selector_texts
+
+        return [""]
 
     @staticmethod
     def from_text(source_text: str, label_text: str, language_iso: str = "en"):

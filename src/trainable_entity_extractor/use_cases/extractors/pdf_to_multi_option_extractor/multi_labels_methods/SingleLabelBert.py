@@ -77,7 +77,7 @@ class SingleLabelBert(MultiLabelMethod):
         return clf_metrics.compute(predictions=predictions_list, references=labels)
 
     def preprocess_function(self, multi_option_sample: TrainingSample):
-        text = multi_option_sample.get_text()
+        text = multi_option_sample.get_segments_text()
         if multi_option_sample.labeled_data.values:
             labels = self.options.index(multi_option_sample.labeled_data.values[0])
         else:

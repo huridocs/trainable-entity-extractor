@@ -72,7 +72,7 @@ class TextBalancedSingleLabelSetFit(TextToMultiOptionMethod):
 
     def get_dataset_from_data(self, extraction_data: ExtractionData):
         data = list()
-        texts = [self.get_text(sample.labeled_data.source_text) for sample in extraction_data.samples]
+        texts = [self.get_text(sample.get_input_text()) for sample in extraction_data.samples]
         labels = list()
 
         for sample in extraction_data.samples:
@@ -126,7 +126,7 @@ class TextBalancedSingleLabelSetFit(TextToMultiOptionMethod):
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
         model = SetFitModel.from_pretrained(self.get_model_path())
-        texts = [self.get_text(sample.source_text) for sample in predictions_samples]
+        texts = [self.get_text(sample.get_input_text()) for sample in predictions_samples]
         predictions = model.predict(texts)
 
         return [[option for option in self.options if option.label == prediction] for prediction in predictions]

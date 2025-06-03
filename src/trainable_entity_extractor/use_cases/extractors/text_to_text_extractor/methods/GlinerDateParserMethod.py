@@ -29,7 +29,7 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
         predictions_dates = [
-            self.get_date(prediction_sample.segment_selector_texts) for prediction_sample in predictions_samples
+            self.get_date(prediction_sample.get_input_text_by_lines()) for prediction_sample in predictions_samples
         ]
         predictions = [date.strftime("%Y-%m-%d") if date else "" for date in predictions_dates]
         return predictions

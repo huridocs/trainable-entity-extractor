@@ -11,7 +11,7 @@ class NaiveExtractor(ExtractorBase):
         suggestions = list()
         for prediction_sample in predictions_samples:
             suggestion = Suggestion.get_empty(self.extraction_identifier, prediction_sample.pdf_data.file_name)
-            suggestion.text = prediction_sample.get_text()
+            suggestion.text = prediction_sample.get_segments_text()
             suggestions.append(suggestion)
 
         return suggestions

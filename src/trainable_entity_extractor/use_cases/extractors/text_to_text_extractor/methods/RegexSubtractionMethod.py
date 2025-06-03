@@ -12,14 +12,14 @@ class RegexSubtractionMethod(ToTextExtractorMethod):
 
     def train(self, extraction_data: ExtractionData):
         front_subtraction = [
-            self.get_first_subtraction_characters(" ".join(x.segment_selector_texts), x.labeled_data.label_text)
+            self.get_first_subtraction_characters(" ".join(x.get_input_text_by_lines()), x.labeled_data.label_text)
             for x in extraction_data.samples
         ]
         front_regex_list = rexpy.extract([x for x in front_subtraction if x])
         front_regex_list = [regex[:-1] for regex in front_regex_list]
 
         back_subtraction = [
-            self.get_last_subtraction_characters(" ".join(x.segment_selector_texts), x.labeled_data.label_text)
+            self.get_last_subtraction_characters(" ".join(x.get_input_text_by_lines()), x.labeled_data.label_text)
             for x in extraction_data.samples
         ]
         back_regex_list = rexpy.extract([x for x in back_subtraction if x])
@@ -29,7 +29,7 @@ class RegexSubtractionMethod(ToTextExtractorMethod):
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
         regex_list = self.load_json("regex_subtraction_list.json")
-        predictions = [" ".join(x.segment_selector_texts) for x in predictions_samples]
+        predictions = [" ".join(x.get_input_text_by_lines()) for x in predictions_samples]
         for i, prediction in enumerate(predictions):
             for regex in regex_list:
                 matches = re.search(regex, prediction)

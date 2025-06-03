@@ -12,12 +12,24 @@ class PredictionSample(BaseModel):
     source_text: str = ""
     entity_name: str = ""
 
-    def get_text(self):
+    def get_segments_text(self):
         texts = list()
         for segment in self.pdf_data.pdf_data_segments:
             texts.append(segment.text_content)
 
         return " ".join(texts)
+
+    def get_input_text(self) -> str:
+        return "".join(self.get_input_text_by_lines())
+
+    def get_input_text_by_lines(self) -> list[str]:
+        if self.source_text:
+            return [self.source_text]
+
+        if self.segment_selector_texts:
+            return self.segment_selector_texts
+
+        return [""]
 
     @staticmethod
     def from_pdf_data(pdf_data: PdfData):

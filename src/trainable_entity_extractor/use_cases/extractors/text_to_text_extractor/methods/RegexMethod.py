@@ -25,7 +25,7 @@ class RegexMethod(ToTextExtractorMethod):
                 if predictions[index]:
                     break
 
-                text = " ".join(prediction_sample.segment_selector_texts)
+                text = prediction_sample.get_input_text()
 
                 match = re.search(regex, text)
                 if match:

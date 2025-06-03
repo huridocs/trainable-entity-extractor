@@ -37,7 +37,7 @@ class TextFuzzyFirstCleanLabels(TextToMultiOptionMethod):
         predictions: list[list[Option]] = list()
         option_labels = self.get_cleaned_labels(self.options)
         for sample in predictions_samples:
-            values = self.get_appearance(sample.source_text, option_labels)
+            values = self.get_appearance(sample.get_input_text(), option_labels)
 
             if values:
                 predictions.append([self.options[option_labels.index(values[0])]])

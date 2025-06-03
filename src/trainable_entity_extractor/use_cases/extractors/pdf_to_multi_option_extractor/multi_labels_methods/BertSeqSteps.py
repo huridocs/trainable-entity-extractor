@@ -78,7 +78,7 @@ class BertSeqSteps(MultiLabelMethod):
         return clf_metrics.compute(predictions=predictions, references=labels.astype(int).reshape(-1))
 
     def preprocess_function(self, sample: TrainingSample):
-        text = sample.get_text()
+        text = sample.get_segments_text()
         labels = [1.0 if value in sample.labeled_data.values else 0.0 for value in self.options]
 
         example = tokenizer(text, padding="max_length", truncation="only_first", max_length=self.get_token_length())

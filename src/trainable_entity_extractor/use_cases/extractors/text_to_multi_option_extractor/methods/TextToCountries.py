@@ -51,7 +51,9 @@ class TextToCountries(TextToMultiOptionMethod):
         option_keywords_dict = {option_keyword.keyword: option_keyword for option_keyword in option_keywords}
         for sample in predictions_samples:
             predictions.append([])
-            sample_text = sample.source_text if sample.source_text else " ".join([x for x in sample.segment_selector_texts])
+            sample_text = (
+                sample.get_input_text() if sample.get_input_text() else " ".join([x for x in sample.segment_selector_texts])
+            )
             found_countries = self._find_countries(sample_text)
             if found_countries:
                 options = [

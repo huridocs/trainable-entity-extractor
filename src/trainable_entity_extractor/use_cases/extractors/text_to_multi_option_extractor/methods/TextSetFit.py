@@ -61,7 +61,7 @@ class TextSetFit(TextToMultiOptionMethod):
 
     def get_dataset_from_data(self, extraction_data: ExtractionData):
         data = list()
-        texts = [self.get_text(sample.labeled_data.source_text) for sample in extraction_data.samples]
+        texts = [self.get_text(sample.get_input_text()) for sample in extraction_data.samples]
         labels = self.get_one_hot_encoding(extraction_data)
 
         for text, label in zip(texts[:10000], labels[:10000]):
@@ -115,7 +115,7 @@ class TextSetFit(TextToMultiOptionMethod):
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
         model = SetFitModel.from_pretrained(self.get_model_path())
-        texts = [self.get_text(sample.source_text) for sample in predictions_samples]
+        texts = [self.get_text(sample.get_input_text()) for sample in predictions_samples]
         predictions = model.predict(texts)
 
         return self.predictions_to_options_list(predictions.tolist())

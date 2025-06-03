@@ -49,7 +49,7 @@ class TextTfIdf(TextToMultiOptionMethod):
         return join(model_folder_path, "fast.model")
 
     def train(self, multi_option_data: ExtractionData):
-        texts = [sample.labeled_data.source_text for sample in multi_option_data.samples]
+        texts = [sample.get_input_text() for sample in multi_option_data.samples]
         dump(texts, self.get_data_path())
 
         vectorized = TfidfVectorizer()
@@ -66,7 +66,7 @@ class TextTfIdf(TextToMultiOptionMethod):
         vectorized = TfidfVectorizer()
         vectorized.fit_transform(train_texts)
 
-        predict_texts = [sample.source_text for sample in predictions_samples]
+        predict_texts = [sample.get_input_text() for sample in predictions_samples]
 
         tfidf_predict_vectors = vectorized.transform(predict_texts)
 

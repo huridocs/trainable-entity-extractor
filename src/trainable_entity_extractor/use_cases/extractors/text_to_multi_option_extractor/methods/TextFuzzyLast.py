@@ -36,7 +36,7 @@ class TextFuzzyLast(TextToMultiOptionMethod):
         predictions: list[list[Option]] = list()
         option_labels = [option.label.lower() for option in self.options]
         for sample in predictions_samples:
-            values = self.get_appearance(sample.source_text, option_labels)
+            values = self.get_appearance(sample.get_input_text(), option_labels)
             predictions.append([option for option in self.options if option.label in values])
 
         return predictions

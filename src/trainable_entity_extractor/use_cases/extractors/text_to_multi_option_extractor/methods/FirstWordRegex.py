@@ -24,7 +24,7 @@ class FirstWordRegex(TextToMultiOptionMethod):
         options_regex: list[OptionRegex] = [self.load_option_regex(option) for option in self.options]
         options_regex.sort(key=lambda x: len(x.regex_list))
         for sample in predictions_samples:
-            options_ids = self.predict_one(sample.source_text, options_regex)
+            options_ids = self.predict_one(sample.get_input_text(), options_regex)
             if options_ids:
                 predictions.append([option for option in self.options if option.id in options_ids])
             else:
@@ -39,11 +39,7 @@ class FirstWordRegex(TextToMultiOptionMethod):
 
     def train(self, multi_option_data: ExtractionData):
         for option in multi_option_data.options:
-            texts = [
-                sample.labeled_data.source_text
-                for sample in multi_option_data.samples
-                if option in sample.labeled_data.values
-            ]
+            texts = [sample.get_input_text() for sample in multi_option_data.samples if option in sample.labeled_data.values]
             first_words = [text.split()[0] for text in texts if text]
             regex_list = rexpy.extract(first_words)
             regex_list = [regex[1:-1] for regex in regex_list]
