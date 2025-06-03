@@ -9,18 +9,20 @@ from trainable_entity_extractor.config import GEMINI_API_KEY
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.Gemini.GeminiSample import GeminiSample
 
+
 CODE_FILE_NAME = "gemini_code.py"
 
 
 class GeminiRun(BaseModel):
+    gemini_model: str = "gemini-2.5-flash-preview-05-20"
     max_training_size: int = 0
+    prompt: str = ""
+    code: str = ""
     training_samples: list[GeminiSample] = list()
     non_used_samples: list[GeminiSample] = list()
     mistakes_samples: list[GeminiSample] = list()
-    prompt: str = ""
-    code: str = ""
 
-    def set_run_data(self, previous_run: "GeminiRun" = None):
+    def _update_data_from_previous_run(self, previous_run: "GeminiRun" = None):
         if not previous_run:
             return
 
@@ -32,25 +34,23 @@ class GeminiRun(BaseModel):
 
         training_samples_set = set(self.training_samples)
         self.non_used_samples = [sample for sample in previous_run.mistakes_samples if sample not in training_samples_set]
-        self.set_prompt()
+        self._set_prompt()
 
     def run_training(self, previous_run: "GeminiRun"):
         if not self.max_training_size or not GEMINI_API_KEY:
             return
 
-        client = genai.Client(api_key=GEMINI_API_KEY)
-
-        self.set_run_data(previous_run)
+        self._update_data_from_previous_run(previous_run)
 
         if len(self.training_samples) == len(previous_run.training_samples):
             self.mistakes_samples = previous_run.mistakes_samples
             self.code = previous_run.code
             return
 
-        self.set_code(client)
-        self.set_mistakes_samples()
+        self._set_code_from_model()
+        self._update_mistakes_samples()
 
-    def set_mistakes_samples(self):
+    def _update_mistakes_samples(self):
         predictions = self.run_code(self.non_used_samples)
         self.mistakes_samples = [
             sample
@@ -58,14 +58,15 @@ class GeminiRun(BaseModel):
             if prediction.strip() != sample.output_text.strip()
         ]
 
-    def set_code(self, client):
-        response = client.models.generate_content(model="gemini-2.5-flash-preview-05-20", contents=self.prompt)
+    def _set_code_from_model(self):
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(model=self.gemini_model, contents=self.prompt)
         answer: str = response.text
         code_start = "```python\n"
         code_end = "```"
         self.code = answer[answer.find(code_start) + len(code_start) : answer.rfind(code_end)]
 
-    def set_prompt(self):
+    def _set_prompt(self):
         prompt_parts = ["**Examples**\n"]
         for sample_index, sample in enumerate(self.training_samples):
             prompt_parts.append(f"**Example {sample_index + 1}**\n")
@@ -112,10 +113,6 @@ class GeminiRun(BaseModel):
 
         extraction_identifier.save_content(CODE_FILE_NAME, code_to_save, False)
 
-    @staticmethod
-    def _get_empty_results(samples: list[GeminiSample]) -> list[str]:
-        return [""] * len(samples)
-
     def _load_extract_function(self):
         local_namespace = {}
 
@@ -133,15 +130,6 @@ class GeminiRun(BaseModel):
             return None
         except Exception:
             return None
-
-    @staticmethod
-    def clean_outputs(text: str) -> str:
-        text = text.strip()
-        if text.startswith("```"):
-            text = text[3:].strip()
-        if text.endswith("```"):
-            text = text[:-3].strip()
-        return text
 
     def _process_samples_with_function(self, extract_func: callable, samples: list[GeminiSample]) -> list[str]:
         outputs_texts = []
@@ -170,3 +158,16 @@ class GeminiRun(BaseModel):
         path = Path(extraction_identifier.get_path()) / CODE_FILE_NAME
         code = path.read_text(encoding="utf-8") if path.exists() else ""
         return GeminiRun(code=code)
+
+    @staticmethod
+    def _get_empty_results(samples: list[GeminiSample]) -> list[str]:
+        return [""] * len(samples)
+
+    @staticmethod
+    def clean_outputs(text: str) -> str:
+        text = text.strip()
+        if text.startswith("```"):
+            text = text[3:].strip()
+        if text.endswith("```"):
+            text = text[:-3].strip()
+        return text

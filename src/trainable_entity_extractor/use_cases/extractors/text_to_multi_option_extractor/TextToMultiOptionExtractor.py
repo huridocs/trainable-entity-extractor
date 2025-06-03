@@ -166,6 +166,12 @@ class TextToMultiOptionExtractor(ExtractorBase):
         config_logger.info(f"\nChecking {method_instance.get_name()}")
         try:
             performance = method_instance.performance(extraction_data)
+        except IndexError:
+            performance = 0
+            if "setfit" in method_instance.get_name().lower():
+                config_logger.info("Insufficient data to train SetFit model")
+            else:
+                config_logger.info("ERROR", exc_info=True)
         except:
             config_logger.info("ERROR", exc_info=True)
             performance = 0
