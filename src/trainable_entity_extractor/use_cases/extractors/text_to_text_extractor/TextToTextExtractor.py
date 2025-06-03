@@ -7,6 +7,9 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.DateParserWithBreaksMethod import (
     DateParserWithBreaksMethod,
 )
+from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.Gemini.GeminiTextMethod import (
+    GeminiTextMethod,
+)
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.GlinerDateParserMethod import (
     GlinerDateParserMethod,
 )
@@ -37,6 +40,7 @@ class TextToTextExtractor(ToTextExtractor):
         # Error downloading the model
         # NerFirstAppearanceMethod,
         # NerLastAppearanceMethod,
+        GeminiTextMethod,
         MT5TrueCaseEnglishSpanishMethod,
     ]
 
