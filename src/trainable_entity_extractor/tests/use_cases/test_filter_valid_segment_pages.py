@@ -55,8 +55,8 @@ class TestFilterValidSegmentPages(TestCase):
         )
 
     def test_get_valid_pages_one_document(self):
-        tenant = "tenant_filter"
-        extraction_id = "property_filter"
+        tenant = "unit_test"
+        extraction_id = "tenant_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
@@ -69,7 +69,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2, 3, 4, 5, 6], pages_per_document[0])
 
     def test_get_valid_pages_no_label(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -84,7 +84,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2], pages_per_document[1])
 
     def test_get_valid_pages_two_documents(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -100,7 +100,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2, 3, 4], pages_per_document[1])
 
     def test_get_valid_pages_only_first_page(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -116,7 +116,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1], pages_per_document[1])
 
     def test_get_valid_pages_two_documents_more_variability(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -132,7 +132,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2, 3, 4, 5, 6, 7], pages_per_document[1])
 
     def test_get_valid_pages_from_the_end(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -148,7 +148,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([9, 10, 11, 12], pages_per_document[1])
 
     def test_get_valid_pages_from_the_end_different_page_numbers(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -164,7 +164,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2], pages_per_document[1])
 
     def test_get_valid_pages_two_documents_from_the_end_more_variability(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -180,7 +180,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([4, 5, 6], pages_per_document[1])
 
     def test_get_valid_pages_for_prediction(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -197,7 +197,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2], pages_per_document[0])
 
     def test_get_valid_pages_for_prediction_from_the_end(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -214,7 +214,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2], pages_per_document[0])
 
     def test_get_valid_pages_for_prediction_void(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -231,7 +231,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2], pages_per_document[0])
 
     def test_get_valid_pages_for_prediction_empty(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -249,7 +249,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2], pages_per_document[0])
 
     def test_get_valid_pages_only_prediction(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -263,7 +263,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2], pages_per_document[0])
 
     def test_get_valid_pages_prediction_first_page(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
@@ -279,7 +279,7 @@ class TestFilterValidSegmentPages(TestCase):
         self.assertEqual([1, 2], pages_per_document[0])
 
     def test_get_first_four_and_last_four_when_no_labels(self):
-        tenant = "tenant_filter"
+        tenant = "unit_test"
         extraction_id = "property_filter"
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)

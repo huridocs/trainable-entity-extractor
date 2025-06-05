@@ -9,7 +9,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
     RegexSubtractionMethod,
 )
 
-extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="test")
+extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="test")
 
 
 class TestRegexSubtractionMethod(TestCase):

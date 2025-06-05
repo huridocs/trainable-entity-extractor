@@ -12,7 +12,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
 
 class TestDateParserWithBreaksMethod(TestCase):
     def test_predict(self):
-        extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="test")
+        extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="test")
 
         sample = TrainingSample(
             labeled_data=LabeledData(label_text="1982-06-05", language_iso="en"), segment_selector_texts=["5 Jun 1982"]

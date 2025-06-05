@@ -11,7 +11,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 
 
 class TestTextToMultiOptionExtraction(TestCase):
-    TENANT = "default"
+    TENANT = "unit_test"
     extraction_id = "multi_option_extraction_test"
 
     def test_can_be_used(self):

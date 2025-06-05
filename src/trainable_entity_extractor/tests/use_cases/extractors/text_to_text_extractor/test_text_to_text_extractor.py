@@ -10,8 +10,8 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.TextToTextExtractor import TextToTextExtractor
 
-tenant = "semantic_tenant_to_be_removed"
-extraction_id = "extraction_id"
+tenant = "unit_test"
+extraction_id = "semantic_tenant"
 
 extraction_identifier = ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
 

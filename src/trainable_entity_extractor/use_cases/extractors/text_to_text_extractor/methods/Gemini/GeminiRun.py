@@ -55,7 +55,7 @@ class GeminiRun(BaseModel):
         self.mistakes_samples = [
             sample
             for sample, prediction in zip(self.non_used_samples, predictions)
-            if prediction.strip() != sample.output_text.strip()
+            if prediction.strip() != sample.output.strip()
         ]
 
     def _set_code_from_model(self):
@@ -73,7 +73,7 @@ class GeminiRun(BaseModel):
             prompt_parts.append("Input:\n")
             prompt_parts.append(f"```{sample.input_text}```\n\n")
             prompt_parts.append("Output:\n")
-            prompt_parts.append(f"```{sample.output_text}```\n\n")
+            prompt_parts.append(f"```{sample.output}```\n\n")
 
         examples_string = "".join(prompt_parts)
 
@@ -143,7 +143,7 @@ class GeminiRun(BaseModel):
         outputs_texts = [self.clean_outputs(text) for text in outputs_texts]
         return outputs_texts
 
-    def run_code(self, samples: list[GeminiSample]) -> list[str]:
+    def run_code(self, samples: list[GeminiSample]) -> list[str] | list[list[str]]:
         if not self.code:
             return self._get_empty_results(samples)
 

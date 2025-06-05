@@ -7,7 +7,7 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.use_cases.extractors.pdf_to_text_extractor.methods.FirstDateMethod import FirstDateMethod
 
-extraction_identifier = ExtractionIdentifier(run_name="date_test", extraction_name="date_test")
+extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="date_test")
 
 
 class TestFirstDateMethod(TestCase):

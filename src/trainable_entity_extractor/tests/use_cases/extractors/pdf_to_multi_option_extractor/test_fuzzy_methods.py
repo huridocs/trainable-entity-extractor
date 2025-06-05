@@ -23,8 +23,8 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 
 
 class TestFuzzyMethods(TestCase):
-    TENANT = "TestFuzzyMethods"
-    extraction_id = "extraction_id"
+    TENANT = "unit_test"
+    extraction_id = "TestFuzzyMethods"
 
     def test_fuzzy_all_100(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)

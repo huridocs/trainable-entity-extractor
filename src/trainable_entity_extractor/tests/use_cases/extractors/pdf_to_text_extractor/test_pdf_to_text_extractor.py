@@ -9,8 +9,8 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_text_extractor.PdfTo
 
 
 class TestPdfToTextExtractor(TestCase):
-    TENANT = "TestPdfToTextExtractor"
-    extraction_id = "extraction_id"
+    TENANT = "unit_test"
+    extraction_id = "TestPdfToTextExtractor"
     extraction_identifier = ExtractionIdentifier(run_name=TENANT, extraction_name=extraction_id)
 
     def test_no_prediction_data(self):

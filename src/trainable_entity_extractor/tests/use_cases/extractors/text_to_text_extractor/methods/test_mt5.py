@@ -29,7 +29,7 @@ class TestMT5(TestCase):
         start = time()
         print("GPU available?")
         print(torch.cuda.is_available())
-        extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="test")
+        extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="test")
 
         samples_1 = [TrainingSample(labeled_data=LabeledData(label_text="foo"), segment_selector_texts=["1/ foo end"])] * 5
         samples_2 = [TrainingSample(labeled_data=LabeledData(label_text="var"), segment_selector_texts=["2/ var end"])] * 5

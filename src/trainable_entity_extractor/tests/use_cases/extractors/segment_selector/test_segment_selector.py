@@ -17,8 +17,8 @@ from pdf_token_type_labels.TokenType import TokenType
 
 
 class TestSegmentSelector(TestCase):
-    TENANT = "segment_selector_test"
-    extraction_id = "extraction_id"
+    TENANT = "unit_test"
+    extraction_id = "segment_selector_test"
     EXTRACTION_IDENTIFIER = ExtractionIdentifier(run_name=TENANT, extraction_name=extraction_id)
     TEST_XML_NAME = "test.xml"
 

@@ -9,7 +9,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
     TextToCountries,
 )
 
-extraction_identifier = ExtractionIdentifier(run_name="text_to_countries", extraction_name="text_to_countries")
+extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="text_to_countries")
 
 
 class TestTextToCountries(TestCase):

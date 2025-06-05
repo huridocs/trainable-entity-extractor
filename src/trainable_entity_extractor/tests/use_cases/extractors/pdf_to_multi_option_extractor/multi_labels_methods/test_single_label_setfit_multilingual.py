@@ -18,8 +18,8 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 
 
 class TestSetFitSingleLabelMultilingualMethod(TestCase):
-    TENANT = "single_label_setfit_multilingual_test"
-    extraction_id = "extraction_id"
+    TENANT = "unit_test"
+    extraction_id = "single_label_setfit_multilingual_test"
 
     def tearDown(self):
         shutil.rmtree(join(DATA_PATH, self.TENANT), ignore_errors=True)

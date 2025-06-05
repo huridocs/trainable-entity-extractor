@@ -9,7 +9,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
     GlinerDateParserMethod,
 )
 
-extraction_identifier = ExtractionIdentifier(run_name="date_test", extraction_name="date_test")
+extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="date_test")
 
 
 class TestGlinerDateMethod(TestCase):

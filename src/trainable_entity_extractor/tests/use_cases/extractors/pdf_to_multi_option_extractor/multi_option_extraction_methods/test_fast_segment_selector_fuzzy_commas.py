@@ -12,8 +12,8 @@ from trainable_entity_extractor.use_cases.extractors.segment_selector.FastSegmen
 
 
 class TestFastSegmentSelectorFuzzyCommas(TestCase):
-    TENANT = "multi_option_extraction_test"
-    extraction_id = "extraction_id"
+    TENANT = "unit_test"
+    extraction_id = "multi_option_extraction_test"
     extraction_identifier = ExtractionIdentifier(run_name=TENANT, extraction_name=extraction_id)
 
     def setUp(self):

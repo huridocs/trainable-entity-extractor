@@ -7,7 +7,7 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.RegexMethod import RegexMethod
 
-extraction_identifier = ExtractionIdentifier(run_name="test", extraction_name="test")
+extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="test")
 
 
 class TestRegexMethod(TestCase):

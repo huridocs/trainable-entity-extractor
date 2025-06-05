@@ -23,8 +23,8 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 
 
 class TestSetFitEnglishMethod(TestCase):
-    TENANT = "multi_option_extraction_test"
-    extraction_id = "extraction_id"
+    TENANT = "unit_test"
+    extraction_id = "multi_option_extraction_test"
 
     def setUp(self):
         self.extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
