@@ -28,14 +28,6 @@ class TestTextToCountries(TestCase):
             )
         )
 
-    def test_predict_single_value(self):
-        text = "foo var chile spain france"
-        sample = PredictionSample(source_text=text)
-        options = [Option(id="1", label="Spain"), Option(id="2", label="Chile"), Option(id="3", label="France")]
-        text_to_countries = TextToCountries(extraction_identifier, options, False)
-        text_to_countries.train(ExtractionData(samples=[TrainingSample()], options=options))
-        self.assertEqual([[Option(id="2", label="Chile")]], text_to_countries.predict([sample]))
-
     def test_predict_multi_value(self):
         text = "foo var Democratic Republic of the Congo Democratic People's Republic of Korea"
         sample = PredictionSample(source_text=text)

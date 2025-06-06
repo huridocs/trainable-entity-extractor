@@ -1,6 +1,6 @@
 from pathlib import Path
 import random
-
+import textwrap
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.Gemini.GeminiRun import (
@@ -14,38 +14,58 @@ class GeminiRunMultiOption(GeminiRun):
     multi_value: bool = True
 
     def _set_prompt(self):
-        prompt_parts = ["**Examples**\n"]
-        for sample_index, sample in enumerate(self.training_samples):
-            prompt_parts.append(f"**Example {sample_index + 1}**\n")
-            prompt_parts.append("Input:\n")
-            prompt_parts.append(f"```{sample.input_text}```\n\n")
-            prompt_parts.append("Output (choose one or more from the allowed options):\n")
-            prompt_parts.append(f"```{sample.output}```\n\n")
-
-        examples_string = "".join(prompt_parts)
         options_string = ", ".join([f'"{opt}"' for opt in self.options])
+        indent_prefix = "    "  # 4 spaces for indentation
 
-        self.prompt = f"""**Task**
-        We have a set of example inputs and the corresponding outputs. Each output is a list of one or more options, chosen from a fixed set. Your goal is to infer the logic from the examples and write a self-contained Python function that, given a new input, returns a list of options (strings) from the allowed set that apply.
+        # 1. Task section
+        task_raw = f"""We have a set of example inputs and the corresponding outputs. Each output is a list
+    of one or more options, chosen from a fixed set. Your goal is to infer the logic from the
+    examples and write a self-contained Python function that, given a new input, returns a list
+    of options (strings) from the allowed set that apply.
 
-        Allowed options: [{options_string}]
+    Allowed options: [{options_string}]"""
+        task = textwrap.indent(textwrap.dedent(task_raw), indent_prefix)
 
-        {examples_string}
+        # 2. Examples section
+        example_blocks = []
+        for i, sample in enumerate(self.training_samples, 1):
+            block = f"""**Example {i}**
+    Input:
+    ```{sample.input_text}```
+    Output (choose one or more from the allowed options):
+    ```{sample.output}```"""
+            example_blocks.append(block)
+        examples = textwrap.indent("\n\n".join(example_blocks), indent_prefix)
 
-        **Requirements**
-        1. Write your solution as a single Python function named `extract(text: str)`. It should return a list of strings, each string being one of the allowed options.
-        2. Only return options from the allowed set.
-        3. If no options apply, return an empty list.
-        4. Only return your function definition, wrapped in a Python code block.
-        {'5. Pick only one option at most' if self.multi_value else ''}
+        # 3. Requirements section
+        reqs = [
+            "1. Write your solution as a single Python function named `extract(text: str)`. It should return a list of strings, each string being one of the allowed options.",
+            "2. Only return options from the allowed set.",
+            "3. If no options apply, return an empty list.",
+            "4. Only return your function definition, wrapped in a Python code block.",
+            "5. Generalize as much as possible based on the examples provided.",
+            "6. Put all the import statements inside the function definition.",
+        ]
+        if not self.multi_value:
+            reqs.append("7. Pick only one option at most")
+        requirements = textwrap.indent("\n".join(reqs), indent_prefix)
 
-        **Output Format**
-        Return the function definition *only*, wrapped in fenced code blocks using Python syntax. For example:
+        # 4. Output Format section
+        fmt_raw = """Return the function definition *only*, wrapped in fenced code blocks using Python syntax. For example:
 
-        ```python
-        def extract(text: str):
-            # Your logic here
-        ```"""
+    ```python
+    def extract(text: str):
+        # Your logic here
+    ```"""
+        output_format = textwrap.indent(textwrap.dedent(fmt_raw), indent_prefix)
+
+        # Assemble final prompt
+        self.prompt = (
+            f"**Task**\n{task}\n\n"
+            f"**Examples**\n{examples}\n\n"
+            f"**Requirements**\n{requirements}\n\n"
+            f"**Output Format**\n{output_format}"
+        )
 
     def _update_data_from_previous_run(self, previous_run: "GeminiRunMultiOption" = None):
         if previous_run and not previous_run.training_samples:

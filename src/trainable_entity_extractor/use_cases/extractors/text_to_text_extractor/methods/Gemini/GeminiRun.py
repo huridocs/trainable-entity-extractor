@@ -1,4 +1,3 @@
-import codecs
 import random
 from pathlib import Path
 
@@ -68,49 +67,61 @@ class GeminiRun(BaseModel):
         self.code = answer[answer.find(code_start) + len(code_start) : answer.rfind(code_end)]
 
     def _set_prompt(self):
-        prompt_parts = ["**Examples**\n"]
-        for sample_index, sample in enumerate(self.training_samples):
-            prompt_parts.append(f"**Example {sample_index + 1}**\n")
-            prompt_parts.append("Input:\n")
-            prompt_parts.append(f"```{sample.input_text}```\n\n")
-            prompt_parts.append("Output:\n")
-            prompt_parts.append(f"```{sample.output}```\n\n")
+        import textwrap
 
-        examples_string = "".join(prompt_parts)
+        indent_prefix = "    "  # 4 spaces for indentation
 
-        self.prompt = f"""**Task**
-                       We have a set of example inputs and the corresponding outputs. These examples illustrate how we want to transform the input data to the output data. Your goal is to figure out the pattern or logic from these examples and write a self-contained Python function that reproduces this behavior.
-    
-                       We do not provide an explicit list of rules. Instead, use the examples to infer how the input should be processed to create the output. If the pattern does not clearly match some new input, your function may return `None` or an empty string, but it should handle the provided examples correctly.
-    
-                       {examples_string}
-    
-                       **Requirements**
-                       1. Write your solution as a single Python function named `extract(text: str)`. No additional arguments should be required.
-                          2. In your solution, you may apply any logic needed to extract, parse, or process the input so that it matches how each example is transformed to its output.
-                          3. If no valid transformation or pattern is found, return `None` or an empty string.
-                          4. Only return your function definition. No additional commentary, test calls, or example usage should appear outside the code block.
-                          5. Your code should be standalone and use only standard Python 3 libraries without external dependencies.
-    
-    
-                       **Output Format**
-                       Return the function definition *only*, wrapped in fenced code blocks using Python syntax. For example:
-    
-                       ```python
-                       def extract(text: str):
-                           # Your logic here
-                       ```
-    
-                       No explanatory text or test calls should appear outside of that code block."""
+        # 1. Task section
+        task_raw = f"""We have a set of example inputs and the corresponding outputs. These examples illustrate how we want to transform the input data to the output data. Your goal is to figure out the pattern or logic from these examples and write a self-contained Python function that reproduces this behavior.
+    We do not provide an explicit list of rules. Instead, use the examples to infer how the input should be processed to create the output. If the pattern does not clearly match some new input, your function may return `None` or an empty string, but it should handle the provided examples correctly."""
+        task = textwrap.indent(textwrap.dedent(task_raw), indent_prefix)
+
+        # 2. Examples section
+        example_blocks = []
+        for i, sample in enumerate(self.training_samples, 1):
+            block = f"""**Example {i}**
+    Input:
+    ```{sample.input_text}```
+    Output:
+    ```{sample.output}```"""
+            example_blocks.append(block)
+        examples = textwrap.indent("\n\n".join(example_blocks), indent_prefix)
+
+        # 3. Requirements section
+        reqs = [
+            "1. Write your solution as a single Python function named `extract(text: str)`. No additional arguments should be required.",
+            "2. Only return your function definition. No additional commentary, test calls, or example usage should appear outside the code block.",
+            "3. If no valid transformation or pattern is found, return an empty string.",
+            "4. Generalize as much as possible based on the examples provided.",
+            "5. Your code should be standalone and use only standard Python 3 libraries without external dependencies.",
+            "6. Put all the import statements inside the function definition.",
+        ]
+        requirements = textwrap.indent("\n".join(reqs), indent_prefix)
+
+        # 4. Output Format section
+        fmt_raw = """Return the function definition \\*only\\*, wrapped in fenced code blocks using Python syntax. For example:
+
+    ```python
+    def extract(text: str):
+        # Your logic here
+    ```"""
+        output_format = textwrap.indent(textwrap.dedent(fmt_raw), indent_prefix)
+
+        # Assemble final prompt
+        self.prompt = (
+            f"**Task**\n{task}\n\n"
+            f"**Examples**\n{examples}\n\n"
+            f"**Requirements**\n{requirements}\n\n"
+            f"**Output Format**\n{output_format}"
+        )
 
     def save_code(self, extraction_identifier: ExtractionIdentifier):
         if not self.code:
             return
 
-        try:
-            code_to_save = codecs.decode(self.code.encode("utf-8", "backslashreplace"), "unicode-escape")
-        except Exception:
-            code_to_save = self.code.replace("\\n", "\n")
+        code_to_save = self.code.replace("\\n", "\n")
+        code_to_save = code_to_save.replace("\\t", "\t")
+        code_to_save = code_to_save.replace("\\r", "\r")
 
         extraction_identifier.save_content(CODE_FILE_NAME, code_to_save, False)
         extraction_identifier.save_content(PROMPT_FILE_NAME, self.prompt, False)
@@ -118,11 +129,11 @@ class GeminiRun(BaseModel):
     def _load_extract_function(self):
         local_namespace = {}
 
-        try:
-            code_to_execute = codecs.decode(self.code.encode("utf-8", "backslashreplace"), "unicode-escape")
-        except Exception:
-            # Fallback if the above decoding fails for some reason
-            code_to_execute = self.code.replace("\\n", "\n")
+        # Apply the same replacements as in save_code
+        code_to_execute = self.code.replace("\\n", "\n")
+        code_to_execute = code_to_execute.replace("\\t", "\t")
+        code_to_execute = code_to_execute.replace("\\r", "\r")
+        # Add other replacements if needed, consistent with save_code
 
         try:
             exec(code_to_execute, {}, local_namespace)

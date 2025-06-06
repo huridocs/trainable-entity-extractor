@@ -14,7 +14,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 class TestGeminiTextMethodWithRealAPI(TestCase):
     @unittest.SkipTest
     def test_gemini(self):
-        extraction_identifier = ExtractionIdentifier(extraction_name="gemini_text_test")
+        extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_test")
         gemini_text_method = GeminiTextMethod(extraction_identifier)
 
         extraction_data = ExtractionData(
@@ -37,7 +37,7 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
 
     @unittest.SkipTest
     def test_gemini_with_other_data(self):
-        extraction_identifier = ExtractionIdentifier(extraction_name="gemini_text_other_data")
+        extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_other_data")
         gemini_text_method = GeminiTextMethod(extraction_identifier)
 
         extraction_data = ExtractionData(

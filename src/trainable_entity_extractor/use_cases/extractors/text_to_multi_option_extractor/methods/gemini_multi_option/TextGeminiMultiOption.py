@@ -31,7 +31,6 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
 
         for previous_gemini_run, gemini_run in zip(gemini_runs, gemini_runs[1:]):
             gemini_run.run_training(previous_gemini_run)
-
             if not gemini_run.mistakes_samples:
                 break
 

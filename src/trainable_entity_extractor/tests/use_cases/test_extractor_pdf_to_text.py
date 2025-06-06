@@ -136,7 +136,7 @@ class TestExtractorPdfToText(TestCase):
         suggestion = trainable_entity_extractor.predict(samples)[0]
 
         self.assertTrue(task_calculated)
-        self.assertEqual("default", suggestion.tenant)
+        self.assertEqual("unit_test", suggestion.tenant)
         self.assertEqual(extraction_id, suggestion.id)
         self.assertEqual("test.xml", suggestion.xml_file_name)
         self.assertEqual("Original: English", suggestion.segment_text)
@@ -171,7 +171,7 @@ class TestExtractorPdfToText(TestCase):
         suggestion = trainable_entity_extractor.predict(samples)[0]
 
         self.assertTrue(task_calculated)
-        self.assertEqual("default", suggestion.tenant)
+        self.assertEqual("unit_test", suggestion.tenant)
         self.assertEqual(extraction_id, suggestion.id)
         self.assertEqual("test.xml", suggestion.xml_file_name)
         self.assertTrue("15 February 2021" in suggestion.segment_text)
@@ -203,7 +203,7 @@ class TestExtractorPdfToText(TestCase):
         suggestion = trainable_entity_extractor.predict(samples)[0]
 
         self.assertTrue(task_calculated)
-        self.assertEqual("default", suggestion.tenant)
+        self.assertEqual("unit_test", suggestion.tenant)
         self.assertEqual(extraction_id, suggestion.id)
         self.assertEqual("blank.xml", suggestion.xml_file_name)
         self.assertEqual("", suggestion.segment_text)
@@ -235,7 +235,7 @@ class TestExtractorPdfToText(TestCase):
         suggestion = trainable_entity_extractor.predict(samples)[0]
 
         self.assertTrue(task_calculated)
-        self.assertEqual("default", suggestion.tenant)
+        self.assertEqual("unit_test", suggestion.tenant)
         self.assertEqual(extraction_id, suggestion.id)
         self.assertEqual("no_pages.xml", suggestion.xml_file_name)
         self.assertEqual("", suggestion.segment_text)
