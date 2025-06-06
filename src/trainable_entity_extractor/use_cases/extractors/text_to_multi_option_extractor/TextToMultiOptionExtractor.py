@@ -18,9 +18,6 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextBalancedSetFit import (
     TextBalancedSetFit,
 )
-from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextFastTextMethod import (
-    TextFastTextMethod,
-)
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextFuzzyAll100 import (
     TextFuzzyAll100,
 )
@@ -77,7 +74,6 @@ class TextToMultiOptionExtractor(ExtractorBase):
         TextFuzzyAll100,
         TextFuzzyAll88,
         TextFuzzyAll75,
-        TextFastTextMethod,
         TextGeminiMultiOption,
         TextBalancedSetFit,
         TextSetFitMultilingual,

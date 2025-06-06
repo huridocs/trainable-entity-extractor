@@ -66,7 +66,7 @@ class TextSingleLabelSetFit1_5(TextToMultiOptionMethod):
             if sample.labeled_data.values:
                 labels[-1] = self.options[self.options.index(sample.labeled_data.values[0])].label
 
-        for text, label in zip(texts[:15000], labels[:15000]):
+        for text, label in zip(texts[:10000], labels[:10000]):
             data.append([text, label])
 
         df = pd.DataFrame(data)
