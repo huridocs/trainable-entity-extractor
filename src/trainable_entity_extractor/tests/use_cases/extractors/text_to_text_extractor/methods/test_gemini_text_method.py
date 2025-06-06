@@ -20,12 +20,10 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
         extraction_data = ExtractionData(
             samples=[
                 TrainingSample(
-                    labeled_data=LabeledData(label_text="This is a test output", language_iso="en"),
-                    segment_selector_texts=["This is a test input"],
+                    labeled_data=LabeledData(label_text="This is a test output", source_text="This is a test input"),
                 ),
                 TrainingSample(
-                    labeled_data=LabeledData(label_text="Same for output", language_iso="en"),
-                    segment_selector_texts=["Same for input"],
+                    labeled_data=LabeledData(label_text="Same for output", source_text="Same for input"),
                 ),
             ],
             extraction_identifier=extraction_identifier,

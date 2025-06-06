@@ -20,7 +20,7 @@ class PredictionSample(BaseModel):
         return " ".join(texts)
 
     def get_input_text(self) -> str:
-        return "".join(self.get_input_text_by_lines())
+        return " ".join(self.get_input_text_by_lines())
 
     def get_input_text_by_lines(self) -> list[str]:
         if self.source_text:

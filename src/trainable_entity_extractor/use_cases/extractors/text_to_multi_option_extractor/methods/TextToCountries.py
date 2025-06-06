@@ -65,9 +65,6 @@ class TextToCountries(TextToMultiOptionMethod):
 
             predictions[-1].extend(self.get_no_country_strings(sample_text, option_keywords))
 
-            if not self.multi_value:
-                predictions[-1] = predictions[-1][:1]
-
         return predictions
 
     def _load_option_keywords(self) -> list[OptionKeyword]:

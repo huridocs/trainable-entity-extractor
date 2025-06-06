@@ -11,6 +11,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
 
 
 CODE_FILE_NAME = "gemini_code.py"
+PROMPT_FILE_NAME = "prompt.txt"
 
 
 class GeminiRun(BaseModel):
@@ -112,6 +113,7 @@ class GeminiRun(BaseModel):
             code_to_save = self.code.replace("\\n", "\n")
 
         extraction_identifier.save_content(CODE_FILE_NAME, code_to_save, False)
+        extraction_identifier.save_content(PROMPT_FILE_NAME, self.prompt, False)
 
     def _load_extract_function(self):
         local_namespace = {}

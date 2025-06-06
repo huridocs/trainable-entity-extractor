@@ -14,7 +14,7 @@ from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 
 extraction_id = "test_pdf_to_multi_option"
-extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
+extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name=extraction_id)
 TEST_XML_PATH = APP_PATH / "trainable_entity_extractor" / "tests" / "test_files"
 
 

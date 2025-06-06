@@ -10,12 +10,17 @@ class GeminiSample(BaseModel):
     __hash__ = object.__hash__
 
     @staticmethod
-    def from_prediction_sample(prediction_sample: PredictionSample) -> "GeminiSample":
+    def from_prediction_sample(prediction_sample: PredictionSample, multi_option: bool = False) -> "GeminiSample":
+        if multi_option:
+            return GeminiSample(
+                input_text=prediction_sample.get_input_text(),
+                output=[],
+            )
         return GeminiSample(input_text=prediction_sample.get_input_text())
 
     @staticmethod
-    def from_training_sample(training_sample: TrainingSample, multioption: bool = False) -> "GeminiSample":
-        if multioption:
+    def from_training_sample(training_sample: TrainingSample, multi_option: bool = False) -> "GeminiSample":
+        if multi_option:
             return GeminiSample(
                 input_text=" ".join(training_sample.get_input_text_by_lines()),
                 output=(

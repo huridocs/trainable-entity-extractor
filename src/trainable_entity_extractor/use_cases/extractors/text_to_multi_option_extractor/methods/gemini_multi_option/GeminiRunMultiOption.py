@@ -1,5 +1,5 @@
 from pathlib import Path
-import ast
+import random
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
@@ -11,6 +11,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
 
 class GeminiRunMultiOption(GeminiRun):
     options: list[str] = []
+    multi_value: bool = True
 
     def _set_prompt(self):
         prompt_parts = ["**Examples**\n"]
@@ -36,6 +37,7 @@ class GeminiRunMultiOption(GeminiRun):
         2. Only return options from the allowed set.
         3. If no options apply, return an empty list.
         4. Only return your function definition, wrapped in a Python code block.
+        {'5. Pick only one option at most' if self.multi_value else ''}
 
         **Output Format**
         Return the function definition *only*, wrapped in fenced code blocks using Python syntax. For example:
@@ -44,6 +46,25 @@ class GeminiRunMultiOption(GeminiRun):
         def extract(text: str):
             # Your logic here
         ```"""
+
+    def _update_data_from_previous_run(self, previous_run: "GeminiRunMultiOption" = None):
+        if previous_run and not previous_run.training_samples:
+            selected = []
+            for option in self.options:
+                for sample in previous_run.mistakes_samples:
+                    if isinstance(sample.output, list) and option in sample.output:
+                        selected.append(sample)
+                        break
+
+            remaining = [s for s in previous_run.mistakes_samples if s not in selected]
+            slots = max(0, self.max_training_size - len(selected))
+            random.seed(42)
+            selected += random.sample(remaining, min(slots, len(remaining))) if slots > 0 else []
+            self.training_samples = selected
+            self.non_used_samples = [s for s in previous_run.mistakes_samples if s not in selected]
+            self._set_prompt()
+        else:
+            super()._update_data_from_previous_run(previous_run)
 
     def _update_mistakes_samples(self):
         predictions = self.run_code(self.non_used_samples)
@@ -63,11 +84,11 @@ class GeminiRunMultiOption(GeminiRun):
 
     @staticmethod
     def from_extractor_identifier_multioption(
-        extraction_identifier: ExtractionIdentifier, options: list[Option]
+        extraction_identifier: ExtractionIdentifier, options: list[Option], multi_value: bool = True
     ) -> "GeminiRunMultiOption":
         path = Path(extraction_identifier.get_path()) / CODE_FILE_NAME
         code = path.read_text(encoding="utf-8") if path.exists() else ""
-        return GeminiRunMultiOption(code=code, options=[option.label for option in options])
+        return GeminiRunMultiOption(code=code, options=[option.label for option in options], multi_value=multi_value)
 
     @staticmethod
     def _get_empty_results(samples: list) -> list[list[str]]:

@@ -57,6 +57,9 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.TextToCountries import (
     TextToCountries,
 )
+from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.methods.gemini_multi_option.TextGeminiMultiOption import (
+    TextGeminiMultiOption,
+)
 from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 
@@ -75,6 +78,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         TextFuzzyAll88,
         TextFuzzyAll75,
         TextFastTextMethod,
+        TextGeminiMultiOption,
         TextBalancedSetFit,
         TextSetFitMultilingual,
         TextSingleLabelSetFit,
@@ -192,18 +196,3 @@ class TextToMultiOptionExtractor(ExtractorBase):
                 return True
 
         return False
-
-    def suggestions_from_predictions(
-        self, method_instance: type[TextToMultiOptionMethod], predictions_samples: list[PredictionSample]
-    ) -> list[Suggestion]:
-        suggestions = list()
-        prediction = method_instance.predict(predictions_samples, self.options)
-
-        for prediction, prediction_sample in zip(prediction, predictions_samples):
-            suggestion = Suggestion.from_prediction_multi_option(
-                self.extraction_identifier, prediction_sample.entity_name, prediction
-            )
-            suggestion.segment_text = prediction_sample.source_text if prediction_sample.source_text else ""
-            suggestions.append(suggestion)
-
-        return suggestions
