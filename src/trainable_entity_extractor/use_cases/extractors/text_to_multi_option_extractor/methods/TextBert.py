@@ -67,7 +67,7 @@ class TextBert(TextToMultiOptionMethod):
             for text, label in zip(texts, labels):
                 rows.append([text, label])
         else:
-            for text, label in zip(texts[:10000], labels[:10000]):
+            for text, label in zip(texts[:15000], labels[:15000]):
                 rows.append([text, label])
 
         output_df = pd.DataFrame(rows)

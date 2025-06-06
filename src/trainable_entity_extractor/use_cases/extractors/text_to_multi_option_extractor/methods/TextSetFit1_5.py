@@ -64,7 +64,7 @@ class TextSetFit1_5(TextToMultiOptionMethod):
         texts = [self.get_text(sample.get_input_text()) for sample in extraction_data.samples]
         labels = self.get_one_hot_encoding(extraction_data)
 
-        for text, label in zip(texts[:10000], labels[:10000]):
+        for text, label in zip(texts[:15000], labels[:15000]):
             data.append([text, label])
 
         df = pd.DataFrame(data)
