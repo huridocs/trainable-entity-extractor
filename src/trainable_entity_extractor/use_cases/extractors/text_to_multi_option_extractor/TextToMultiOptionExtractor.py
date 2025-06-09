@@ -200,26 +200,26 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
         return False
 
-    def get_train_test_sets(self, extraction_data: ExtractionData) -> (ExtractionData, ExtractionData):
-        if len(extraction_data.samples) < 8:
-            return extraction_data, extraction_data
-
-        samples_by_labels = self.get_samples_by_labels(extraction_data)
-
-        if self.percentage_of_labels_without_values(samples_by_labels) > 15:
-            train_set, test_set = self.get_train_test_sets_using_labels(samples_by_labels)
-        else:
-            train_size = int(len(extraction_data.samples) * 0.8)
-            train_set: list[TrainingSample] = extraction_data.samples[:train_size]
-
-            if len(extraction_data.samples) < 15:
-                test_set: list[TrainingSample] = extraction_data.samples[-10:]
-            else:
-                test_set = extraction_data.samples[train_size:]
-
-        train_extraction_data = ExtractorBase.get_extraction_data_from_samples(extraction_data, train_set)
-        test_extraction_data = ExtractorBase.get_extraction_data_from_samples(extraction_data, test_set)
-        return train_extraction_data, test_extraction_data
+    # def get_train_test_sets(self, extraction_data: ExtractionData) -> (ExtractionData, ExtractionData):
+    #     if len(extraction_data.samples) < 8:
+    #         return extraction_data, extraction_data
+    #
+    #     samples_by_labels = self.get_samples_by_labels(extraction_data)
+    #
+    #     if self.percentage_of_labels_without_values(samples_by_labels) > 15:
+    #         train_set, test_set = self.get_train_test_sets_using_labels(samples_by_labels)
+    #     else:
+    #         train_size = int(len(extraction_data.samples) * 0.8)
+    #         train_set: list[TrainingSample] = extraction_data.samples[:train_size]
+    #
+    #         if len(extraction_data.samples) < 15:
+    #             test_set: list[TrainingSample] = extraction_data.samples[-10:]
+    #         else:
+    #             test_set = extraction_data.samples[train_size:]
+    #
+    #     train_extraction_data = ExtractorBase.get_extraction_data_from_samples(extraction_data, train_set)
+    #     test_extraction_data = ExtractorBase.get_extraction_data_from_samples(extraction_data, test_set)
+    #     return train_extraction_data, test_extraction_data
 
     @staticmethod
     def get_samples_by_labels(extraction_data):
