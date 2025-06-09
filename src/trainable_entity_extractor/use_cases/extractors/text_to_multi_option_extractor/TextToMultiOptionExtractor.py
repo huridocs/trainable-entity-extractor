@@ -241,26 +241,26 @@ class TextToMultiOptionExtractor(ExtractorBase):
         samples_without_values = sum(1 for samples in samples_by_labels.values() if not samples)
         return (samples_without_values / total_samples) * 100
 
-    # @staticmethod
-    # def get_train_test_sets_using_labels(
-    #     samples_by_labels: dict[str, list[TrainingSample]]
-    # ) -> (list[TrainingSample], list[TrainingSample]):
-    #     test_set = set()
-    #     all_samples = {sample for samples in samples_by_labels.values() for sample in samples}
-    #     sorted_labels_by_samples_count = sorted(samples_by_labels.keys(), key=lambda x: len(samples_by_labels[x]))
-    #
-    #     for label in sorted_labels_by_samples_count:
-    #         test_set.update(samples_by_labels[label])
-    #         if len(test_set) / len(all_samples) >= 0.10:
-    #             break
-    #     if len(all_samples) - len(test_set) < 8:
-    #         test_set = set(list(all_samples)[: int(len(all_samples) * 0.30)])
-    #     else:
-    #         test_size = int(len(all_samples) * 0.10)
-    #         test_set.update(list(all_samples)[:test_size])
-    #
-    #     train_set = all_samples - test_set
-    #     return list(train_set), list(test_set)
+    @staticmethod
+    def get_train_test_sets_using_labels(
+        samples_by_labels: dict[str, list[TrainingSample]]
+    ) -> (list[TrainingSample], list[TrainingSample]):
+        test_set = set()
+        all_samples = {sample for samples in samples_by_labels.values() for sample in samples}
+        sorted_labels_by_samples_count = sorted(samples_by_labels.keys(), key=lambda x: len(samples_by_labels[x]))
+
+        for label in sorted_labels_by_samples_count:
+            test_set.update(samples_by_labels[label])
+            if len(test_set) / len(all_samples) >= 0.10:
+                break
+        if len(all_samples) - len(test_set) < 8:
+            test_set = set(list(all_samples)[: int(len(all_samples) * 0.30)])
+        else:
+            test_size = int(len(all_samples) * 0.10)
+            test_set.update(list(all_samples)[:test_size])
+
+        train_set = all_samples - test_set
+        return list(train_set), list(test_set)
 
     @staticmethod
     def get_stats(extraction_data):
