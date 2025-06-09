@@ -220,3 +220,99 @@ report (Australia);""",
         suggestions = multi_option_extraction.get_suggestions([])
 
         self.assertEqual(0, len(suggestions))
+
+    def test_get_train_test_sets_using_labels(self):
+        # Test Case 1: Condition `len(all_samples) - len(test_set) < 8` is TRUE
+        # This means the initial test set (from smallest groups) leaves too few for training.
+        # Fallback: test_set becomes int(total_samples * 0.30) of all samples.
+        self.subTest("Condition: train set too small (fallback to 30% test set)")
+        s_c1_1 = TrainingSample(labeled_data=LabeledData(source_text="s_c1_1"))
+        s_c1_2 = TrainingSample(labeled_data=LabeledData(source_text="s_c1_2"))
+        s_c1_3 = TrainingSample(labeled_data=LabeledData(source_text="s_c1_3"))
+        s_c1_4 = TrainingSample(labeled_data=LabeledData(source_text="s_c1_4"))
+        s_c1_5 = TrainingSample(labeled_data=LabeledData(source_text="s_c1_5"))
+        s_c1_6 = TrainingSample(labeled_data=LabeledData(source_text="s_c1_6"))
+        s_c1_7 = TrainingSample(labeled_data=LabeledData(source_text="s_c1_7"))
+
+        samples_by_labels_c1 = {
+            "A": [s_c1_1, s_c1_2],  # Smallest group (or tied), 2 samples
+            "B": [s_c1_3, s_c1_4, s_c1_5],  # 3 samples
+            "C": [s_c1_6, s_c1_7],  # 2 samples
+        }
+        all_samples_c1_set = {s_c1_1, s_c1_2, s_c1_3, s_c1_4, s_c1_5, s_c1_6, s_c1_7}  # 7 unique samples
+
+        # Expected logic walk-through for c1:
+        # sorted_labels_by_samples_count: e.g., ["A", "C", "B"] or ["C", "A", "B"]
+        # Loop 1 (label "A"): initial_test_set = {s_c1_1, s_c1_2}. size = 2.
+        # 2 / 7 (total) approx 0.28. This is >= 0.10. Loop breaks.
+        # Current test_set = {s_c1_1, s_c1_2}.
+        # len(all_samples_c1_set) - len(test_set) = 7 - 2 = 5.
+        # Condition `5 < 8` is TRUE.
+        # test_set is reassigned: set(list(all_samples_c1_set)[:int(7 * 0.30)])
+        # int(7 * 0.30) = int(2.1) = 2.
+        # So, test_set will contain 2 samples, taken from the start of list(all_samples_c1_set).
+        expected_test_size_c1 = int(len(all_samples_c1_set) * 0.30)  # Should be 2
+        expected_train_size_c1 = len(all_samples_c1_set) - expected_test_size_c1  # Should be 5
+
+        train_list_c1, test_list_c1 = TextToMultiOptionExtractor.get_train_test_sets_using_labels(samples_by_labels_c1)
+        train_set_c1 = set(train_list_c1)
+        test_set_c1 = set(test_list_c1)
+
+        self.assertEqual(len(test_set_c1), expected_test_size_c1)
+        self.assertEqual(len(train_set_c1), expected_train_size_c1)
+        self.assertTrue(train_set_c1.isdisjoint(test_set_c1), "Train and test sets should be disjoint")
+        self.assertEqual(
+            train_set_c1 | test_set_c1, all_samples_c1_set, "Union of train and test sets should be all samples"
+        )
+
+        # Test Case 2: Condition `len(all_samples) - len(test_set) < 8` is FALSE
+        # Sufficient samples for training after initial test_set creation from smallest groups.
+        # Fallback: test_set = initial_test_set + update(list(all_samples)[:10%])
+        self.subTest("Condition: train set large enough (initial test set + 10% update)")
+
+        # Create 20 unique samples
+        samples_list_c2 = [TrainingSample(labeled_data=LabeledData(source_text=f"s_c2_{i}")) for i in range(20)]
+        all_samples_c2_set = set(samples_list_c2)  # 20 unique samples
+
+        samples_by_labels_c2 = {
+            "A": [samples_list_c2[0], samples_list_c2[1]],  # Smallest group, 2 samples (s_c2_0, s_c2_1)
+            "B": [samples_list_c2[2], samples_list_c2[3], samples_list_c2[4]],  # 3 samples
+            "C": samples_list_c2[5:],  # Remaining 15 samples
+        }
+
+        # Expected logic walk-through for c2:
+        # sorted_labels_by_samples_count: ["A", "B", "C"]
+        # Loop 1 (label "A"): initial_test_set_from_loop = {s_c2_0, s_c2_1}. size = 2.
+        # 2 / 20 (total) = 0.1. This is >= 0.10. Loop breaks.
+        # Current test_set from loop = {s_c2_0, s_c2_1}.
+        # len(all_samples_c2_set) - len(test_set_from_loop) = 20 - 2 = 18.
+        # Condition `18 < 8` is FALSE. Else branch is taken.
+        # test_size_for_update = int(20 * 0.10) = 2.
+        # test_set.update(list(all_samples_c2_set)[:2])
+        # The final test_set will be {s_c2_0, s_c2_1} union {first 2 samples from list(all_samples_c2_set)}.
+        # Size of test_set will be between 2 (if first 2 are s_c2_0, s_c2_1) and 4 (if first 2 are different).
+
+        initial_smallest_group_samples_c2 = {samples_list_c2[0], samples_list_c2[1]}
+        min_expected_test_size_c2 = len(initial_smallest_group_samples_c2)  # 2
+        # Max size is if the 10% update adds completely new samples
+        max_expected_test_size_c2 = len(initial_smallest_group_samples_c2) + int(len(all_samples_c2_set) * 0.10)  # 2 + 2 = 4
+
+        train_list_c2, test_list_c2 = TextToMultiOptionExtractor.get_train_test_sets_using_labels(samples_by_labels_c2)
+        train_set_c2 = set(train_list_c2)
+        test_set_c2 = set(test_list_c2)
+
+        self.assertTrue(train_set_c2.isdisjoint(test_set_c2), "Train and test sets should be disjoint")
+        self.assertEqual(
+            train_set_c2 | test_set_c2, all_samples_c2_set, "Union of train and test sets should be all samples"
+        )
+
+        self.assertTrue(
+            initial_smallest_group_samples_c2.issubset(test_set_c2),
+            "Test set should contain the initial smallest group samples",
+        )
+        self.assertGreaterEqual(
+            len(test_set_c2), min_expected_test_size_c2, "Test set size should be at least the size of the smallest group"
+        )
+        self.assertLessEqual(
+            len(test_set_c2), max_expected_test_size_c2, "Test set size should not exceed smallest group + 10% of total"
+        )

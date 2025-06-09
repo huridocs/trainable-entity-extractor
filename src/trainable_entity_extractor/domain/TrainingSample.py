@@ -14,6 +14,7 @@ class TrainingSample(BaseModel):
     pdf_data: Optional[PdfData] = None
     labeled_data: Optional[LabeledData] = None
     segment_selector_texts: Optional[list[str]] = None
+    __hash__ = object.__hash__
 
     def get_segments_text(self):
         texts = list()
