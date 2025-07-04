@@ -159,7 +159,7 @@ def get_multi_option_extractor_benchmark():
 
         test_data = [PredictionSample(pdf_data=x.pdf_data) for x in test_set.samples]
         suggestions = extractor.get_suggestions(test_data)
-        values_list = [x.values for x in suggestions]
+        values_list = [Option(id=x.id, label=x.label) for x in suggestions]
         predictions_one_hot = PdfMultiOptionMethod.one_hot_to_options_list(values_list, extraction_data.options)
 
         performance = 100 * f1_score(truth_one_hot, predictions_one_hot, average="micro")

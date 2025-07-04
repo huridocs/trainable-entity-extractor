@@ -7,6 +7,7 @@ from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.Beginning750 import (
     Beginning750,
 )
@@ -22,7 +23,7 @@ class Suggestion(BaseModel):
     entity_name: str = ""
     text: str = ""
     empty_suggestion: bool = False
-    values: list[Option] = list()
+    values: list[Value] = list()
     segment_text: str = ""
     page_number: int = 1
     segments_boxes: list[SegmentBox] = list()
@@ -59,7 +60,7 @@ class Suggestion(BaseModel):
 
     def add_prediction_multi_option(self, training_sample: TrainingSample, values: list[Option], context_from_the_end: bool):
         self.add_segments(training_sample.pdf_data, context_from_the_end)
-        self.values = values
+        self.values = [Value(id=x.id, label=x.label, segment_text=self.segment_text) for x in values]
 
     def add_segments(self, pdf_data: PdfData, context_from_the_end: bool = False):
         context_segments: list[PdfDataSegment] = [x for x in pdf_data.pdf_data_segments if x.ml_label]
@@ -95,5 +96,5 @@ class Suggestion(BaseModel):
     @staticmethod
     def from_prediction_multi_option(extraction_identifier: ExtractionIdentifier, entity_name: str, values: list[Option]):
         suggestion = Suggestion.get_empty(extraction_identifier, entity_name)
-        suggestion.values = values
+        suggestion.values = [Value(id=x.id, label=x.label, segment_text=suggestion.segment_text) for x in values]
         return suggestion
