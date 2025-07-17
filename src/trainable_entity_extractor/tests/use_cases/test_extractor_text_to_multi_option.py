@@ -1,6 +1,7 @@
 import shutil
 from unittest import TestCase
 
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.TrainableEntityExtractor import TrainableEntityExtractor
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -41,4 +42,10 @@ class TestExtractorTextToMultiOption(TestCase):
 
         self.assertEqual(1, len(suggestions))
         self.assertEqual(extraction_id, suggestions[0].id)
-        self.assertEqual(options[1:], suggestions[0].values)
+        self.assertEqual(
+            [
+                Value(id="2", label="dfg", segment_text="foo var dfg hij foo var"),
+                Value(id="3", label="hij", segment_text="foo var dfg hij foo var"),
+            ],
+            suggestions[0].values,
+        )

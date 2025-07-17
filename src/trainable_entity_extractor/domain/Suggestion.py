@@ -94,7 +94,7 @@ class Suggestion(BaseModel):
         return suggestion
 
     @staticmethod
-    def from_prediction_multi_option(extraction_identifier: ExtractionIdentifier, entity_name: str, values: list[Option]):
+    def from_prediction_multi_option(extraction_identifier: ExtractionIdentifier, entity_name: str, values: list[Value]):
         suggestion = Suggestion.get_empty(extraction_identifier, entity_name)
-        suggestion.values = [Value(id=x.id, label=x.label, segment_text=suggestion.segment_text) for x in values]
+        suggestion.values = values
         return suggestion

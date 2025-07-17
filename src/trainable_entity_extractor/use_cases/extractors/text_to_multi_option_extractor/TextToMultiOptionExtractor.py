@@ -9,6 +9,7 @@ from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 
 from trainable_entity_extractor.use_cases.extractors.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
@@ -100,10 +101,11 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
         suggestions = list()
         for prediction_sample, prediction in zip(predictions_samples, predictions):
+            segment_text = prediction_sample.source_text if prediction_sample.source_text else ""
+            values = [Value(id=x.id, label=x.label, segment_text=segment_text) for x in prediction]
             suggestion = Suggestion.from_prediction_multi_option(
-                self.extraction_identifier, prediction_sample.entity_name, prediction
+                self.extraction_identifier, prediction_sample.entity_name, values
             )
-            suggestion.segment_text = prediction_sample.source_text if prediction_sample.source_text else ""
             suggestions.append(suggestion)
 
         return suggestions

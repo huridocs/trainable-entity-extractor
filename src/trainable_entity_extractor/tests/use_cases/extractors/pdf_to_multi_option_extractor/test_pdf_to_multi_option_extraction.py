@@ -6,6 +6,7 @@ from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
     PdfToMultiOptionExtractor,
 )
@@ -41,8 +42,8 @@ class TestPdfToMultiOptionExtraction(TestCase):
         suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_3])
 
         self.assertEqual(2, len(suggestions))
-        self.assertEqual([Option(id="1", label="1")], suggestions[0].values)
-        self.assertEqual([Option(id="3", label="3")], suggestions[1].values)
+        self.assertEqual([Value(id="1", label="1", segment_text="point 1")], suggestions[0].values)
+        self.assertEqual([Value(id="3", label="3", segment_text="point 3")], suggestions[1].values)
 
     def test_multi_value(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
@@ -70,12 +71,12 @@ class TestPdfToMultiOptionExtraction(TestCase):
         suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_3])
 
         self.assertEqual(2, len(suggestions))
-        self.assertTrue(Option(id="1", label="1") in suggestions[0].values)
-        self.assertTrue(Option(id="2", label="2") in suggestions[0].values)
-        self.assertTrue(Option(id="3", label="3") not in suggestions[0].values)
-        self.assertTrue(Option(id="3", label="3") in suggestions[1].values)
-        self.assertTrue(Option(id="2", label="2") not in suggestions[1].values)
-        self.assertTrue(Option(id="1", label="1") in suggestions[1].values)
+        self.assertTrue(Value(id="1", label="1", segment_text="point 1 point 2") in suggestions[0].values)
+        self.assertTrue(Value(id="2", label="2", segment_text="point 1 point 2") in suggestions[0].values)
+        self.assertTrue(Value(id="3", label="3", segment_text="point 1 point 2") not in suggestions[0].values)
+        self.assertTrue(Value(id="3", label="3", segment_text="point 3 point 1") in suggestions[1].values)
+        self.assertTrue(Value(id="2", label="2", segment_text="point 3 point 1") not in suggestions[1].values)
+        self.assertTrue(Value(id="1", label="1", segment_text="point 3 point 1") in suggestions[1].values)
 
     def test_no_prediction_data(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
