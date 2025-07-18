@@ -7,6 +7,7 @@ import fasttext
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 
 
@@ -67,7 +68,7 @@ class FastTextMethod(MultiLabelMethod):
         model = fasttext.train_supervised(**fasttext_params)
         model.save_model(self.get_model_path())
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         texts = [sample.pdf_data.get_text() for sample in multi_option_data.samples]
         texts = [text.replace("\n", " ") for text in texts]
 
@@ -80,12 +81,12 @@ class FastTextMethod(MultiLabelMethod):
         else:
             prediction_labels_scores = model.predict(texts, k=1)
 
-        predictions: list[list[Option]] = list()
+        predictions: list[list[Value]] = list()
         for prediction_labels, scores in zip(prediction_labels_scores[0], prediction_labels_scores[1]):
             predictions.append(list())
             for prediction_label, score in zip(prediction_labels, scores):
                 if score > 0.5 and prediction_label[9:] in labels:
                     label_index = labels.index(prediction_label[9:])
-                    predictions[-1].append(self.options[label_index])
+                    predictions[-1].append(Value.from_option(self.options[label_index]))
 
         return predictions

@@ -8,6 +8,7 @@ from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FastSegmentSelectorFuzzyCommas import (
     FastSegmentSelectorFuzzyCommas,
 )
@@ -19,7 +20,7 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
         extraction_data_by_sentences = self.get_extraction_data_by_sentence(multi_option_data)
         super().train(extraction_data_by_sentences)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         extraction_data_by_sentences = self.get_extraction_data_by_sentence(multi_option_data)
         return super().predict(extraction_data_by_sentences)
 

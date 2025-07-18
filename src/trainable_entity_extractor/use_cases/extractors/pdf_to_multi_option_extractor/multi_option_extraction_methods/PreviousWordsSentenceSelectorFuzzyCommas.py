@@ -2,6 +2,7 @@ from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FuzzyCommas import (
     FuzzyCommas,
 )
@@ -23,7 +24,7 @@ class PreviousWordsSentenceSelectorFuzzyCommas(SentenceSelectorFuzzyCommas):
         PreviousWordsSegmentSelector(self.extraction_identifier).create_model(marked_segments)
         FuzzyCommas().train(extraction_data_by_sentences)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         extraction_data_by_sentences = self.get_extraction_data_by_sentence(multi_option_data)
         self.set_parameters(extraction_data_by_sentences)
         self.extraction_data = self.get_prediction_data(extraction_data_by_sentences)

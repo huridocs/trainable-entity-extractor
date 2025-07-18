@@ -1,5 +1,6 @@
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FastSegmentSelectorFuzzy95 import (
     FastSegmentSelectorFuzzy95,
 )
@@ -14,7 +15,7 @@ class FastSegmentSelectorFuzzyCommas(FastSegmentSelectorFuzzy95):
         super().train(multi_option_data)
         FuzzyCommas().train(multi_option_data)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         self.set_parameters(multi_option_data)
         self.extraction_data = self.get_prediction_data(multi_option_data)
         return FuzzyCommas().predict(self.extraction_data)

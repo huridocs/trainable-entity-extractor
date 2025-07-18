@@ -5,6 +5,7 @@ from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FastSegmentSelectorFuzzyCommas import (
     FastSegmentSelectorFuzzyCommas,
 )
@@ -107,12 +108,12 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         self.assertEqual(2, len(predictions))
 
         self.assertEqual(2, len(predictions[0]))
-        self.assertTrue(Option(id="1", label="1") in predictions[0])
-        self.assertTrue(Option(id="2", label="2") in predictions[0])
+        self.assertTrue(Value(id="1", label="1") in predictions[0])
+        self.assertTrue(Value(id="2", label="2") in predictions[0])
 
         self.assertEqual(2, len(predictions[1]))
-        self.assertTrue(Option(id="4", label="4") in predictions[1])
-        self.assertTrue(Option(id="3", label="3") in predictions[1])
+        self.assertTrue(Value(id="4", label="4") in predictions[1])
+        self.assertTrue(Value(id="3", label="3") in predictions[1])
 
     def test_predictions_when_empy_data(self):
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
@@ -148,8 +149,8 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         self.assertEqual(4, len(predictions))
 
         self.assertEqual(2, len(predictions[0]))
-        self.assertTrue(Option(id="1", label="1") in predictions[0])
-        self.assertTrue(Option(id="2", label="2") in predictions[0])
+        self.assertTrue(Value(id="1", label="1", segment_text="1, 2") in predictions[0])
+        self.assertTrue(Value(id="2", label="2") in predictions[0])
 
         self.assertEqual(0, len(predictions[1]))
         self.assertEqual(0, len(predictions[2]))

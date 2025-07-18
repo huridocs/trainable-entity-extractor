@@ -1,20 +1,26 @@
 import math
 import unicodedata
 from collections import Counter
+from typing import Optional
+
 from rapidfuzz import fuzz
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
 )
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.Appearance import (
+    Appearance,
+)
 
 
 class FuzzyFirstCleanLabel(PdfMultiOptionMethod):
 
-    def get_appearance(self, pdf_segments: list[PdfDataSegment], options: list[str]) -> list[str]:
+    def get_appearance(self, pdf_segments: list[PdfDataSegment], options: list[str]) -> Optional[Appearance]:
         for pdf_segment in pdf_segments:
             for ratio_threshold in range(100, 95, -1):
                 for option in options:
@@ -22,21 +28,21 @@ class FuzzyFirstCleanLabel(PdfMultiOptionMethod):
                         continue
                     text = self.remove_accents(pdf_segment.text_content.lower())
                     if fuzz.partial_ratio(option, text) >= ratio_threshold:
-                        pdf_segment.ml_label = 1
-                        return [option]
+                        return Appearance(option_label=option, context=pdf_segment.text_content)
 
-        return []
+        return None
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
-        predictions = list()
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
+        self.options = multi_option_data.options
+        predictions: list[list[Value]] = list()
         clean_options = self.get_cleaned_options(multi_option_data.options)
         clean_options_sorted = list(sorted(clean_options, key=lambda x: len(x), reverse=True))
 
         for multi_option_sample in multi_option_data.samples:
             pdf_segments: list[PdfDataSegment] = [x for x in multi_option_sample.pdf_data.pdf_data_segments]
-            prediction = self.get_appearance(pdf_segments, clean_options_sorted)
-            if prediction:
-                predictions.append([multi_option_data.options[clean_options.index(prediction[0])]])
+            appearance = self.get_appearance(pdf_segments, clean_options_sorted)
+            if appearance:
+                predictions.append([appearance.to_value(clean_options, self.options)])
             else:
                 predictions.append([])
 

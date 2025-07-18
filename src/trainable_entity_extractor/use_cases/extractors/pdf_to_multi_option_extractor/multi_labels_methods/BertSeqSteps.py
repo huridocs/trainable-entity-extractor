@@ -140,7 +140,7 @@ class BertSeqSteps(MultiLabelMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         id2class = {index: label for index, label in enumerate([x.label for x in self.options])}
         class2id = {label: index for index, label in enumerate([x.label for x in self.options])}
 

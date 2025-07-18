@@ -110,7 +110,7 @@ class BertMethod(MultiLabelMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         labels_number = len(self.options)
         predict_path = self.create_dataset(multi_option_data, "predict")
         model_arguments = ModelArguments(self.get_model_path(), ignore_mismatched_sizes=True)

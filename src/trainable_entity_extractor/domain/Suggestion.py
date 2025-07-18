@@ -58,9 +58,14 @@ class Suggestion(BaseModel):
         self.add_segments(prediction_pdf_data)
         self.text = text
 
-    def add_prediction_multi_option(self, training_sample: TrainingSample, values: list[Option], context_from_the_end: bool):
-        self.add_segments(training_sample.pdf_data, context_from_the_end)
-        self.values = [Value(id=x.id, label=x.label, segment_text=self.segment_text) for x in values]
+    def add_prediction_multi_option(
+        self, training_sample: TrainingSample, values: list[Value], use_context_from_the_end: bool
+    ):
+        self.add_segments(training_sample.pdf_data, use_context_from_the_end)
+        self.values = [
+            Value(id=x.id, label=x.label, segment_text=x.segment_text if x.segment_text else self.segment_text)
+            for x in values
+        ]
 
     def add_segments(self, pdf_data: PdfData, context_from_the_end: bool = False):
         context_segments: list[PdfDataSegment] = [x for x in pdf_data.pdf_data_segments if x.ml_label]

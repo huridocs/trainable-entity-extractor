@@ -8,6 +8,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.FilterSegmentsMethod import (
     FilterSegmentsMethod,
@@ -89,7 +90,7 @@ class PdfMultiOptionMethod:
         multi_label = self.multi_label_method(self.extraction_identifier, self.options, self.multi_value, self.get_name())
         multi_label.train(filtered_multi_option_data)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         self.set_parameters(multi_option_data)
 
         print("Filtering segments")

@@ -13,6 +13,7 @@ from transformers import (
     AutoModelForSequenceClassification,
 )
 from trainable_entity_extractor.domain.Option import Option
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.bert_method_scripts.AvoidAllEvaluation import AvoidAllEvaluation
 from trainable_entity_extractor.use_cases.extractors.bert_method_scripts.get_batch_size import get_max_steps, get_batch_size
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
@@ -142,7 +143,7 @@ class SingleLabelBert(MultiLabelMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         id2class = {index: label for index, label in enumerate([x.label for x in self.options])}
         class2id = {label: index for index, label in enumerate([x.label for x in self.options])}
 

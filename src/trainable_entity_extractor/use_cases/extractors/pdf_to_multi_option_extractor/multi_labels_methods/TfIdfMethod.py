@@ -10,6 +10,7 @@ import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from trainable_entity_extractor.domain.Option import Option
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 
@@ -56,7 +57,7 @@ class TfIdfMethod(MultiLabelMethod):
         one_vs_rest_classifier = one_vs_rest_classifier.fit(tfidf_train_vectors, labels)
         dump(one_vs_rest_classifier, self.get_model_path())
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         train_texts = load(self.get_data_path())
 
         vectorized = TfidfVectorizer()

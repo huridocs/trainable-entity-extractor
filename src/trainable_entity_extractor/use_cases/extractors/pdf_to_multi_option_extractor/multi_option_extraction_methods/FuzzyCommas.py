@@ -10,11 +10,15 @@ from rapidfuzz import fuzz
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
 )
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.Appearance import (
+    Appearance,
+)
 
 
 class FuzzyCommas(PdfMultiOptionMethod):
@@ -29,8 +33,8 @@ class FuzzyCommas(PdfMultiOptionMethod):
 
     def get_appearances_for_segments(
         self, pdf_segments: list[PdfDataSegment], aliases: dict[str, list[str]]
-    ) -> tuple[list[str], list[str]]:
-        appearances = []
+    ) -> tuple[list[Appearance], list[str]]:
+        appearances: list[Appearance] = []
         not_found_texts = []
 
         for pdf_segment in pdf_segments:
@@ -43,8 +47,8 @@ class FuzzyCommas(PdfMultiOptionMethod):
                 appearance = self.get_appearances_one_segment(one_piece_text, aliases)
 
                 if appearance:
-                    pdf_segment.ml_label = 1
-                    appearances.append(appearance)
+                    if appearance not in appearances:
+                        appearances.append(Appearance(option_label=appearance, context=pdf_segment.text_content))
                 else:
                     not_found_texts.append(one_piece_text)
 
@@ -84,7 +88,7 @@ class FuzzyCommas(PdfMultiOptionMethod):
     def clean_texts(self, texts: list[str], sort_words: bool) -> list[str]:
         return list([self.clean_text(option, sort_words) for option in texts])
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         self.set_parameters(multi_option_data)
         self.set_options_variants()
 
@@ -100,8 +104,8 @@ class FuzzyCommas(PdfMultiOptionMethod):
 
         for multi_option_sample in multi_option_data.samples:
             pdf_segments: list[PdfDataSegment] = [x for x in multi_option_sample.pdf_data.pdf_data_segments]
-            predictions_sample, _ = self.get_appearances_for_segments(pdf_segments, aliases)
-            prediction_options = [self.options[self.options_cleaned.index(x)] for x in predictions_sample]
+            appearances, _ = self.get_appearances_for_segments(pdf_segments, aliases)
+            prediction_options = [x.to_value(self.options_cleaned, self.options) for x in appearances]
             predictions.append(prediction_options)
 
         return predictions

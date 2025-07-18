@@ -5,6 +5,7 @@ from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FastSegmentSelectorFuzzy95 import (
     FastSegmentSelectorFuzzy95,
 )
@@ -47,11 +48,11 @@ class TestFuzzyMethods(TestCase):
         predictions = FuzzyAll100().predict(multi_option_data)
 
         self.assertEqual(3, len(predictions))
-        self.assertEqual([Option(id="1", label="item 1")], predictions[0])
-        self.assertEqual([Option(id="3", label="item 10")], predictions[1])
-        self.assertTrue(Option(id="1", label="item 1") in predictions[2])
-        self.assertTrue(Option(id="2", label="item 2") not in predictions[2])
-        self.assertTrue(Option(id="3", label="item 10") in predictions[2])
+        self.assertEqual([Value(id="1", label="item 1", segment_text="blah. item 1. blah")], predictions[0])
+        self.assertEqual([Value(id="3", label="item 10", segment_text="blah. item 10. blah")], predictions[1])
+        self.assertTrue(Value(id="1", label="item 1") in predictions[2])
+        self.assertTrue(Value(id="2", label="item 2") not in predictions[2])
+        self.assertTrue(Value(id="3", label="item 10") in predictions[2])
 
     def test_fuzzy_commas(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
@@ -74,13 +75,13 @@ class TestFuzzyMethods(TestCase):
 
         self.assertEqual(2, len(predictions))
 
-        self.assertTrue(Option(id="1", label="item 1") in predictions[0])
-        self.assertTrue(Option(id="2", label="item 2") in predictions[0])
-        self.assertTrue(Option(id="10", label="item 10") not in predictions[0])
+        self.assertTrue(Value(id="1", label="item 1") in predictions[0])
+        self.assertTrue(Value(id="2", label="item 2") in predictions[0])
+        self.assertTrue(Value(id="10", label="item 10") not in predictions[0])
 
-        self.assertTrue(Option(id="1", label="item 1") in predictions[1])
-        self.assertTrue(Option(id="2", label="item 2") not in predictions[1])
-        self.assertTrue(Option(id="10", label="item 10") in predictions[1])
+        self.assertTrue(Value(id="1", label="item 1") in predictions[1])
+        self.assertTrue(Value(id="2", label="item 2") not in predictions[1])
+        self.assertTrue(Value(id="10", label="item 10") in predictions[1])
 
     def test_fuzzy_commas_aliases(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
@@ -105,7 +106,7 @@ class TestFuzzyMethods(TestCase):
 
         self.assertEqual(1, len(predictions))
 
-        self.assertTrue(Option(id="1", label="  United Kingdom  ") in predictions[0])
+        self.assertTrue(Value(id="1", label="  United Kingdom  ") in predictions[0])
 
     def test_fast_segment_selector_fuzzy_95(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
@@ -135,21 +136,21 @@ We are a human rights organisation too, and our ultimate vision is a world where
 
         self.assertEqual(15, len(predictions))
 
-        self.assertTrue(Option(id="1", label="item 1") in predictions[0])
-        self.assertTrue(Option(id="2", label="item 2") in predictions[0])
-        self.assertTrue(Option(id="10", label="item 10") in predictions[0])
+        self.assertTrue(Value(id="1", label="item 1") in predictions[0])
+        self.assertTrue(Value(id="2", label="item 2") in predictions[0])
+        self.assertTrue(Value(id="10", label="item 10") in predictions[0])
         contexts = [x.text_content for x in samples[0].pdf_data.pdf_data_segments if x.ml_label]
         self.assertEqual("item 1, item 2, item 10", "".join(contexts))
 
-        self.assertTrue(Option(id="1", label="item 1") not in predictions[1])
-        self.assertTrue(Option(id="2", label="item 2") in predictions[1])
-        self.assertTrue(Option(id="10", label="item 10") not in predictions[1])
+        self.assertTrue(Value(id="1", label="item 1") not in predictions[1])
+        self.assertTrue(Value(id="2", label="item 2") in predictions[1])
+        self.assertTrue(Value(id="10", label="item 10") not in predictions[1])
         contexts = [x.text_content for x in samples[1].pdf_data.pdf_data_segments if x.ml_label]
         self.assertEqual("item 2", "".join(contexts))
 
-        self.assertTrue(Option(id="1", label="item 1") not in predictions[2])
-        self.assertTrue(Option(id="2", label="item 2") not in predictions[2])
-        self.assertTrue(Option(id="10", label="item 10") in predictions[2])
+        self.assertTrue(Value(id="1", label="item 1") not in predictions[2])
+        self.assertTrue(Value(id="2", label="item 2") not in predictions[2])
+        self.assertTrue(Value(id="10", label="item 10") in predictions[2])
         contexts = [x.text_content for x in samples[2].pdf_data.pdf_data_segments if x.ml_label]
         self.assertEqual("item 10", "".join(contexts))
 
@@ -170,9 +171,9 @@ We are a human rights organisation too, and our ultimate vision is a world where
         predictions = FuzzyAll75().predict(multi_option_data)
 
         self.assertEqual(1, len(predictions))
-        self.assertTrue(Option(id="1", label="item 1") in predictions[0])
-        self.assertTrue(Option(id="2", label="item 2") not in predictions[0])
-        self.assertTrue(Option(id="3", label="item 10") in predictions[0])
+        self.assertTrue(Value(id="1", label="item 1") in predictions[0])
+        self.assertTrue(Value(id="2", label="item 2") not in predictions[0])
+        self.assertTrue(Value(id="3", label="item 10") in predictions[0])
 
     def test_fuzzy_first(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
@@ -195,8 +196,8 @@ We are a human rights organisation too, and our ultimate vision is a world where
         predictions = FuzzyFirst().predict(multi_option_data)
 
         self.assertEqual(3, len(predictions))
-        self.assertEqual([Option(id="1", label="item 1")], predictions[0])
-        self.assertEqual([Option(id="3", label="item 10")], predictions[1])
-        self.assertTrue(Option(id="1", label="item 1") not in predictions[2])
-        self.assertTrue(Option(id="2", label="item 2") not in predictions[2])
-        self.assertTrue(Option(id="3", label="item 10") in predictions[2])
+        self.assertEqual([Value(id="1", label="item 1", segment_text="blah. item 1. blah")], predictions[0])
+        self.assertEqual([Value(id="3", label="item 10", segment_text="blah. item 10. blah")], predictions[1])
+        self.assertTrue(Value(id="1", label="item 1") not in predictions[2])
+        self.assertTrue(Value(id="2", label="item 2") not in predictions[2])
+        self.assertTrue(Value(id="3", label="item 10") in predictions[2])

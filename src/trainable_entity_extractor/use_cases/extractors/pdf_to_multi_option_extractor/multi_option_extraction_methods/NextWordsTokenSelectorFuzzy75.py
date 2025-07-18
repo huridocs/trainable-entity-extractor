@@ -3,6 +3,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FastSegmentSelectorFuzzy95 import (
     FastSegmentSelectorFuzzy95,
 )
@@ -17,7 +18,7 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 class NextWordsTokenSelectorFuzzy75(FastSegmentSelectorFuzzy95):
     threshold = 75
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         self.set_parameters(multi_option_data)
         self.get_token_extraction_data(multi_option_data)
         segment_selector = NextWordsSegmentSelector(self.extraction_identifier)

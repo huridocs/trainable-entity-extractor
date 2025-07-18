@@ -11,6 +11,7 @@ from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.FilterSegmentsMethod import (
     FilterSegmentsMethod,
 )
@@ -59,7 +60,7 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
             marked_segments.extend(self.get_marked_segments(sample))
         FastSegmentSelector(self.extraction_identifier, self.get_name()).create_model(marked_segments)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         self.set_parameters(multi_option_data)
         self.extraction_data = self.get_prediction_data(multi_option_data)
         predictions = FuzzyAll95().predict(self.extraction_data)

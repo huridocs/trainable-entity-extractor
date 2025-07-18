@@ -11,6 +11,7 @@ from numpy import argmax
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.Value import Value
 
 
 class MultiLabelMethod(ABC):
@@ -39,7 +40,7 @@ class MultiLabelMethod(ABC):
         pass
 
     @abstractmethod
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
         pass
 
     def save_json(self, file_name: str, data: any):
@@ -67,15 +68,15 @@ class MultiLabelMethod(ABC):
         labels = self.get_one_hot_encoding(multi_option_data)
         return texts, labels
 
-    def predictions_to_options_list(self, predictions) -> list[list[Option]]:
+    def predictions_to_options_list(self, predictions) -> list[list[Value]]:
         return [self.one_prediction_to_option_list(prediction) for prediction in predictions]
 
-    def one_prediction_to_option_list(self, prediction) -> list[Option]:
+    def one_prediction_to_option_list(self, prediction) -> list[Value]:
         if not self.multi_value:
             best_score_index = argmax(prediction)
             return [self.options[best_score_index]] if prediction[best_score_index] > 0.5 else []
 
-        return [self.options[i] for i, value in enumerate(prediction) if value > 0.5]
+        return [Value.from_option(self.options[i]) for i, value in enumerate(prediction) if value > 0.5]
 
     def get_one_hot_encoding(self, multi_option_data: ExtractionData):
         options_ids = [option.id for option in self.options]

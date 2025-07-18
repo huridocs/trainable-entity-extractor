@@ -6,6 +6,7 @@ from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
@@ -152,16 +153,16 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         training_samples, predictions = self.get_predictions(predictions_samples)
         prediction_method = self.get_predictions_method()
 
-        context_from_the_end = "End" in prediction_method.get_name()
+        use_context_from_the_end = "End" in prediction_method.get_name()
         suggestions = list()
         for training_sample, prediction_sample, prediction in zip(training_samples, predictions_samples, predictions):
             suggestion = Suggestion.get_empty(self.extraction_identifier, prediction_sample.entity_name)
-            suggestion.add_prediction_multi_option(training_sample, prediction, context_from_the_end)
+            suggestion.add_prediction_multi_option(training_sample, prediction, use_context_from_the_end)
             suggestions.append(suggestion)
 
         return suggestions
 
-    def get_predictions(self, predictions_samples: list[PredictionSample]) -> (list[TrainingSample], list[list[Option]]):
+    def get_predictions(self, predictions_samples: list[PredictionSample]) -> (list[TrainingSample], list[list[Value]]):
         self.options = self.extraction_identifier.get_options()
         self.multi_value = self.extraction_identifier.get_multi_value()
         training_samples = [TrainingSample(pdf_data=sample.pdf_data) for sample in predictions_samples]

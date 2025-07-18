@@ -7,10 +7,14 @@ from rapidfuzz import fuzz
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
 )
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.Appearance import (
+    Appearance,
+)
 from trainable_entity_extractor.use_cases.extractors.segment_selector.SegmentSelector import SegmentSelector
 
 threshold = 85
@@ -18,19 +22,24 @@ threshold = 85
 
 class FuzzySegmentSelector(PdfMultiOptionMethod):
     @staticmethod
-    def get_appearances(pdf_segment: PdfDataSegment, options: list[str]) -> list[str]:
+    def get_appearances(pdf_segments: list[PdfDataSegment], options: list[str]) -> list[Appearance]:
         appearances = []
 
-        for option in options:
-            if len(pdf_segment.text_content) < math.ceil(len(option)):
-                continue
+        for pdf_segment in pdf_segments:
+            for option in options:
+                if option in appearances:
+                    continue
 
-            if fuzz.partial_ratio(option, pdf_segment.text_content.lower()) >= threshold:
-                appearances.append(option)
+                if len(pdf_segment.text_content) < math.ceil(len(option)):
+                    continue
 
-        return list(dict.fromkeys(appearances))
+                if fuzz.partial_ratio(option, pdf_segment.text_content.lower()) >= threshold:
+                    appearances.append(Appearance(option_label=option, context=pdf_segment.text_content))
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Option]]:
+        return appearances
+
+    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
+        self.options = multi_option_data.options
         segment_selector = SegmentSelector(self.extraction_identifier)
         segment_selector.set_extraction_segments([sample.pdf_data for sample in multi_option_data.samples])
 
@@ -38,11 +47,8 @@ class FuzzySegmentSelector(PdfMultiOptionMethod):
         clean_options = self.get_cleaned_options(multi_option_data.options)
         for multi_option_sample in multi_option_data.samples:
             pdf_segments: list[PdfDataSegment] = [x for x in multi_option_sample.pdf_data.pdf_data_segments if x.ml_label]
-            predictions_sample = list()
-            for segment in pdf_segments:
-                predictions_sample.extend(self.get_appearances(segment, clean_options))
-
-            predictions.append([multi_option_data.options[clean_options.index(x)] for x in predictions_sample])
+            appearances: list[Appearance] = self.get_appearances(pdf_segments, clean_options)
+            predictions.append([x.to_value(clean_options, self.options) for x in appearances])
 
         return predictions
 
