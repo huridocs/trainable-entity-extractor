@@ -7,7 +7,6 @@ from pathlib import Path
 import rapidfuzz
 from rapidfuzz import fuzz
 
-from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
@@ -48,6 +47,7 @@ class FuzzyCommas(PdfMultiOptionMethod):
 
                 if appearance:
                     if appearance not in appearances:
+                        pdf_segment.ml_label = 1
                         appearances.append(Appearance(option_label=appearance, context=pdf_segment.text_content))
                 else:
                     not_found_texts.append(one_piece_text)

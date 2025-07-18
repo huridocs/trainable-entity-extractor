@@ -31,6 +31,7 @@ class FuzzyAll100(PdfMultiOptionMethod):
                     continue
 
                 if fuzz.partial_ratio(option, text) >= self.threshold:
+                    pdf_segment.ml_label = 1
                     appearances.append(Appearance(option_label=option, context=pdf_segment.text_content))
 
                 if option in text:

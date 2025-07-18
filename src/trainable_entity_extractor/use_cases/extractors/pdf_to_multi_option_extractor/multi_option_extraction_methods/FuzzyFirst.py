@@ -25,6 +25,7 @@ class FuzzyFirst(PdfMultiOptionMethod):
                     if len(pdf_segment.text_content) < math.ceil(len(option) * ratio_threshold / 100):
                         continue
                     if fuzz.partial_ratio(option, pdf_segment.text_content.lower()) >= ratio_threshold:
+                        pdf_segment.ml_label = 1
                         return Appearance(option_label=option, context=pdf_segment.text_content)
 
         return None

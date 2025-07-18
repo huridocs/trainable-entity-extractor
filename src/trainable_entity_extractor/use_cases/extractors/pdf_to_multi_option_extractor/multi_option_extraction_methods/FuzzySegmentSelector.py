@@ -34,6 +34,7 @@ class FuzzySegmentSelector(PdfMultiOptionMethod):
                     continue
 
                 if fuzz.partial_ratio(option, pdf_segment.text_content.lower()) >= threshold:
+                    pdf_segment.ml_label = 1
                     appearances.append(Appearance(option_label=option, context=pdf_segment.text_content))
 
         return appearances

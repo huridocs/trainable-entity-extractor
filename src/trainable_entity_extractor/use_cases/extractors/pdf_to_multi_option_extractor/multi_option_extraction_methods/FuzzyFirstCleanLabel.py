@@ -28,6 +28,7 @@ class FuzzyFirstCleanLabel(PdfMultiOptionMethod):
                         continue
                     text = self.remove_accents(pdf_segment.text_content.lower())
                     if fuzz.partial_ratio(option, text) >= ratio_threshold:
+                        pdf_segment.ml_label = 1
                         return Appearance(option_label=option, context=pdf_segment.text_content)
 
         return None
