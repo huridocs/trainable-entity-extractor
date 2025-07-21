@@ -23,6 +23,7 @@ import logging
 import os
 import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional, Tuple
 
 import datasets
@@ -565,8 +566,13 @@ def run(model_args: ModelArguments, data_args: DataTrainingArguments, training_a
     )
 
     # metric = evaluate.load("squad_v2" if data_args.version_2_with_negative else "squad")
+    # metric = evaluate.load(
+    #     "squad",
+    #     cache_dir=model_args.cache_dir,
+    #     download_config=DownloadConfig(cache_dir=model_args.cache_dir),
+    # )
     metric = evaluate.load(
-        "squad",
+        str(Path(__file__).parent.absolute()) + "/squad/squad.py",
         cache_dir=model_args.cache_dir,
         download_config=DownloadConfig(cache_dir=model_args.cache_dir),
     )

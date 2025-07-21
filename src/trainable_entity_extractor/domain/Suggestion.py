@@ -2,7 +2,6 @@ from pdf_token_type_labels.TokenType import TokenType
 from pydantic import BaseModel
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.PdfData import PdfData
