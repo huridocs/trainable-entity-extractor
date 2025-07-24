@@ -35,7 +35,6 @@ class TrainableEntityExtractor:
     def train(self, extraction_data: ExtractionData) -> (bool, str):
         start = time()
         send_logs(self.extraction_identifier, f"Set data in {round(time() - start, 2)} seconds")
-        self.extraction_identifier.set_extractor_to_processing()
 
         if not extraction_data or not extraction_data.samples:
             return False, "No data to create model"
@@ -50,7 +49,6 @@ class TrainableEntityExtractor:
             send_logs(self.extraction_identifier, f"Creating models with {len(extraction_data.samples)} samples")
             self.extraction_identifier.save_extractor_used(extractor_instance.get_name())
             success, message = extractor_instance.create_model(extraction_data)
-            self.extraction_identifier.save_processing_finished(success)
             return success, message
 
         send_logs(self.extraction_identifier, "Error creating extractor", LogSeverity.error)
@@ -63,7 +61,6 @@ class TrainableEntityExtractor:
             send_logs(self.extraction_identifier, f"No extractor available", LogSeverity.error)
             return []
 
-        self.extraction_identifier.set_extractor_to_processing()
         for extractor in self.EXTRACTORS:
             extractor_instance = extractor(self.extraction_identifier)
             if extractor_instance.get_name() != extractor_name:
@@ -74,10 +71,7 @@ class TrainableEntityExtractor:
 
             suggestions = extractor_instance.get_suggestions(prediction_samples)
             suggestions = [suggestion.mark_suggestion_if_empty() for suggestion in suggestions]
-
-            self.extraction_identifier.save_processing_finished(True)
             return suggestions
 
         send_logs(self.extraction_identifier, f"No extractor available", LogSeverity.error)
-        self.extraction_identifier.save_processing_finished(True)
         return []
