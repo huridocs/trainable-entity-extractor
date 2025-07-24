@@ -33,9 +33,6 @@ class TrainableEntityExtractor:
         self.options = list()
 
     def train(self, extraction_data: ExtractionData) -> (bool, str):
-        start = time()
-        send_logs(self.extraction_identifier, f"Set data in {round(time() - start, 2)} seconds")
-
         if not extraction_data or not extraction_data.samples:
             return False, "No data to create model"
 
