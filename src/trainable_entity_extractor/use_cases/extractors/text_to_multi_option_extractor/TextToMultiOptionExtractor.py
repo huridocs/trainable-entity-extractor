@@ -10,6 +10,7 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
+from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
 
 from trainable_entity_extractor.use_cases.extractors.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
@@ -137,7 +138,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
     def get_best_method(self, extraction_data: ExtractionData):
         best_performance = 0
         best_method_instance = self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
-        performance_log = "Performance aggregation:\n"
+        performance_summary = PerformanceSummary(samples_count=len(extraction_data.samples))
 
         for method in self.METHODS:
             method_instance = method(self.extraction_identifier, self.options, self.multi_value)
@@ -149,21 +150,19 @@ class TextToMultiOptionExtractor(ExtractorBase):
                 continue
 
             performance = self.get_performance(extraction_data, method_instance)
-            performance_log += f"{method_instance.get_name()}: {round(performance, 2)}%\n"
+            performance_summary.add_performance(method_instance.get_name(), performance)
 
             if performance == 100:
-                send_logs(self.extraction_identifier, performance_log)
-                send_logs(self.extraction_identifier, f"Best method {method_instance.get_name()} with {performance}%")
-                self.extraction_identifier.save_content("performance_log.txt", performance_log)
+                send_logs(self.extraction_identifier, performance_summary.to_log())
+                self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
                 return method_instance
 
             if performance > best_performance:
                 best_performance = performance
                 best_method_instance = method_instance
 
-        send_logs(self.extraction_identifier, performance_log)
-        send_logs(self.extraction_identifier, f"Best method {best_method_instance.get_name()} with {best_performance}%")
-        self.extraction_identifier.save_content("performance_log.txt", performance_log)
+        self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
+        send_logs(self.extraction_identifier, performance_summary.to_log())
         return best_method_instance
 
     @staticmethod

@@ -84,6 +84,7 @@ from trainable_entity_extractor.use_cases.extractors.segment_selector.FastAndPos
 from trainable_entity_extractor.use_cases.extractors.segment_selector.FastSegmentSelector import FastSegmentSelector
 from trainable_entity_extractor.use_cases.extractors.segment_selector.SegmentSelector import SegmentSelector
 from trainable_entity_extractor.use_cases.send_logs import send_logs
+from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
 
 RETRAIN_SAMPLES_THRESHOLD = 250
 
@@ -186,24 +187,22 @@ class PdfToMultiOptionExtractor(ExtractorBase):
     def get_best_method(self, multi_option_data: ExtractionData) -> PdfMultiOptionMethod:
         best_method_instance = self.METHODS[0]
         best_performance = 0
-        performance_log = "Performance aggregation:\n"
+        performance_summary = PerformanceSummary(samples_count=len(multi_option_data.samples))
         train_set, test_set = ExtractorBase.get_train_test_sets(multi_option_data)
         for method in self.METHODS:
             performance = self.get_method_performance(method, train_set, test_set)
-            performance_log += f"{method.get_name()}: {round(performance, 2)}%\n"
+            performance_summary.add_performance(method.get_name(), performance)
             if performance == 100:
-                send_logs(self.extraction_identifier, performance_log)
-                send_logs(self.extraction_identifier, f"Best method {method.get_name()} with {performance}%")
-                self.extraction_identifier.save_content("performance_log.txt", performance_log)
+                send_logs(self.extraction_identifier, performance_summary.to_log())
+                self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
                 return method
 
-            if performance > best_performance:
-                best_performance = performance
+            if round(performance, 2) > best_performance:
+                best_performance = round(performance, 2)
                 best_method_instance = method
 
-        send_logs(self.extraction_identifier, performance_log)
-        send_logs(self.extraction_identifier, f"Best method {best_method_instance.get_name()}")
-        self.extraction_identifier.save_content("performance_log.txt", performance_log)
+        send_logs(self.extraction_identifier, performance_summary.to_log())
+        self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
         return best_method_instance
 
     def get_method_performance(

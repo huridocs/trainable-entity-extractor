@@ -5,19 +5,18 @@ from trainable_entity_extractor.domain.Performance import Performance
 
 class PerformanceSummary(BaseModel):
     samples_count: int
-    methods: list[Performance] = list()
+    methods: list[Performance] = []
 
     def add_performance(self, method_name: str, performance: float):
         self.methods.append(Performance(method_name=method_name, performance=performance))
 
     def to_log(self) -> str:
         text = "Performance summary\n"
-        text += "-------------------\n"
+        text += f"Best method: {self.get_best_method().to_log(self.samples_count)}\n"
         text += f"Samples count: {self.samples_count}\n"
-        text += f"Best method: {self.get_best_method()}\n"
         text += "Methods by performance:\n"
         for method in sorted(self.methods, key=lambda x: x.performance, reverse=True):
-            text += f"{method}\n"
+            text += f"{method.to_log(self.samples_count)}\n"
 
         return text
 
