@@ -187,8 +187,11 @@ class PdfToMultiOptionExtractor(ExtractorBase):
     def get_best_method(self, multi_option_data: ExtractionData) -> PdfMultiOptionMethod:
         best_method_instance = self.METHODS[0]
         best_performance = 0
-        performance_summary = PerformanceSummary(samples_count=len(multi_option_data.samples))
         train_set, test_set = ExtractorBase.get_train_test_sets(multi_option_data)
+        performance_summary = PerformanceSummary(
+            training_samples_count=len(train_set.samples),
+            testing_samples_count=len(test_set.samples)
+        )
         for method in self.METHODS:
             performance = self.get_method_performance(method, train_set, test_set)
             performance_summary.add_performance(method.get_name(), performance)

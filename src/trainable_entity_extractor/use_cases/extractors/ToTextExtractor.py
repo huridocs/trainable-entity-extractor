@@ -94,9 +94,13 @@ class ToTextExtractor(ExtractorBase):
     def get_best_method(self, extraction_data: ExtractionData):
         best_performance = 0
         best_method_instance = self.METHODS[0](self.extraction_identifier)
-        performance_summary = PerformanceSummary(samples_count=len(extraction_data.samples))
 
         training_set, test_set = self.get_train_test_sets(extraction_data)
+        performance_summary = PerformanceSummary(
+            training_samples_count=len(training_set.samples),
+            testing_samples_count=len(test_set.samples)
+        )
+
         for method in self.METHODS:
             method_instance = method(self.extraction_identifier)
             send_logs(self.extraction_identifier, f"Checking {method_instance.get_name()}")
