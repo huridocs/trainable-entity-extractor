@@ -6,4 +6,7 @@ class Performance(BaseModel):
     performance: float
 
     def to_log(self, samples_count: int) -> str:
-        return f"{self.method_name} - {round(samples_count * (100 - self.performance) / 100)} mistakes / {self.performance:.2f}%"
+        mistakes = round(samples_count * (100 - self.performance) / 100)
+        mistakes_text = f"{mistakes} mistakes" if mistakes != 1 else "1 mistake"
+        text = f"{self.method_name} - {mistakes_text} / {self.performance:.2f}%"
+        return text

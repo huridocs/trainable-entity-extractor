@@ -97,8 +97,10 @@ class ToTextExtractor(ExtractorBase):
 
         training_set, test_set = self.get_train_test_sets(extraction_data)
         performance_summary = PerformanceSummary(
+            extractor_name=self.get_name(),
+            samples_count=len(extraction_data.samples),
             training_samples_count=len(training_set.samples),
-            testing_samples_count=len(test_set.samples)
+            testing_samples_count=len(test_set.samples),
         )
 
         for method in self.METHODS:

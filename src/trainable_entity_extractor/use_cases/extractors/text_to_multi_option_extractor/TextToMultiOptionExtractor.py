@@ -140,8 +140,11 @@ class TextToMultiOptionExtractor(ExtractorBase):
         best_method_instance = self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
         performance_train_set, performance_test_set = ExtractorBase.get_train_test_sets(extraction_data)
         performance_summary = PerformanceSummary(
-            training_samples_count= len(performance_train_set.samples),
-            testing_samples_count=len(performance_test_set.samples))
+            extractor_name=self.get_name(),
+            samples_count=len(extraction_data.samples),
+            training_samples_count=len(performance_train_set.samples),
+            testing_samples_count=len(performance_test_set.samples),
+        )
 
         for method in self.METHODS:
             method_instance = method(self.extraction_identifier, self.options, self.multi_value)
