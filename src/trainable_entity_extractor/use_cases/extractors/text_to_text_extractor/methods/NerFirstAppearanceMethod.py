@@ -1,5 +1,7 @@
 from statistics import mode
 
+from flair.nn import Classifier
+
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.use_cases.extractors.ToTextExtractorMethod import ToTextExtractorMethod
@@ -7,7 +9,7 @@ from flair.data import Sentence
 
 TAG_TYPE_JSON = "types.json"
 
-# tagger = Classifier.load("ner-ontonotes-large")
+tagger = Classifier.load("ner-ontonotes-large")
 
 
 class NerFirstAppearanceMethod(ToTextExtractorMethod):

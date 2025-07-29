@@ -19,6 +19,12 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.MT5TrueCaseEnglishSpanishMethod import (
     MT5TrueCaseEnglishSpanishMethod,
 )
+from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.NerFirstAppearanceMethod import (
+    NerFirstAppearanceMethod,
+)
+from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.NerLastAppearanceMethod import (
+    NerLastAppearanceMethod,
+)
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.RegexMethod import RegexMethod
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.RegexSubtractionMethod import (
     RegexSubtractionMethod,
@@ -37,9 +43,8 @@ class TextToTextExtractor(ToTextExtractor):
         DateParserWithBreaksMethod,
         DateParserMethod,
         GlinerDateParserMethod,
-        # Error downloading the model
-        # NerFirstAppearanceMethod,
-        # NerLastAppearanceMethod,
+        NerFirstAppearanceMethod,
+        NerLastAppearanceMethod,
         GeminiTextMethod,
         MT5TrueCaseEnglishSpanishMethod,
     ]

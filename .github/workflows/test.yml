@@ -19,11 +19,16 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install just commander
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y just
+
       - name: Install venv
-        run: make install_venv
+        run: just install_venv
 
       - name: Lint with black
-        run: make check_format
+        run: just check_format
 
       - name: Test with unittest
-        run: make test
+        run: just test

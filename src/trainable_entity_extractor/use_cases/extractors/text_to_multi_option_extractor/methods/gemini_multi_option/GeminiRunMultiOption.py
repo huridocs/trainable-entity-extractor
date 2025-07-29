@@ -1,6 +1,6 @@
+import textwrap
 from pathlib import Path
 import random
-import textwrap
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.Gemini.GeminiRun import (
@@ -13,20 +13,18 @@ class GeminiRunMultiOption(GeminiRun):
     options: list[str] = []
     multi_value: bool = True
 
-    def _set_prompt(self):
+    def _get_task_section(self, indent_prefix: str) -> str:
         options_string = ", ".join([f'"{opt}"' for opt in self.options])
-        indent_prefix = "    "  # 4 spaces for indentation
-
-        # 1. Task section
         task_raw = f"""We have a set of example inputs and the corresponding outputs. Each output is a list
     of one or more options, chosen from a fixed set. Your goal is to infer the logic from the
     examples and write a self-contained Python function that, given a new input, returns a list
     of options (strings) from the allowed set that apply.
 
     Allowed options: [{options_string}]"""
-        task = textwrap.indent(textwrap.dedent(task_raw), indent_prefix)
+        return textwrap.indent(textwrap.dedent(task_raw), indent_prefix)
 
-        # 2. Examples section
+    def _get_examples_section(self, indent_prefix: str) -> str:
+        """Override to customize examples section for multi-option extraction"""
         example_blocks = []
         for i, sample in enumerate(self.training_samples, 1):
             block = f"""**Example {i}**
@@ -35,9 +33,10 @@ class GeminiRunMultiOption(GeminiRun):
     Output (choose one or more from the allowed options):
     ```{sample.output}```"""
             example_blocks.append(block)
-        examples = textwrap.indent("\n\n".join(example_blocks), indent_prefix)
+        return textwrap.indent("\n\n".join(example_blocks), indent_prefix)
 
-        # 3. Requirements section
+    def _get_requirements_section(self, indent_prefix: str) -> str:
+        """Override to customize requirements section for multi-option extraction"""
         reqs = [
             "1. Write your solution as a single Python function named `extract(text: str)`. It should return a list of strings, each string being one of the allowed options.",
             "2. Only return options from the allowed set.",
@@ -48,24 +47,7 @@ class GeminiRunMultiOption(GeminiRun):
         ]
         if not self.multi_value:
             reqs.append("7. Pick only one option at most")
-        requirements = textwrap.indent("\n".join(reqs), indent_prefix)
-
-        # 4. Output Format section
-        fmt_raw = """Return the function definition *only*, wrapped in fenced code blocks using Python syntax. For example:
-
-    ```python
-    def extract(text: str):
-        # Your logic here
-    ```"""
-        output_format = textwrap.indent(textwrap.dedent(fmt_raw), indent_prefix)
-
-        # Assemble final prompt
-        self.prompt = (
-            f"**Task**\n{task}\n\n"
-            f"**Examples**\n{examples}\n\n"
-            f"**Requirements**\n{requirements}\n\n"
-            f"**Output Format**\n{output_format}"
-        )
+        return textwrap.indent("\n".join(reqs), indent_prefix)
 
     def _update_data_from_previous_run(self, previous_run: "GeminiRunMultiOption" = None):
         if previous_run and not previous_run.training_samples:

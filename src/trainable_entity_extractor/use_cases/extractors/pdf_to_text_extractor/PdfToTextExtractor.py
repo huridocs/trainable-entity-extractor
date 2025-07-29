@@ -38,6 +38,9 @@ from trainable_entity_extractor.use_cases.extractors.segment_selector.FastAndPos
 )
 from trainable_entity_extractor.use_cases.extractors.segment_selector.FastSegmentSelector import FastSegmentSelector
 from trainable_entity_extractor.use_cases.extractors.segment_selector.SegmentSelector import SegmentSelector
+from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.Gemini.GeminiTextMethod import (
+    GeminiTextMethod,
+)
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.MT5TrueCaseEnglishSpanishMethod import (
     MT5TrueCaseEnglishSpanishMethod,
 )
@@ -76,6 +79,7 @@ class PdfToTextExtractor(ToTextExtractor):
     METHODS += near_1_fast_segment_selector_methods
     METHODS += near_4_fast_segment_selector_methods
     METHODS += segment_selector_methods
+    METHODS += [pdf_to_text_method_builder(PdfToTextSegmentSelector, GeminiTextMethod)]
     METHODS += t5_methods
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:

@@ -3,8 +3,15 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.DateParserWithBreaksMethod import (
     DateParserWithBreaksMethod,
 )
+
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.GlinerDateParserMethod import (
     GlinerDateParserMethod,
+)
+from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.NerFirstAppearanceMethod import (
+    NerFirstAppearanceMethod,
+)
+from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.NerLastAppearanceMethod import (
+    NerLastAppearanceMethod,
 )
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.RegexMethod import RegexMethod
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.RegexSubtractionMethod import (
@@ -21,9 +28,8 @@ text_to_text_methods = [
     GlinerDateParserMethod,
     DateParserWithBreaksMethod,
     DateParserMethod,
-    # Error downloading the model
-    # NerFirstAppearanceMethod,
-    # NerLastAppearanceMethod,
+    NerFirstAppearanceMethod,
+    NerLastAppearanceMethod,
 ]
 
 

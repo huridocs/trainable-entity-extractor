@@ -20,7 +20,7 @@ class FastTextMethod(MultiLabelMethod):
     def clean_label(label: str):
         return "_".join(label.split()).lower().replace(",", "")
 
-    def clean_labels(self, values: list[Option], id_labels: dict[int, str]):
+    def clean_labels(self, values: list[Option], id_labels: dict[str, str]):
         real_labels = [id_labels[x.id] for x in values if x.id in id_labels]
         return [self.clean_label(x) for x in real_labels]
 

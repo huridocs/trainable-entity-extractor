@@ -3,6 +3,7 @@ from pathlib import Path
 
 from google import genai
 from pydantic import BaseModel
+import textwrap
 
 from trainable_entity_extractor.config import GEMINI_API_KEY
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -66,17 +67,15 @@ class GeminiRun(BaseModel):
         code_end = "```"
         self.code = answer[answer.find(code_start) + len(code_start) : answer.rfind(code_end)]
 
-    def _set_prompt(self):
-        import textwrap
+    def _get_task_section(self, indent_prefix: str) -> str:
+        """Override in subclasses to customize the task section"""
 
-        indent_prefix = "    "  # 4 spaces for indentation
-
-        # 1. Task section
         task_raw = f"""We have a set of example inputs and the corresponding outputs. These examples illustrate how we want to transform the input data to the output data. Your goal is to figure out the pattern or logic from these examples and write a self-contained Python function that reproduces this behavior.
     We do not provide an explicit list of rules. Instead, use the examples to infer how the input should be processed to create the output. If the pattern does not clearly match some new input, your function may return `None` or an empty string, but it should handle the provided examples correctly."""
-        task = textwrap.indent(textwrap.dedent(task_raw), indent_prefix)
+        return textwrap.indent(textwrap.dedent(task_raw), indent_prefix)
 
-        # 2. Examples section
+    def _get_examples_section(self, indent_prefix: str) -> str:
+        """Override in subclasses to customize the examples section"""
         example_blocks = []
         for i, sample in enumerate(self.training_samples, 1):
             block = f"""**Example {i}**
@@ -85,9 +84,10 @@ class GeminiRun(BaseModel):
     Output:
     ```{sample.output}```"""
             example_blocks.append(block)
-        examples = textwrap.indent("\n\n".join(example_blocks), indent_prefix)
+        return textwrap.indent("\n\n".join(example_blocks), indent_prefix)
 
-        # 3. Requirements section
+    def _get_requirements_section(self, indent_prefix: str) -> str:
+        """Override in subclasses to customize the requirements section"""
         reqs = [
             "1. Write your solution as a single Python function named `extract(text: str)`. No additional arguments should be required.",
             "2. Only return your function definition. No additional commentary, test calls, or example usage should appear outside the code block.",
@@ -96,22 +96,39 @@ class GeminiRun(BaseModel):
             "5. Your code should be standalone and use only standard Python 3 libraries without external dependencies.",
             "6. Put all the import statements inside the function definition.",
         ]
-        requirements = textwrap.indent("\n".join(reqs), indent_prefix)
+        return textwrap.indent("\n".join(reqs), indent_prefix)
 
-        # 4. Output Format section
+    def _get_special_requirements_section(self, indent_prefix: str) -> str:
+        """Can be overridden in subclasses to customize special requirements"""
+        special_reqs_raw = """Select the best method from [Regex, LightGBM, Pure Python, rapidfuzz] based on the nature of the task and examples provided."""
+        return textwrap.indent(textwrap.dedent(special_reqs_raw), indent_prefix)
+
+    def _get_output_format_section(self, indent_prefix: str) -> str:
+        """Can be overridden in subclasses to customize output format"""
         fmt_raw = """Return the function definition \\*only\\*, wrapped in fenced code blocks using Python syntax. For example:
 
     ```python
     def extract(text: str):
         # Your logic here
     ```"""
-        output_format = textwrap.indent(textwrap.dedent(fmt_raw), indent_prefix)
+        return textwrap.indent(textwrap.dedent(fmt_raw), indent_prefix)
+
+    def _set_prompt(self):
+        indent_prefix = "    "  # 4 spaces for indentation
+
+        # Get all sections
+        task = self._get_task_section(indent_prefix)
+        examples = self._get_examples_section(indent_prefix)
+        requirements = self._get_requirements_section(indent_prefix)
+        special_requirements = self._get_special_requirements_section(indent_prefix)
+        output_format = self._get_output_format_section(indent_prefix)
 
         # Assemble final prompt
         self.prompt = (
             f"**Task**\n{task}\n\n"
             f"**Examples**\n{examples}\n\n"
             f"**Requirements**\n{requirements}\n\n"
+            f"**Special Requirements**\n{special_requirements}\n\n"
             f"**Output Format**\n{output_format}"
         )
 
