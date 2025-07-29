@@ -100,7 +100,7 @@ class GeminiRun(BaseModel):
 
     def _get_special_requirements_section(self, indent_prefix: str) -> str:
         """Can be overridden in subclasses to customize special requirements"""
-        special_reqs_raw = """Select the best method from [Regex, LightGBM, Pure Python, rapidfuzz] based on the nature of the task and examples provided."""
+        special_reqs_raw = """Select the best extraction method from [Pure Python, Regex, rapidfuzz, LightGBM] based on the nature of the task and examples provided."""
         return textwrap.indent(textwrap.dedent(special_reqs_raw), indent_prefix)
 
     def _get_output_format_section(self, indent_prefix: str) -> str:
