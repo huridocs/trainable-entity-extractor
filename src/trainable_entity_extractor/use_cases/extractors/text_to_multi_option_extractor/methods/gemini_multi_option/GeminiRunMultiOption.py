@@ -30,7 +30,7 @@ class GeminiRunMultiOption(GeminiRun):
             block = f"""**Example {i}**
     Input:
     ```{sample.input_text}```
-    Output (choose one or more from the allowed options):
+    Output:
     ```{sample.output}```"""
             example_blocks.append(block)
         return textwrap.indent("\n\n".join(example_blocks), indent_prefix)

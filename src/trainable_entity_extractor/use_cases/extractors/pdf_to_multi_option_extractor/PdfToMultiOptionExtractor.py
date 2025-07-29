@@ -26,8 +26,8 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_labels_methods.FastTextMethod import (
     FastTextMethod,
 )
-from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_labels_methods.GeminiMultiLabelMethod import (
-    GeminiMultiLabelMethod,
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_labels_methods.PDFGeminiMultiLabelMethod import (
+    PDFGeminiMultiLabelMethod,
 )
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_labels_methods.SetFitEnglishMethod import (
     SetFitEnglishMethod,
@@ -109,7 +109,8 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         FuzzySegmentSelector(),
         PdfMultiOptionMethod(CleanBeginningDotDigits500, FastTextMethod),
         PdfMultiOptionMethod(CleanEndDotDigits1000, FastTextMethod),
-        PdfMultiOptionMethod(CleanEndDotDigits1000, GeminiMultiLabelMethod),
+        PdfMultiOptionMethod(CleanBeginningDot1000, PDFGeminiMultiLabelMethod),
+        PdfMultiOptionMethod(CleanEndDotDigits1000, PDFGeminiMultiLabelMethod),
         PdfMultiOptionMethod(CleanBeginningDot1000, SetFitEnglishMethod),
         PdfMultiOptionMethod(CleanBeginningDot1000, SetFitMultilingualMethod),
         PdfMultiOptionMethod(CleanBeginningDot1000, SingleLabelSetFitEnglishMethod),
