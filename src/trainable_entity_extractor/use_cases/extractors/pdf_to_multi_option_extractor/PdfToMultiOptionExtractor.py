@@ -109,8 +109,8 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         FuzzySegmentSelector(),
         PdfMultiOptionMethod(CleanBeginningDotDigits500, FastTextMethod),
         PdfMultiOptionMethod(CleanEndDotDigits1000, FastTextMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, PDFGeminiMultiLabelMethod),
         PdfMultiOptionMethod(CleanEndDotDigits1000, PDFGeminiMultiLabelMethod),
+        PdfMultiOptionMethod(CleanBeginningDot1000, PDFGeminiMultiLabelMethod),
         PdfMultiOptionMethod(CleanBeginningDot1000, SetFitEnglishMethod),
         PdfMultiOptionMethod(CleanBeginningDot1000, SetFitMultilingualMethod),
         PdfMultiOptionMethod(CleanBeginningDot1000, SingleLabelSetFitEnglishMethod),
@@ -192,15 +192,15 @@ class PdfToMultiOptionExtractor(ExtractorBase):
     def get_best_method(self, multi_option_data: ExtractionData) -> PdfMultiOptionMethod:
         best_method_instance = self.METHODS[0]
         best_performance = 0
-        train_set, test_set = ExtractorBase.get_train_test_sets(multi_option_data)
-        performance_summary = PerformanceSummary(
+        training_set, test_set = ExtractorBase.get_train_test_sets(multi_option_data)
+        performance_summary = PerformanceSummary.from_extraction_data(
             extractor_name=self.get_name(),
-            samples_count=len(multi_option_data.samples),
-            training_samples_count=len(train_set.samples),
+            training_samples_count=len(training_set.samples),
             testing_samples_count=len(test_set.samples),
+            extraction_data=multi_option_data,
         )
         for method in self.METHODS:
-            performance = self.get_method_performance(method, train_set, test_set)
+            performance = self.get_method_performance(method, training_set, test_set)
             performance_summary.add_performance(method.get_name(), performance)
             if performance == 100:
                 send_logs(self.extraction_identifier, performance_summary.to_log())

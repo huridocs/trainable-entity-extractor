@@ -96,11 +96,11 @@ class ToTextExtractor(ExtractorBase):
         best_method_instance = self.METHODS[0](self.extraction_identifier)
 
         training_set, test_set = self.get_train_test_sets(extraction_data)
-        performance_summary = PerformanceSummary(
+        performance_summary = PerformanceSummary.from_extraction_data(
             extractor_name=self.get_name(),
-            samples_count=len(extraction_data.samples),
             training_samples_count=len(training_set.samples),
             testing_samples_count=len(test_set.samples),
+            extraction_data=extraction_data,
         )
 
         for method in self.METHODS:

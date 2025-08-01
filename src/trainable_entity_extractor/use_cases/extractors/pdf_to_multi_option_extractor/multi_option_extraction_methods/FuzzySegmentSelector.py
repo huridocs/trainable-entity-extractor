@@ -82,17 +82,17 @@ class FuzzySegmentSelector(PdfMultiOptionMethod):
 
     def get_segments_appearances(
         self, pdf_data_segments: list[PdfDataSegment], segment_index: int, cleaned_options: list[str]
-    ) -> (PdfDataSegment, int, PdfDataSegment, int):
+    ) -> (int, PdfDataSegment, int):
         segment = pdf_data_segments[segment_index]
         next_segment = self.get_next_segment(pdf_data_segments, segment_index)
-        appearances = len(self.get_appearances(segment, cleaned_options))
+        appearances_count = len(self.get_appearances([segment], cleaned_options))
 
         if next_segment:
-            next_segment_appearances = len(self.get_appearances(next_segment, cleaned_options))
+            next_segment_appearances = len(self.get_appearances([next_segment], cleaned_options))
         else:
             next_segment_appearances = 0
 
-        return appearances, next_segment, next_segment_appearances
+        return appearances_count, next_segment, next_segment_appearances
 
     def train(self, multi_option_data: ExtractionData):
         self.set_parameters(multi_option_data)
@@ -111,16 +111,19 @@ class FuzzySegmentSelector(PdfMultiOptionMethod):
             return
 
         for i, segment in enumerate(multi_option_sample.pdf_data.pdf_data_segments):
-            appearances, next_segment, next_segment_appearances = self.get_segments_appearances(
+            appearances_count, next_segment, next_segment_appearances_count = self.get_segments_appearances(
                 multi_option_sample.pdf_data.pdf_data_segments, i, cleaned_values
             )
 
-            if next_segment_appearances and appearances_threshold <= appearances + next_segment_appearances:
+            if (
+                next_segment_appearances_count
+                and appearances_threshold <= appearances_count + next_segment_appearances_count
+            ):
                 segment.ml_label = 1
                 next_segment.ml_label = 1
                 break
 
-            if appearances_threshold <= appearances:
+            if appearances_threshold <= appearances_count:
                 segment.ml_label = 1
                 break
 
