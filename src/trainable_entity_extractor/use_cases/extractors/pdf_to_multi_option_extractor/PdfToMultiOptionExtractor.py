@@ -14,8 +14,8 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
-from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.CleanBeginningDot1000 import (
-    CleanBeginningDot1000,
+from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.CleanBeginningDotDigits1000 import (
+    CleanBeginningDotDigits1000,
 )
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.CleanBeginningDotDigits500 import (
     CleanBeginningDotDigits500,
@@ -110,11 +110,11 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         PdfMultiOptionMethod(CleanBeginningDotDigits500, FastTextMethod),
         PdfMultiOptionMethod(CleanEndDotDigits1000, FastTextMethod),
         PdfMultiOptionMethod(CleanEndDotDigits1000, PDFGeminiMultiLabelMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, PDFGeminiMultiLabelMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, SetFitEnglishMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, SetFitMultilingualMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, SingleLabelSetFitEnglishMethod),
-        PdfMultiOptionMethod(CleanBeginningDot1000, SingleLabelSetFitMultilingualMethod),
+        PdfMultiOptionMethod(CleanBeginningDotDigits1000, PDFGeminiMultiLabelMethod),
+        PdfMultiOptionMethod(CleanBeginningDotDigits1000, SetFitEnglishMethod),
+        PdfMultiOptionMethod(CleanBeginningDotDigits1000, SetFitMultilingualMethod),
+        PdfMultiOptionMethod(CleanBeginningDotDigits1000, SingleLabelSetFitEnglishMethod),
+        PdfMultiOptionMethod(CleanBeginningDotDigits1000, SingleLabelSetFitMultilingualMethod),
     ]
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):
