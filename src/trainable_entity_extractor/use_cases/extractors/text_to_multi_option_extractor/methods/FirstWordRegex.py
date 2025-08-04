@@ -53,6 +53,9 @@ class FirstWordRegex(TextToMultiOptionMethod):
         return OptionRegex(option_id=option.id, regex_list=regex_list)
 
     def predict_one(self, source_text: str, options_regex: list[OptionRegex]) -> list[str]:
+        if not source_text.strip():
+            return []
+
         first_word = source_text.split()[0]
         predictions = []
         if not first_word:

@@ -84,6 +84,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         TextSingleLabelSetFit,
         TextSingleLabelSetFitMultilingual,
     ]
+    EMPTY_PLACEHOLDER = "EMPTY"
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):
         super().__init__(extraction_identifier)
@@ -95,6 +96,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         if not predictions_samples:
             return []
 
+        self.fix_empty_prediction_data(predictions_samples)
         predictions = self.get_predictions_method().predict(predictions_samples)
 
         if not self.multi_value:
@@ -123,6 +125,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         return self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
+        self.fix_empty_data(extraction_data)
         self.extraction_identifier.save_options(extraction_data.options)
         self.options = extraction_data.options
         self.multi_value = extraction_data.multi_value
@@ -292,3 +295,13 @@ class TextToMultiOptionExtractor(ExtractorBase):
             stats += "\n".join(list(options_with_no_samples))
 
         return stats
+
+    def fix_empty_data(self, extraction_data: ExtractionData):
+        for sample in extraction_data.samples:
+            if not sample.labeled_data.source_text.strip():
+                sample.labeled_data.source_text = self.EMPTY_PLACEHOLDER
+
+    def fix_empty_prediction_data(self, predictions_samples: list[PredictionSample]):
+        for sample in predictions_samples:
+            if not sample.source_text.strip():
+                sample.source_text = self.EMPTY_PLACEHOLDER
