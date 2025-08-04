@@ -45,3 +45,8 @@ dependencies = [
     "country_named_entity_recognition==0.4",
     "google-genai==1.18.0"
 ]
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "no-local-version"
+write_to = "_version.py"
