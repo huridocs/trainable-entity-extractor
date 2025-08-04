@@ -31,7 +31,11 @@ class GeminiRun(BaseModel):
         samples_previous_run = previous_run.training_samples
         max_samples_to_add = self.max_training_size - len(samples_previous_run)
         max_samples_to_add = min(max_samples_to_add, len(previous_run.mistakes_samples))
-        self.training_samples = samples_previous_run + random.sample(previous_run.mistakes_samples, max_samples_to_add)
+
+        if max_samples_to_add > 0 and len(previous_run.mistakes_samples) > 0:
+            self.training_samples = samples_previous_run + random.sample(previous_run.mistakes_samples, max_samples_to_add)
+        else:
+            self.training_samples = samples_previous_run
 
         training_samples_set = set(self.training_samples)
         self.non_used_samples = [sample for sample in previous_run.mistakes_samples if sample not in training_samples_set]
