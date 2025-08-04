@@ -21,4 +21,3 @@ if GRAYLOG_IP:
 logging.root.handlers = []
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", handlers=handlers)
 config_logger = logging.getLogger(__name__)
-config_logger.propagate = False
