@@ -20,3 +20,4 @@ outputs
 /.ruff_cache/
 /data/
 /src/checkpoints/
+/dist/
