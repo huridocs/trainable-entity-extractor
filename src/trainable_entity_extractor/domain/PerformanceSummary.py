@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Performance import Performance
 
 
@@ -12,12 +13,14 @@ class PerformanceSummary(BaseModel):
     training_samples_count: int = 0
     testing_samples_count: int = 0
     methods: list[Performance] = []
+    extraction_identifier: ExtractionIdentifier | None = None
 
     def add_performance(self, method_name: str, performance: float):
         self.methods.append(Performance(method_name=method_name, performance=performance))
 
     def to_log(self) -> str:
         text = "Performance summary\n"
+        text += f"Id: {self.extraction_identifier}\n" if self.extraction_identifier else ""
         text += f"Extractor: {self.extractor_name}\n"
         text += f"Best method: {self.get_best_method().to_log(self.testing_samples_count)}\n"
         text += f"Samples: {self.samples_count}\n"
@@ -46,6 +49,7 @@ class PerformanceSummary(BaseModel):
                 languages.add(sample.labeled_data.language_iso)
 
         return PerformanceSummary(
+            extraction_identifier=extraction_data.extraction_identifier,
             extractor_name=extractor_name,
             samples_count=len(extraction_data.samples),
             options_count=len(extraction_data.options) if extraction_data.options else 0,

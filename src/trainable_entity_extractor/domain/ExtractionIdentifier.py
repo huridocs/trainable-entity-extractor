@@ -94,3 +94,6 @@ class ExtractionIdentifier(BaseModel):
 
     def save_processing_finished(self, success: bool):
         self.save_content(PROCESSING_FINISHED_FILE_NAME, success)
+
+    def __str__(self):
+        return f"{self.run_name} / {self.extraction_name}"

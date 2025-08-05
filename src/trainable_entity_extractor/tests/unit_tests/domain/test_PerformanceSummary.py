@@ -1,4 +1,5 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
@@ -32,7 +33,8 @@ class TestPerformanceSummary:
         sample1 = TrainingSample(labeled_data=LabeledData(source_text="Sample 1"))
         sample2 = TrainingSample(labeled_data=LabeledData(source_text="Sample 2"))
 
-        extraction_data = ExtractionData(samples=[sample1, sample2])
+        extraction_identifier = ExtractionIdentifier(run_name="test_run", extraction_name="test_extraction")
+        extraction_data = ExtractionData(samples=[sample1, sample2], extraction_identifier=extraction_identifier)
 
         result = PerformanceSummary.from_extraction_data(
             extractor_name="Multi Sample Extractor",
@@ -47,6 +49,7 @@ class TestPerformanceSummary:
         assert result.languages == []
         assert result.training_samples_count == 15
         assert result.testing_samples_count == 8
+        assert result.extraction_identifier == extraction_identifier
 
     def test_from_extraction_data_with_languages(self):
         """Test creating PerformanceSummary from ExtractionData with multiple languages"""
@@ -321,3 +324,63 @@ class TestPerformanceSummary:
         result = summary.to_log()
 
         assert "Best method: Failed Method - 2 mistakes / 0.00%" in result
+
+    def test_from_extraction_data_and_to_log(self):
+        """Test from_extraction_data and to_log integration"""
+        # Prepare extraction data with languages and options
+        from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+        from trainable_entity_extractor.domain.LabeledData import LabeledData
+        from trainable_entity_extractor.domain.Option import Option
+        from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+
+        sample1 = TrainingSample(labeled_data=LabeledData(source_text="Text 1", language_iso="en"))
+        sample2 = TrainingSample(labeled_data=LabeledData(source_text="Text 2", language_iso="fr"))
+        option1 = Option(id="1", label="Option 1")
+        option2 = Option(id="2", label="Option 2")
+        extraction_data = ExtractionData(samples=[sample1, sample2], options=[option1, option2])
+
+        summary = PerformanceSummary.from_extraction_data(
+            extractor_name="Integration Extractor",
+            training_samples_count=8,
+            testing_samples_count=2,
+            extraction_data=extraction_data,
+        )
+        summary.add_performance("test_method", 0.85)
+        log = summary.to_log()
+        assert "Integration Extractor" in log
+        assert "2 language(s): en, fr" in log or "2 language(s): fr, en" in log
+        assert "Options count: 2" in log
+        assert "test_method" in log
+        assert "0.85" in log
+
+    def test_from_extraction_data_and_to_log_with_extraction_identifier(self):
+        """Test from_extraction_data and to_log integration with ExtractionIdentifier"""
+        from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+        from trainable_entity_extractor.domain.LabeledData import LabeledData
+        from trainable_entity_extractor.domain.Option import Option
+        from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+        from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+
+        extraction_identifier = ExtractionIdentifier(run_name="run42", extraction_name="extract99")
+        sample1 = TrainingSample(labeled_data=LabeledData(source_text="Text 1", language_iso="en"))
+        sample2 = TrainingSample(labeled_data=LabeledData(source_text="Text 2", language_iso="fr"))
+        option1 = Option(id="1", label="Option 1")
+        option2 = Option(id="2", label="Option 2")
+        extraction_data = ExtractionData(
+            samples=[sample1, sample2], options=[option1, option2], extraction_identifier=extraction_identifier
+        )
+
+        summary = PerformanceSummary.from_extraction_data(
+            extractor_name="Integration Extractor",
+            training_samples_count=8,
+            testing_samples_count=2,
+            extraction_data=extraction_data,
+        )
+        summary.add_performance("test_method", 0.85)
+        log = summary.to_log()
+        assert "Integration Extractor" in log
+        assert "2 language(s): en, fr" in log or "2 language(s): fr, en" in log
+        assert "Options count: 2" in log
+        assert "test_method" in log
+        assert "0.85" in log
+        assert "run42 / extract99" in log  # ExtractionIdentifier string representation
