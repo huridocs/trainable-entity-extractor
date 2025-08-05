@@ -168,12 +168,13 @@ class TestPerformanceSummary:
             languages=["en", "es"],
             training_samples_count=40,
             testing_samples_count=10,
+            extraction_identifier=ExtractionIdentifier(run_name="run1", extraction_name="extract1"),
         )
 
         result = summary.to_log()
 
         assert "Performance summary" in result
-        assert "Extractor: Basic Extractor" in result
+        assert "Basic Extractor" in result
         assert "Best method: No methods - 10 mistakes / 0.00%" in result
         assert "Samples: 50" in result
         assert "Train/test: 40/10" in result
@@ -190,11 +191,12 @@ class TestPerformanceSummary:
             languages=["fr"],
             training_samples_count=20,
             testing_samples_count=5,
+            extraction_identifier=ExtractionIdentifier(run_name="run2", extraction_name="extract2"),
         )
 
         result = summary.to_log()
 
-        assert "Extractor: Options Extractor" in result
+        assert "Options Extractor" in result
         assert "1 language(s): fr" in result
         assert "Options count: 5" in result
 
@@ -337,7 +339,10 @@ class TestPerformanceSummary:
         sample2 = TrainingSample(labeled_data=LabeledData(source_text="Text 2", language_iso="fr"))
         option1 = Option(id="1", label="Option 1")
         option2 = Option(id="2", label="Option 2")
-        extraction_data = ExtractionData(samples=[sample1, sample2], options=[option1, option2])
+        extraction_identifier = ExtractionIdentifier(run_name="test_run", extraction_name="test_extraction")
+        extraction_data = ExtractionData(
+            samples=[sample1, sample2], options=[option1, option2], extraction_identifier=extraction_identifier
+        )
 
         summary = PerformanceSummary.from_extraction_data(
             extractor_name="Integration Extractor",

@@ -20,8 +20,7 @@ class PerformanceSummary(BaseModel):
 
     def to_log(self) -> str:
         text = "Performance summary\n"
-        text += f"Id: {self.extraction_identifier}\n" if self.extraction_identifier else ""
-        text += f"Extractor: {self.extractor_name}\n"
+        text += f"Id: {self.extraction_identifier} / {self.extractor_name}\n" if self.extraction_identifier else ""
         text += f"Best method: {self.get_best_method().to_log(self.testing_samples_count)}\n"
         text += f"Samples: {self.samples_count}\n"
         text += f"Train/test: {self.training_samples_count}/{self.testing_samples_count}\n"
