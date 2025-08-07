@@ -68,8 +68,10 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
         if exists(data_path):
             os.remove(data_path)
 
-        text_inputs = [sample.get_input_text() for sample in extraction_data.samples]
-        text_target = [sample.labeled_data.label_text if sample.labeled_data else "" for sample in extraction_data.samples]
+        samples = extraction_data.samples[:10000]
+
+        text_inputs = [sample.get_input_text() for sample in samples]
+        text_target = [sample.labeled_data.label_text if sample.labeled_data else "" for sample in samples]
 
         data = [
             [str(index + 1), f"Extract: {text_input}", text_target]
@@ -117,7 +119,7 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
             learning_rate=5e-4,
             weight_decay=0.1,
             do_train=True,
-            do_eval=True,
+            do_eval=False,
             do_predict=False,
             save_total_limit=2,
             save_strategy="epoch",
@@ -125,7 +127,7 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
             load_best_model_at_end=True,
             metric_for_best_model="f1",
             early_stopping=True,
-            num_train_epochs=30,
+            num_train_epochs=self.calculate_epochs(len(extraction_data.samples)),
             early_stopping_patience=4,
             log_level="error",
             generation_max_length=output_length,
@@ -134,6 +136,18 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
 
         run(model_arguments, data_training_arguments, t5_training_arguments)
         self.delete_checkpoints()
+
+    @staticmethod
+    def calculate_epochs(samples_count: int) -> int:
+        if samples_count >= 10000:
+            return 1
+        elif samples_count <= 0:
+            return 30
+        else:
+            # Linear interpolation: 30 epochs at 0 samples down to 1 epoch at 10000 samples
+            # Formula: epochs = 30 - (29 * samples_count / 10000)
+            epochs = 30 - (29 * samples_count / 10000)
+            return max(1, int(round(epochs)))
 
     @staticmethod
     def get_cache_dir():
