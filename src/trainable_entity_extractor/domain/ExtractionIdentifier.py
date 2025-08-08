@@ -7,9 +7,10 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from trainable_entity_extractor.config import DATA_PATH
+from trainable_entity_extractor.config import DATA_PATH, IS_TRAINING_CANCELED_FILE_NAME
 from trainable_entity_extractor.domain.ExtractionStatus import ExtractionStatus
 from trainable_entity_extractor.domain.Option import Option
+from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 OPTIONS_FILE_NAME = "options.json"
 MULTI_VALUE_FILE_NAME = "multi_value.json"
@@ -94,6 +95,20 @@ class ExtractionIdentifier(BaseModel):
 
     def save_processing_finished(self, success: bool):
         self.save_content(PROCESSING_FINISHED_FILE_NAME, success)
+
+    def is_training_canceled(self):
+        is_cancel_file_path = Path(self.get_path()) / IS_TRAINING_CANCELED_FILE_NAME
+        if is_cancel_file_path.exists():
+            Path(self.extraction_identifier.get_path()).unlink()
+            send_logs(self, "Training canceled")
+            return True
+
+        return False
+
+    def cancel_training(self):
+        is_cancel_file_path = Path(self.get_path()) / IS_TRAINING_CANCELED_FILE_NAME
+        is_cancel_file_path.parent.mkdir(parents=True, exist_ok=True)
+        is_cancel_file_path.write_text("true")
 
     def __str__(self):
         return f"{self.run_name} / {self.extraction_name}"

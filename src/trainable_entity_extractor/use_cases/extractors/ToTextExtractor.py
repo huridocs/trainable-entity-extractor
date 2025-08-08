@@ -104,8 +104,7 @@ class ToTextExtractor(ExtractorBase):
         )
 
         for method in self.METHODS:
-            if self.is_training_canceled():
-                send_logs(self.extraction_identifier, "Training cancelled", LogSeverity.info)
+            if self.extraction_identifier.is_training_canceled():
                 return best_method_instance
 
             method_instance = method(self.extraction_identifier)
