@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 from os.path import join, exists
 from pathlib import Path
 from time import time
@@ -99,7 +100,7 @@ class ExtractionIdentifier(BaseModel):
     def is_training_canceled(self):
         is_cancel_file_path = Path(self.get_path()) / IS_TRAINING_CANCELED_FILE_NAME
         if is_cancel_file_path.exists():
-            Path(self.extraction_identifier.get_path()).unlink()
+            shutil.rmtree(self.get_path(), ignore_errors=True)
             send_logs(self, "Training canceled")
             return True
 
