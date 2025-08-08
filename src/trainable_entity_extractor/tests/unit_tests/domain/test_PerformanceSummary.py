@@ -11,7 +11,6 @@ class TestPerformanceSummary:
     def test_from_extraction_data_empty_samples(self):
         """Test creating PerformanceSummary from ExtractionData with no samples"""
         extraction_data = ExtractionData(samples=[])
-
         result = PerformanceSummary.from_extraction_data(
             extractor_name="Test Extractor",
             training_samples_count=10,
@@ -175,7 +174,7 @@ class TestPerformanceSummary:
 
         assert "Performance summary" in result
         assert "Basic Extractor" in result
-        assert "Best method: No methods - 10 mistakes / 0.00%" in result
+        assert "Best method: No methods - 0s / 10 mistakes / 0.00%" in result
         assert "Samples: 50" in result
         assert "Train/test: 40/10" in result
         assert "2 language(s): en, es" in result
@@ -229,9 +228,9 @@ class TestPerformanceSummary:
 
         result = summary.to_log()
 
-        assert "Best method: Neural Network - 1 mistake / 85.50%" in result
+        assert "Best method: Neural Network - 0s / 1 mistake / 85.50%" in result
         assert "Methods by performance:" in result
-        assert "Neural Network - 1 mistake / 85.50%" in result.split("Methods by performance:")[1]
+        assert "Neural Network - 0s / 1 mistake / 85.50%" in result.split("Methods by performance:")[1]
 
     def test_to_log_with_multiple_methods_sorted(self):
         """Test to_log with multiple methods sorted by performance"""
@@ -250,15 +249,19 @@ class TestPerformanceSummary:
         result = summary.to_log()
 
         # Best method should be Method B (90.0%)
-        assert "Best method: Method B - 1 mistake / 90.00%" in result
+        assert "Best method: Method B - 0s / 1 mistake / 90.00%" in result
 
-        # Methods should be sorted by performance (descending)
+        # Check that methods are sorted by performance (highest first)
         methods_section = result.split("Methods by performance:")[1]
-        method_lines = [line.strip() for line in methods_section.split("\n") if line.strip()]
+        assert "Method B - 0s / 1 mistake / 90.00%" in methods_section
+        assert "Method A - 0s / 2 mistakes / 75.00%" in methods_section
+        assert "Method C - 0s / 4 mistakes / 60.00%" in methods_section
 
-        assert "Method B - 1 mistake / 90.00%" == method_lines[0]
-        assert "Method A - 2 mistakes / 75.00%" == method_lines[1]
-        assert "Method C - 4 mistakes / 60.00%" == method_lines[2]
+        # Verify order - Method B should appear before Method A, which should appear before Method C
+        method_b_pos = methods_section.find("Method B")
+        method_a_pos = methods_section.find("Method A")
+        method_c_pos = methods_section.find("Method C")
+        assert method_b_pos < method_a_pos < method_c_pos
 
     def test_to_log_perfect_performance(self):
         """Test to_log with 100% performance (0 mistakes)"""
@@ -274,8 +277,8 @@ class TestPerformanceSummary:
 
         result = summary.to_log()
 
-        assert "Best method: Perfect Method - 0 mistakes / 100.00%" in result
-        assert "Perfect Method - 0 mistakes / 100.00%" in result
+        assert "Best method: Perfect Method - 0s / 0 mistakes / 100.00%" in result
+        assert "Perfect Method - 0s / 0 mistakes / 100.00%" in result
 
     def test_to_log_single_mistake(self):
         """Test to_log with exactly 1 mistake (singular form)"""
@@ -291,7 +294,8 @@ class TestPerformanceSummary:
 
         result = summary.to_log()
 
-        assert "Best method: Almost Perfect - 1 mistake / 90.00%" in result
+        assert "Best method: Almost Perfect - 0s / 1 mistake / 90.00%" in result
+        assert "Almost Perfect - 0s / 1 mistake / 90.00%" in result
 
     def test_to_log_many_languages(self):
         """Test to_log with multiple languages"""
@@ -309,7 +313,7 @@ class TestPerformanceSummary:
 
         assert "6 language(s): en, es, fr, de, it, pt" in result
         assert "Options count: 8" in result
-        assert "Best method: Multilingual Model - 4 mistakes / 82.50%" in result
+        assert "Best method: Multilingual Model - 0s / 4 mistakes / 82.50%" in result
 
     def test_to_log_zero_performance(self):
         """Test to_log with 0% performance (all mistakes)"""
@@ -325,7 +329,8 @@ class TestPerformanceSummary:
 
         result = summary.to_log()
 
-        assert "Best method: Failed Method - 2 mistakes / 0.00%" in result
+        assert "Best method: Failed Method - 0s / 2 mistakes / 0.00%" in result
+        assert "Failed Method - 0s / 2 mistakes / 0.00%" in result
 
     def test_from_extraction_data_and_to_log(self):
         """Test from_extraction_data and to_log integration"""

@@ -1,8 +1,8 @@
-from pydantic import BaseModel
-
+from pydantic import BaseModel, Field
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Performance import Performance
+from time import time
 
 
 class PerformanceSummary(BaseModel):
@@ -14,9 +14,15 @@ class PerformanceSummary(BaseModel):
     testing_samples_count: int = 0
     methods: list[Performance] = []
     extraction_identifier: ExtractionIdentifier | None = None
+    previous_timestamp: int = Field(default_factory=lambda: int(time()))
 
     def add_performance(self, method_name: str, performance: float):
-        self.methods.append(Performance(method_name=method_name, performance=performance))
+        current_time = int(time())
+        performance = Performance(
+            method_name=method_name, performance=performance, execution_seconds=int(current_time - self.previous_timestamp)
+        )
+        self.previous_timestamp = current_time
+        self.methods.append(performance)
 
     def to_log(self) -> str:
         text = "Performance summary\n"
