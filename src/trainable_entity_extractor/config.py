@@ -10,8 +10,9 @@ ROOT_PATH = Path(__file__).parent.parent.parent.absolute()
 DATA_PATH = Path(ROOT_PATH, "models_data")
 GRAYLOG_IP = os.environ.get("GRAYLOG_IP")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-
 HUGGINGFACE_PATH = join(ROOT_PATH, "huggingface")
+
+IS_TRAINING_CANCELED_FILE_NAME = "is_training_canceled.txt"
 
 handlers = [logging.StreamHandler()]
 

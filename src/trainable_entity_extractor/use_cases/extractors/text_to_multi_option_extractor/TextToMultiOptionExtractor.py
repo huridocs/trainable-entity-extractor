@@ -151,6 +151,10 @@ class TextToMultiOptionExtractor(ExtractorBase):
         )
 
         for method in self.METHODS:
+            if self.is_training_canceled():
+                send_logs(self.extraction_identifier, "Training cancelled", LogSeverity.info)
+                return best_method_instance
+
             method_instance = method(self.extraction_identifier, self.options, self.multi_value)
 
             if len(self.METHODS) == 1:

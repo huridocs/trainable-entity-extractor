@@ -104,6 +104,10 @@ class ToTextExtractor(ExtractorBase):
         )
 
         for method in self.METHODS:
+            if self.is_training_canceled():
+                send_logs(self.extraction_identifier, "Training cancelled", LogSeverity.info)
+                return best_method_instance
+
             method_instance = method(self.extraction_identifier)
             send_logs(self.extraction_identifier, f"Checking {method_instance.get_name()}")
             try:
@@ -120,6 +124,7 @@ class ToTextExtractor(ExtractorBase):
             if performance > best_performance:
                 best_performance = performance
                 best_method_instance = method_instance
+
         send_logs(self.extraction_identifier, performance_summary.to_log())
         self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
         return best_method_instance

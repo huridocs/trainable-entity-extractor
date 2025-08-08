@@ -58,6 +58,14 @@ class ExtractorBase:
         test_extraction_data = ExtractorBase.get_extraction_data_from_samples(extraction_data, test_set)
         return train_extraction_data, test_extraction_data
 
+    def is_training_canceled(self):
+        is_cancel_file_path = Path(self.extraction_identifier.get_path()) / IS_TRAINING_CANCELED_FILE_NAME
+        if not is_cancel_file_path.exists():
+            return False
+
+        Path(self.extraction_identifier.get_path()).unlink()
+        return True
+
     @staticmethod
     def get_extraction_data_from_samples(extraction_data: ExtractionData, samples: list[TrainingSample]) -> ExtractionData:
         return ExtractionData(
@@ -66,11 +74,3 @@ class ExtractorBase:
             multi_value=extraction_data.multi_value,
             extraction_identifier=extraction_data.extraction_identifier,
         )
-
-    @staticmethod
-    def save_json(path: str, data: any):
-        if not exists(Path(path).parent):
-            makedirs(Path(path).parent)
-
-        with open(path, "w") as file:
-            json.dump(data, file)

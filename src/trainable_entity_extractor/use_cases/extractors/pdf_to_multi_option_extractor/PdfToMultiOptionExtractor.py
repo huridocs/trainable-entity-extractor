@@ -200,6 +200,10 @@ class PdfToMultiOptionExtractor(ExtractorBase):
             extraction_data=multi_option_data,
         )
         for method in self.METHODS:
+            if self.is_training_canceled():
+                send_logs(self.extraction_identifier, "Training cancelled", LogSeverity.info)
+                return best_method_instance
+
             performance = self.get_method_performance(method, training_set, test_set)
             performance_summary.add_performance(method.get_name(), performance)
             if performance == 100:
