@@ -113,7 +113,6 @@ class ToTextExtractor(ExtractorBase):
                 send_logs(self.extraction_identifier, message, LogSeverity.error, e)
                 performance = 0
             performance_summary.add_performance(method_instance.get_name(), performance)
-            send_logs(self.extraction_identifier, f"Performance {method_instance.get_name()}: {performance}%")
             if performance == 100:
                 send_logs(self.extraction_identifier, performance_summary.to_log())
                 self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())

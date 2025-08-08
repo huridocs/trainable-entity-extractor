@@ -5,6 +5,7 @@ from typing import Type
 from trainable_entity_extractor.config import config_logger
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
@@ -176,19 +177,19 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     @staticmethod
     def get_performance(extraction_data, method_instance):
-        config_logger.info(f"\nChecking {method_instance.get_name()}")
+        send_logs(extraction_data.extraction_identifier, f"\nChecking {method_instance.get_name()}")
         try:
             performance = method_instance.performance(extraction_data)
-        except IndexError:
+        except IndexError as e:
             performance = 0
             if "setfit" in method_instance.get_name().lower():
-                config_logger.info("Insufficient data to train SetFit model")
+                send_logs(extraction_data.extraction_identifier, "Insufficient data to train SetFit model")
             else:
-                config_logger.info("ERROR", exc_info=True)
-        except:
-            config_logger.info("ERROR", exc_info=True)
+                send_logs(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
+        except Exception as e:
+            send_logs(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             performance = 0
-        config_logger.info(f"\nPerformance {method_instance.get_name()}: {performance}%")
+
         return performance
 
     def remove_models(self):
@@ -206,7 +207,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
         return False
 
-    def get_train_test_sets(self, extraction_data: ExtractionData) -> (ExtractionData, ExtractionData):
+    def get_train_test_sets(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         if len(extraction_data.samples) < 8:
             return extraction_data, extraction_data
 
@@ -250,7 +251,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
     @staticmethod
     def get_train_test_sets_using_labels(
         samples_by_labels: dict[str, list[TrainingSample]]
-    ) -> (list[TrainingSample], list[TrainingSample]):
+    ) -> tuple[list[TrainingSample], list[TrainingSample]]:
         test_set = set()
         all_samples = {sample for samples in samples_by_labels.values() for sample in samples}
         sorted_labels_by_samples_count = sorted(samples_by_labels.keys(), key=lambda x: len(samples_by_labels[x]))

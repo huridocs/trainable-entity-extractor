@@ -24,7 +24,7 @@ class TestPerformanceSummary:
         assert result.languages == []
         assert result.training_samples_count == 10
         assert result.testing_samples_count == 5
-        assert result.methods == []
+        assert result.performances == []
 
     def test_from_extraction_data_with_samples_no_languages(self):
         """Test creating PerformanceSummary from ExtractionData with samples but no language info"""

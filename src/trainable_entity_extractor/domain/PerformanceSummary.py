@@ -4,6 +4,8 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.Performance import Performance
 from time import time
 
+from trainable_entity_extractor.use_cases.send_logs import send_logs
+
 
 class PerformanceSummary(BaseModel):
     extractor_name: str = "Unknown Extractor"
@@ -12,7 +14,7 @@ class PerformanceSummary(BaseModel):
     languages: list[str] = list()
     training_samples_count: int = 0
     testing_samples_count: int = 0
-    methods: list[Performance] = []
+    performances: list[Performance] = []
     extraction_identifier: ExtractionIdentifier | None = None
     previous_timestamp: int = Field(default_factory=lambda: int(time()))
 
@@ -22,7 +24,8 @@ class PerformanceSummary(BaseModel):
             method_name=method_name, performance=performance, execution_seconds=int(current_time - self.previous_timestamp)
         )
         self.previous_timestamp = current_time
-        self.methods.append(performance)
+        self.performances.append(performance)
+        send_logs(self.extraction_identifier, f"Performance {performance.to_log(self.testing_samples_count)}")
 
     def to_log(self) -> str:
         text = "Performance summary\n"
@@ -33,16 +36,16 @@ class PerformanceSummary(BaseModel):
         text += f"{len(self.languages)} language(s): {', '.join(self.languages) if self.languages else 'None'}\n"
         text += f"Options count: {self.options_count}\n" if self.options_count > 0 else ""
         text += "Methods by performance:\n"
-        for method in sorted(self.methods, key=lambda x: x.performance, reverse=True):
-            text += f"{method.to_log(self.testing_samples_count)}\n"
+        for performance in sorted(self.performances, key=lambda x: x.performance, reverse=True):
+            text += f"{performance.to_log(self.testing_samples_count)}\n"
 
         return text
 
     def get_best_method(self) -> Performance:
-        if not self.methods:
+        if not self.performances:
             return Performance(method_name="No methods", performance=0.0)
 
-        return max(self.methods, key=lambda x: x.performance)
+        return max(self.performances, key=lambda x: x.performance)
 
     @staticmethod
     def from_extraction_data(

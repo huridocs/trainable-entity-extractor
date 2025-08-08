@@ -234,8 +234,6 @@ class PdfToMultiOptionExtractor(ExtractorBase):
             performance = 0
 
         self.reset_extraction_data(train_set)
-
-        send_logs(self.extraction_identifier, f"Performance {method.get_name()}: {round(performance, 2)}%")
         return performance
 
     def get_predictions_method(self):
