@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from trainable_entity_extractor.config import DATA_PATH, IS_TRAINING_CANCELED_FILE_NAME
 from trainable_entity_extractor.domain.ExtractionStatus import ExtractionStatus
 from trainable_entity_extractor.domain.Option import Option
-from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 OPTIONS_FILE_NAME = "options.json"
 MULTI_VALUE_FILE_NAME = "multi_value.json"
@@ -101,7 +100,6 @@ class ExtractionIdentifier(BaseModel):
         is_cancel_file_path = Path(self.get_path()) / IS_TRAINING_CANCELED_FILE_NAME
         if is_cancel_file_path.exists():
             shutil.rmtree(self.get_path(), ignore_errors=True)
-            send_logs(self, "Training canceled")
             return True
 
         return False
