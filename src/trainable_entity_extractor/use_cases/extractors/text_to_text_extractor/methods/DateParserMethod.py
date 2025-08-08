@@ -7,6 +7,7 @@ from dateparser.search import search_dates
 
 
 class DateParserMethod(ToTextExtractorMethod):
+    IS_VALID_EXECUTION_FILE_NAME = "date_parser_is_valid.json"
 
     @staticmethod
     def get_best_date(dates):
@@ -39,9 +40,22 @@ class DateParserMethod(ToTextExtractorMethod):
 
     def train(self, extraction_data: ExtractionData):
         languages = [x.labeled_data.language_iso for x in extraction_data.samples]
+
+        for sample in extraction_data.samples[:15]:
+            if not sample.labeled_data.label_text.strip():
+                continue
+            date = self.get_date([sample.labeled_data.label_text], languages)
+            if not date:
+                self.save_json(self.IS_VALID_EXECUTION_FILE_NAME, "false")
+                return
+
+        self.save_json(self.IS_VALID_EXECUTION_FILE_NAME, "true")
         self.save_json("languages.json", list(set(languages)))
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+        if self.load_json(self.IS_VALID_EXECUTION_FILE_NAME) == "false":
+            return [""] * len(predictions_samples)
+
         languages = self.load_json("languages.json")
         predictions_dates = [
             self.get_date(prediction_sample.get_input_text_by_lines(), languages)

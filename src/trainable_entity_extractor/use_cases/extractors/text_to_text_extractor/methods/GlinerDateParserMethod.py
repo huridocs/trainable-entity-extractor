@@ -5,6 +5,7 @@ from trainable_entity_extractor.use_cases.extractors.GlinerDateExtractor import 
 
 
 class GlinerDateParserMethod(ToTextExtractorMethod):
+    IS_VALID_EXECUTION_FILE_NAME = "gliner_date_is_valid.json"
 
     @staticmethod
     def get_alphanumeric_text_with_spaces(text):
@@ -25,9 +26,22 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
         return None
 
     def train(self, extraction_data: ExtractionData):
-        pass
+        gliner_date_extractor = GlinerDateExtractor()
+
+        for sample in extraction_data.samples[:15]:
+            if not sample.labeled_data.label_text.strip():
+                continue
+            dates = gliner_date_extractor.extract_dates(sample.labeled_data.label_text)
+            if not dates:
+                self.save_json(self.IS_VALID_EXECUTION_FILE_NAME, "false")
+                return
+
+        self.save_json(self.IS_VALID_EXECUTION_FILE_NAME, "true")
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+        if self.load_json(self.IS_VALID_EXECUTION_FILE_NAME) == "false":
+            return [""] * len(predictions_samples)
+
         predictions_dates = [
             self.get_date(prediction_sample.get_input_text_by_lines()) for prediction_sample in predictions_samples
         ]

@@ -28,9 +28,12 @@ class PerformanceSummary(BaseModel):
         send_logs(self.extraction_identifier, f"Performance {performance.to_log(self.testing_samples_count)}")
 
     def to_log(self) -> str:
+        total_time = sum(performance.execution_seconds for performance in self.performances)
+
         text = "Performance summary\n"
         text += f"Id: {self.extraction_identifier} / {self.extractor_name}\n" if self.extraction_identifier else ""
         text += f"Best method: {self.get_best_method().to_log(self.testing_samples_count)}\n"
+        text += f"Training time: {Performance.get_execution_time_string(total_time)}\n"
         text += f"Samples: {self.samples_count}\n"
         text += f"Train/test: {self.training_samples_count}/{self.testing_samples_count}\n"
         text += f"{len(self.languages)} language(s): {', '.join(self.languages) if self.languages else 'None'}\n"

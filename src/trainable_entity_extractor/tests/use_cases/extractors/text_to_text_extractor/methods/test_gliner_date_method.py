@@ -54,3 +54,46 @@ class TestGlinerDateMethod(TestCase):
         gliner_method = GlinerDateParserMethod(extraction_identifier)
 
         self.assertEqual(100, gliner_method.performance(extraction_data, extraction_data))
+
+    def test_is_valid_execution_file_functionality(self):
+        """Test that IS_VALID_EXECUTION_FILE_NAME properly controls prediction behavior"""
+        # Test with valid date samples - should not create invalid execution flag
+        valid_sample = TrainingSample(
+            labeled_data=LabeledData(label_text="2023-01-15", language_iso="en"),
+            segment_selector_texts=["January 15, 2023"],
+        )
+
+        valid_extraction_data = ExtractionData(
+            samples=[valid_sample for _ in range(6)], extraction_identifier=extraction_identifier
+        )
+        gliner_method = GlinerDateParserMethod(extraction_identifier)
+
+        # Train with valid data
+        gliner_method.train(valid_extraction_data)
+
+        # Should make normal predictions
+        predictions = gliner_method.predict([PredictionSample.from_text("March 10, 2024")])
+        self.assertNotEqual([""], predictions)  # Should not return empty string
+
+        # Test with invalid date samples - should create invalid execution flag
+        invalid_sample = TrainingSample(
+            labeled_data=LabeledData(label_text="not a date", language_iso="en"),
+            segment_selector_texts=["some random text"],
+        )
+
+        invalid_extraction_data = ExtractionData(
+            samples=[invalid_sample for _ in range(6)], extraction_identifier=extraction_identifier
+        )
+
+        # Train with invalid data
+        gliner_method.train(invalid_extraction_data)
+
+        # Should return empty strings for all predictions
+        predictions = gliner_method.predict([PredictionSample.from_text("March 10, 2024")])
+        self.assertEqual([""], predictions)
+
+        # Test with multiple prediction samples
+        multiple_predictions = gliner_method.predict(
+            [PredictionSample.from_text("March 10, 2024"), PredictionSample.from_text("April 5, 2025")]
+        )
+        self.assertEqual(["", ""], multiple_predictions)

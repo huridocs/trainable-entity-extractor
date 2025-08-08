@@ -47,19 +47,6 @@ class TestDateParserMethod(TestCase):
         predictions = date_parser_method.predict([PredictionSample.from_text(text)])
         self.assertEqual(["2016-11-30"], predictions)
 
-    def test_performance_no_dates(self):
-        sample_1 = TrainingSample(
-            labeled_data=LabeledData(label_text="1981-05-13", language_iso="en"), segment_selector_texts=["13 May 1981"]
-        )
-        sample_2 = TrainingSample(
-            labeled_data=LabeledData(label_text="text", language_iso="en"), segment_selector_texts=["13 May 81"]
-        )
-
-        extraction_data = ExtractionData(samples=[sample_1, sample_2], extraction_identifier=extraction_identifier)
-        date_parser_method = DateParserMethod(extraction_identifier)
-
-        self.assertEqual(50, date_parser_method.performance(extraction_data, extraction_data))
-
     def test_performance_multiple_tags(self):
         sample = TrainingSample(
             labeled_data=LabeledData(label_text="1981-05-13", language_iso="es"), segment_selector_texts=["13 May", "1981"]
