@@ -1,9 +1,7 @@
-import json
 from abc import abstractmethod
-from os import makedirs
-from os.path import exists
 from pathlib import Path
 
+from trainable_entity_extractor.config import IS_TRAINING_CANCELED_FILE_NAME
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
