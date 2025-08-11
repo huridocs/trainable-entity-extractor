@@ -33,6 +33,10 @@ class TrainableEntityExtractor:
         self.options = list()
 
     def train(self, extraction_data: ExtractionData) -> (bool, str):
+        if extraction_data.extraction_identifier.is_training_canceled():
+            send_logs(self.extraction_identifier, "Training canceled", LogSeverity.error)
+            return False, "Training canceled"
+
         if not extraction_data or not extraction_data.samples:
             return False, "No data to create model"
 

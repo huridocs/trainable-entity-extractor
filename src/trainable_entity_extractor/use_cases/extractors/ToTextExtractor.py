@@ -77,8 +77,6 @@ class ToTextExtractor(ExtractorBase):
         if len(extraction_data.samples) < RETRAIN_SAMPLES_THRESHOLD:
             best_method_instance.train(extraction_data)
 
-        # self.remove_data_from_methods_not_selected(best_method_instance)
-
         return True, ""
 
     @staticmethod
