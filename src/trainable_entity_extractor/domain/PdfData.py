@@ -100,6 +100,7 @@ class PdfData(BaseModel):
     def from_texts(texts: list[str]):
         pdf_data = PdfData()
         pdf_data.pdf_data_segments = PdfDataSegment.from_texts(texts)
+        pdf_data.pdf_features = PdfFeatures.get_empty()
         return pdf_data
 
     def get_text(self):
