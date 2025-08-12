@@ -17,7 +17,7 @@ class PerformanceSummary(BaseModel):
     performances: list[Performance] = []
     extraction_identifier: ExtractionIdentifier | None = None
     previous_timestamp: int = Field(default_factory=lambda: int(time()))
-    empty_pdfs_names: list[str] = Field(default_factory=list)
+    empty_pdf_count: int = 0
 
     def add_performance(self, method_name: str, performance: float):
         current_time = int(time())
@@ -38,11 +38,7 @@ class PerformanceSummary(BaseModel):
         text += f"Samples: {self.samples_count}\n"
         text += f"Train/test: {self.training_samples_count}/{self.testing_samples_count}\n"
         text += f"{len(self.languages)} language(s): {', '.join(self.languages) if self.languages else 'None'}\n"
-        text += (
-            f"Empty PDFs: {len(self.empty_pdfs_names)} ({', '.join(self.empty_pdfs_names[:4])})\n"
-            if self.empty_pdfs_names
-            else ""
-        )
+        text += f"Empty PDFs: {self.empty_pdf_count}\n" if self.empty_pdf_count else ""
         text += f"Options count: {self.options_count}\n" if self.options_count > 0 else ""
         text += "Methods by performance:\n"
         for performance in sorted(self.performances, key=lambda x: x.performance, reverse=True):
@@ -61,13 +57,13 @@ class PerformanceSummary(BaseModel):
         extractor_name: str, training_samples_count: int, testing_samples_count: int, extraction_data: ExtractionData
     ) -> "PerformanceSummary":
         languages = set()
-        empty_pdf_names = list()
+        empty_pdf_count = 0
         for sample in extraction_data.samples:
             if sample.labeled_data and sample.labeled_data.language_iso:
                 languages.add(sample.labeled_data.language_iso)
 
-            if sample.pdf_data and sample.pdf_data.pdf_features and sample.pdf_data.pdf_features.file_name:
-                empty_pdf_names.append(sample.pdf_data.pdf_features.file_name)
+            if sample.pdf_data and sample.pdf_data.pdf_features and not sample.pdf_data.get_text():
+                empty_pdf_count += 1
 
         return PerformanceSummary(
             extraction_identifier=extraction_data.extraction_identifier,
@@ -77,5 +73,5 @@ class PerformanceSummary(BaseModel):
             languages=list(languages),
             training_samples_count=training_samples_count,
             testing_samples_count=testing_samples_count,
-            empty_pdfs_names=empty_pdf_names,
+            empty_pdf_count=empty_pdf_count,
         )

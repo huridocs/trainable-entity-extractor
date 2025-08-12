@@ -273,16 +273,13 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         for sample in extraction_data.samples:
             languages.update([sample.labeled_data.language_iso])
 
-        empty_pdfs = [x for x in extraction_data.samples if not x.pdf_data.contains_text()]
-        empty_file_names = [
-            x.pdf_data.pdf_features.file_name
-            for x in empty_pdfs
-            if x.pdf_data.pdf_features and x.pdf_data.pdf_features.file_name
+        empty_pdfs = [
+            x for x in extraction_data.samples if x.pdf_data and x.pdf_data.pdf_features and not x.pdf_data.contains_text()
         ]
         options_count = len(extraction_data.options)
         stats = f"\nNumber of options: {options_count}\n"
         stats += f"Number of samples: {len(extraction_data.samples)}\n"
-        stats += f"Empty PDFs: {len(empty_pdfs)} ({', '.join(empty_file_names[:4])})\n" if empty_pdfs else ""
+        stats += f"Empty PDFs: {len(empty_pdfs)}\n" if empty_pdfs else ""
         stats += f"Languages\n"
         stats += "\n".join([f"{key} {value}" for key, value in languages.most_common()])
         stats += f"\nOptions\n"
