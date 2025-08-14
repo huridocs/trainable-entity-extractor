@@ -1,5 +1,6 @@
 from collections import Counter
 from os.path import join
+from typing import Optional
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
@@ -142,6 +143,9 @@ class PdfToMultiOptionExtractor(ExtractorBase):
 
         method = self.get_best_method(extraction_data)
 
+        if not method:
+            return False, "Training is canceled"
+
         for method_to_remove in [x for x in self.METHODS if x.get_name() != method.get_name()]:
             method_to_remove.remove_method_data(extraction_data.extraction_identifier)
 
@@ -189,7 +193,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
 
         return method.get_samples_for_context(extraction_data), prediction
 
-    def get_best_method(self, multi_option_data: ExtractionData) -> PdfMultiOptionMethod:
+    def get_best_method(self, multi_option_data: ExtractionData) -> Optional[PdfMultiOptionMethod]:
         best_method_instance = self.METHODS[0]
         best_performance = 0
         training_set, test_set = ExtractorBase.get_train_test_sets(multi_option_data)
@@ -202,7 +206,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         for method in self.METHODS:
             if self.extraction_identifier.is_training_canceled():
                 send_logs(self.extraction_identifier, "Training canceled")
-                return best_method_instance
+                return None
 
             performance = self.get_method_performance(method, training_set, test_set)
             performance_summary.add_performance(method.get_name(), performance)

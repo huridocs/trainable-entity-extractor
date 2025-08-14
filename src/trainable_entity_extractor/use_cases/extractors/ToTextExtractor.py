@@ -72,6 +72,10 @@ class ToTextExtractor(ExtractorBase):
             return True, ""
 
         best_method_instance = self.get_best_method(extraction_data)
+
+        if not best_method_instance:
+            return False, "Training canceled"
+
         self.extraction_identifier.save_method_used(best_method_instance.get_name())
 
         if len(extraction_data.samples) < RETRAIN_SAMPLES_THRESHOLD:
@@ -104,7 +108,7 @@ class ToTextExtractor(ExtractorBase):
         for method in self.METHODS:
             if self.extraction_identifier.is_training_canceled():
                 send_logs(self.extraction_identifier, "Training canceled")
-                return best_method_instance
+                return None
 
             method_instance = method(self.extraction_identifier)
             send_logs(self.extraction_identifier, f"Checking {method_instance.get_name()}")

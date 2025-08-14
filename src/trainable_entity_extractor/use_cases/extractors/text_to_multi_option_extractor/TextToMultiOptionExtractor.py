@@ -133,13 +133,16 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
         send_logs(self.extraction_identifier, self.get_stats(extraction_data))
         best_method_instance = self.get_best_method(extraction_data)
+        if not best_method_instance:
+            return False, "Training canceled"
+
         best_method_instance.train(extraction_data)
 
         self.extraction_identifier.save_multi_value(extraction_data.multi_value)
         self.extraction_identifier.save_method_used(best_method_instance.get_name())
         return True, ""
 
-    def get_best_method(self, extraction_data: ExtractionData):
+    def get_best_method(self, extraction_data: ExtractionData) -> TextToMultiOptionMethod | None:
         best_performance = 0
         best_method_instance = self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
         performance_train_set, performance_test_set = ExtractorBase.get_train_test_sets(extraction_data)
@@ -153,7 +156,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         for method in self.METHODS:
             if self.extraction_identifier.is_training_canceled():
                 send_logs(self.extraction_identifier, "Training canceled")
-                return best_method_instance
+                return None
 
             method_instance = method(self.extraction_identifier, self.options, self.multi_value)
 

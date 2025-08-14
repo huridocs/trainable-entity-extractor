@@ -99,7 +99,7 @@ class ExtractionIdentifier(BaseModel):
     def is_training_canceled(self):
         is_cancel_file_path = Path(self.get_path()) / IS_TRAINING_CANCELED_FILE_NAME
         if is_cancel_file_path.exists():
-            shutil.rmtree(self.get_path(), ignore_errors=True)
+            os.remove(is_cancel_file_path)
             return True
 
         return False
