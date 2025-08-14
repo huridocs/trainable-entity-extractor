@@ -101,4 +101,6 @@ class Suggestion(BaseModel):
     def from_prediction_multi_option(extraction_identifier: ExtractionIdentifier, entity_name: str, values: list[Value]):
         suggestion = Suggestion.get_empty(extraction_identifier, entity_name)
         suggestion.values = values
+        if values:
+            suggestion.segment_text = values[0].segment_text
         return suggestion
