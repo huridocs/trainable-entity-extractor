@@ -9,6 +9,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
     GeminiRunMultiOption,
 )
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.Gemini.GeminiSample import GeminiSample
+from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 
 class TextGeminiMultiOption(TextToMultiOptionMethod):
@@ -22,11 +23,19 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
         options_labels = [option.label for option in self.options]
         gemini_samples = [GeminiSample.from_training_sample(sample, True) for sample in extraction_data.samples]
         gemini_runs = [
-            GeminiRunMultiOption(mistakes_samples=gemini_samples, options=options_labels, multi_value=self.multi_value)
+            GeminiRunMultiOption(
+                mistakes_samples=gemini_samples,
+                options=options_labels,
+                multi_value=self.multi_value,
+                from_class_name=self.method_name,
+            )
         ]
         sizes = [number_of_options, min(2 * number_of_options, 15), min(4 * number_of_options, 45)]
         gemini_runs += [
-            GeminiRunMultiOption(max_training_size=n, options=options_labels, multi_value=self.multi_value) for n in sizes
+            GeminiRunMultiOption(
+                max_training_size=n, options=options_labels, multi_value=self.multi_value, from_class_name=self.method_name
+            )
+            for n in sizes
         ]
 
         for previous_gemini_run, gemini_run in zip(gemini_runs, gemini_runs[1:]):
@@ -43,7 +52,9 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
         gemini_with_code[0].save_code(self.extraction_identifier)
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
-        gemini_run = GeminiRunMultiOption.from_extractor_identifier_multioption(self.extraction_identifier, self.options)
+        gemini_run = GeminiRunMultiOption.from_extractor_identifier_multioption(
+            self.extraction_identifier, self.options, self.multi_value, self.method_name
+        )
         gemini_samples = [GeminiSample.from_prediction_sample(sample, True) for sample in predictions_samples]
         predictions = gemini_run.run_code(gemini_samples)
         options_labels_to_option = {option.label: option for option in self.options}

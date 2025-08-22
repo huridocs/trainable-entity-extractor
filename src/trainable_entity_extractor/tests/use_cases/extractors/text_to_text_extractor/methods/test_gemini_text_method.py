@@ -15,7 +15,7 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
     @unittest.SkipTest
     def test_gemini(self):
         extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_test")
-        gemini_text_method = GeminiTextMethod(extraction_identifier)
+        gemini_text_method = GeminiTextMethod(extraction_identifier, self.__class__.__name__)
 
         extraction_data = ExtractionData(
             samples=[
@@ -38,7 +38,7 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
     @unittest.SkipTest
     def test_gemini_with_other_data(self):
         extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_other_data")
-        gemini_text_method = GeminiTextMethod(extraction_identifier)
+        gemini_text_method = GeminiTextMethod(extraction_identifier, self.__class__.__name__)
 
         extraction_data = ExtractionData(
             samples=[

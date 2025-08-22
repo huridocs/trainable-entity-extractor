@@ -13,8 +13,8 @@ class GeminiTextMethod(ToTextExtractorMethod):
             return
 
         gemini_samples = [GeminiSample.from_training_sample(sample) for sample in extraction_data.samples]
-        gemini_runs = [GeminiRun(mistakes_samples=gemini_samples)]
-        gemini_runs += [GeminiRun(max_training_size=n) for n in [5, 15, 45]]
+        gemini_runs = [GeminiRun(mistakes_samples=gemini_samples, from_class_name=self.from_class_name)]
+        gemini_runs += [GeminiRun(max_training_size=n, from_class_name=self.from_class_name) for n in [5, 15, 45]]
 
         for previous_gemini_run, gemini_run in zip(gemini_runs, gemini_runs[1:]):
             gemini_run.run_training(previous_gemini_run)
@@ -31,6 +31,6 @@ class GeminiTextMethod(ToTextExtractorMethod):
         gemini_with_code[0].save_code(self.extraction_identifier)
 
     def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
-        gemini_run = GeminiRun.from_extractor_identifier(self.extraction_identifier)
+        gemini_run = GeminiRun.from_extractor_identifier(self.extraction_identifier, self.from_class_name)
         gemini_samples = [GeminiSample.from_prediction_sample(sample) for sample in predictions_samples]
         return gemini_run.run_code(gemini_samples)

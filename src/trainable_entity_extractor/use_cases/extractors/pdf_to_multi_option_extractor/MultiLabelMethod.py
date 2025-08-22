@@ -18,10 +18,10 @@ class MultiLabelMethod(ABC):
     def __init__(
         self, extraction_identifier: ExtractionIdentifier, options: list[Option], multi_value: bool, method_name: str = ""
     ):
-        self.method_name = method_name
         self.extraction_identifier = extraction_identifier
         self.options = options
         self.multi_value = multi_value
+        self.method_name = method_name
 
     def get_name(self):
         return self.__class__.__name__

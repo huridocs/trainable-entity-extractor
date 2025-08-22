@@ -1,5 +1,6 @@
 import random
 from pathlib import Path
+import builtins
 
 from google import genai
 from pydantic import BaseModel
@@ -15,13 +16,14 @@ PROMPT_FILE_NAME = "prompt.txt"
 
 
 class GeminiRun(BaseModel):
-    gemini_model: str = "gemini-2.5-flash-preview-05-20"
+    gemini_model: str = "gemini-2.5-flash"
     max_training_size: int = 0
     prompt: str = ""
     code: str = ""
     training_samples: list[GeminiSample] = list()
     non_used_samples: list[GeminiSample] = list()
     mistakes_samples: list[GeminiSample] = list()
+    from_class_name: str = ""
 
     def _update_data_from_previous_run(self, previous_run: "GeminiRun" = None):
         if not previous_run:
@@ -98,7 +100,7 @@ class GeminiRun(BaseModel):
             "3. If no valid transformation or pattern is found, return an empty string.",
             "4. Generalize as much as possible based on the examples provided.",
             "5. Your code should be standalone and use only standard Python 3 libraries without external dependencies.",
-            "6. Put all the import statements inside the function definition.",
+            "6. Important: Put all the import statements inside the extract function.",
         ]
         return textwrap.indent("\n".join(reqs), indent_prefix)
 
@@ -136,6 +138,9 @@ class GeminiRun(BaseModel):
             f"**Output Format**\n{output_format}"
         )
 
+    def get_file_name(self, file_name: str) -> str:
+        return self.from_class_name + "__" + file_name
+
     def save_code(self, extraction_identifier: ExtractionIdentifier):
         if not self.code:
             return
@@ -144,25 +149,46 @@ class GeminiRun(BaseModel):
         code_to_save = code_to_save.replace("\\t", "\t")
         code_to_save = code_to_save.replace("\\r", "\r")
 
-        extraction_identifier.save_content(CODE_FILE_NAME, code_to_save, False)
-        extraction_identifier.save_content(PROMPT_FILE_NAME, self.prompt, False)
+        extraction_identifier.save_content(self.get_file_name(CODE_FILE_NAME), code_to_save, False)
+        extraction_identifier.save_content(self.get_file_name(PROMPT_FILE_NAME), self.prompt, False)
 
     def _load_extract_function(self):
+        import re
+        import json
+        import math
+        import datetime
+        import collections
+        import itertools
+        import string
+        import rapidfuzz
+
         local_namespace = {}
 
-        # Apply the same replacements as in save_code
         code_to_execute = self.code.replace("\\n", "\n")
         code_to_execute = code_to_execute.replace("\\t", "\t")
         code_to_execute = code_to_execute.replace("\\r", "\r")
-        # Add other replacements if needed, consistent with save_code
 
         try:
-            exec(code_to_execute, {}, local_namespace)
+            global_namespace = {
+                "__builtins__": builtins,
+                "__name__": "__main__",
+                "re": re,
+                "json": json,
+                "math": math,
+                "datetime": datetime,
+                "collections": collections,
+                "itertools": itertools,
+                "string": string,
+                "rapidfuzz": rapidfuzz,
+            }
+
+            exec(code_to_execute, global_namespace, local_namespace)
             extract_func = local_namespace.get("extract")
             if callable(extract_func):
                 return extract_func
             return None
-        except Exception:
+        except Exception as e:
+            print(f"Error loading extract function: {e}")
             return None
 
     def _process_samples_with_function(self, extract_func: callable, samples: list[GeminiSample]) -> list[str]:
@@ -188,10 +214,10 @@ class GeminiRun(BaseModel):
         return self._process_samples_with_function(extract_func, samples)
 
     @staticmethod
-    def from_extractor_identifier(extraction_identifier: ExtractionIdentifier) -> "GeminiRun":
-        path = Path(extraction_identifier.get_path()) / CODE_FILE_NAME
+    def from_extractor_identifier(extraction_identifier: ExtractionIdentifier, from_class_name: str) -> "GeminiRun":
+        path = Path(extraction_identifier.get_path()) / (from_class_name + "__" + CODE_FILE_NAME)
         code = path.read_text(encoding="utf-8") if path.exists() else ""
-        return GeminiRun(code=code)
+        return GeminiRun(code=code, from_class_name=from_class_name)
 
     @staticmethod
     def _get_empty_results(samples: list[GeminiSample]) -> list[str]:

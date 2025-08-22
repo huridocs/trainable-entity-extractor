@@ -23,8 +23,8 @@ class PdfMultiOptionMethod:
         filter_segments_method: Type[FilterSegmentsMethod] = None,
         multi_label_method: Type[MultiLabelMethod] = None,
     ):
-        self.multi_label_method = multi_label_method
         self.filter_segments_method = filter_segments_method
+        self.multi_label_method = multi_label_method
         self.extraction_identifier = ExtractionIdentifier(run_name="not set", extraction_name="not set")
         self.options: list[Option] = list()
         self.multi_value = False

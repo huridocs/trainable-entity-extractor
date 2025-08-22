@@ -38,7 +38,7 @@ class TestTextGeminiMultiOption(TestCase):
         labeled_data = LabeledData(source_text=text, values=[options[4]])
         samples += [TrainingSample(labeled_data=labeled_data)]
 
-        text_to_multioption = TextGeminiMultiOption(extraction_identifier, options, True)
+        text_to_multioption = TextGeminiMultiOption(extraction_identifier, options, True, __name__)
         text_to_multioption.train(ExtractionData(samples=samples * 10, options=options))
 
         text = "foo var Democratic Republic of the Congo Democratic People's Republic of Korea"
@@ -69,7 +69,7 @@ class TestTextGeminiMultiOption(TestCase):
         text3 = "orange"
         samples.append(TrainingSample(labeled_data=LabeledData(source_text=text3, values=[options[3]])))
 
-        text_to_multioption = TextGeminiMultiOption(extraction_identifier, options, True)
+        text_to_multioption = TextGeminiMultiOption(extraction_identifier, options, True, __name__)
         text_to_multioption.train(ExtractionData(samples=samples * 10, options=options))
 
         test_text = "I ate apple, cherry, and orange"

@@ -11,7 +11,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_multi_option_extrac
 class PDFGeminiMultiLabelMethod(MultiLabelMethod):
     def __init__(self, extraction_identifier, options, multi_value, method_name=""):
         super().__init__(extraction_identifier, options, multi_value, method_name)
-        self._text_gemini = TextGeminiMultiOption(extraction_identifier, options, multi_value)
+        self._text_gemini = TextGeminiMultiOption(extraction_identifier, options, multi_value, method_name)
 
     def can_be_used(self, extraction_data):
         return self._text_gemini.can_be_used(extraction_data)

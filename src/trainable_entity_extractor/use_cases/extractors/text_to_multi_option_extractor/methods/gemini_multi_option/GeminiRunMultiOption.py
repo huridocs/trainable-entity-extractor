@@ -7,6 +7,7 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
     GeminiRun,
     CODE_FILE_NAME,
 )
+from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 
 class GeminiRunMultiOption(GeminiRun):
@@ -43,7 +44,7 @@ class GeminiRunMultiOption(GeminiRun):
             "3. If no options apply, return an empty list.",
             "4. Only return your function definition, wrapped in a Python code block.",
             "5. Generalize as much as possible based on the examples provided.",
-            "6. Put all the import statements inside the function definition.",
+            "6. Important: Put all the import statements inside the extract function.",
         ]
         if not self.multi_value:
             reqs.append("7. Pick only one option at most")
@@ -80,17 +81,21 @@ class GeminiRunMultiOption(GeminiRun):
             try:
                 result = extract_func(sample.input_text)
                 outputs.append(result)
-            except Exception:
+            except Exception as e:
+                extraction_identifier = ExtractionIdentifier(extraction_name="debug")
+                send_logs(extraction_identifier, f"Error processing sample with input '{sample.input_text}': {e}")
                 outputs.append([])
         return outputs
 
     @staticmethod
     def from_extractor_identifier_multioption(
-        extraction_identifier: ExtractionIdentifier, options: list[Option], multi_value: bool = True
+        extraction_identifier: ExtractionIdentifier, options: list[Option], multi_value: bool = True, method_name: str = ""
     ) -> "GeminiRunMultiOption":
-        path = Path(extraction_identifier.get_path()) / CODE_FILE_NAME
+        path = Path(extraction_identifier.get_path()) / (method_name + "__" + CODE_FILE_NAME)
         code = path.read_text(encoding="utf-8") if path.exists() else ""
-        return GeminiRunMultiOption(code=code, options=[option.label for option in options], multi_value=multi_value)
+        return GeminiRunMultiOption(
+            code=code, options=[option.label for option in options], multi_value=multi_value, from_class_name=method_name
+        )
 
     @staticmethod
     def _get_empty_results(samples: list) -> list[list[str]]:
