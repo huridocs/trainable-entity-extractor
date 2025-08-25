@@ -17,7 +17,7 @@ class TestPDFGeminiMultiLabelMethod(TestCase):
     TENANT = "unit_test"
     extraction_id = "pdf_gemini_multi_label_method"
 
-    @unittest.skip
+    @unittest.SkipTest
     def test_train_and_predict(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
         options = [
