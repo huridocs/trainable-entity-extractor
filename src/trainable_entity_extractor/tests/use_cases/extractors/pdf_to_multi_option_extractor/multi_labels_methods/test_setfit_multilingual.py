@@ -15,6 +15,7 @@ from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.multi_labels_methods.SetFitMultilingualMethod import (
     SetFitMultilingualMethod,
 )
+from trainable_entity_extractor.domain.Value import Value
 
 
 class TestSetFitMultilingualMethod(TestCase):
@@ -72,13 +73,13 @@ class TestSetFitMultilingualMethod(TestCase):
         predictions = setfit_multilingual_method.predict(prediction_data)
 
         self.assertEqual(3, len(predictions))
-        self.assertIn(Option(id="1", label="1"), predictions[0])
-        self.assertNotIn(Option(id="5", label="5"), predictions[0])
+        self.assertIn(Value(id="1", label="1"), predictions[0])
+        self.assertNotIn(Value(id="5", label="5"), predictions[0])
 
-        self.assertIn(Option(id="2", label="2"), predictions[1])
-        self.assertIn(Option(id="3", label="3"), predictions[1])
-        self.assertNotIn(Option(id="4", label="4"), predictions[1])
+        self.assertIn(Value(id="2", label="2"), predictions[1])
+        self.assertIn(Value(id="3", label="3"), predictions[1])
+        self.assertNotIn(Value(id="4", label="4"), predictions[1])
 
-        self.assertIn(Option(id="4", label="4"), predictions[2])
-        self.assertIn(Option(id="1", label="1"), predictions[2])
-        self.assertNotIn(Option(id="3", label="3"), predictions[2])
+        self.assertIn(Value(id="4", label="4"), predictions[2])
+        self.assertIn(Value(id="1", label="1"), predictions[2])
+        self.assertNotIn(Value(id="3", label="3"), predictions[2])
