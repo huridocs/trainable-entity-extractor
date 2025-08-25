@@ -8,6 +8,9 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
 
 class GeminiTextMethod(ToTextExtractorMethod):
 
+    def should_be_retrained_with_more_data(self):
+        return False
+
     def train(self, extraction_data: ExtractionData):
         if not GEMINI_API_KEY:
             return

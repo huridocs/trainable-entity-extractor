@@ -103,3 +103,6 @@ class ToTextExtractorMethod:
 
     def remove_method_data(self):
         shutil.rmtree(self.get_path(), ignore_errors=True)
+
+    def should_be_retrained_with_more_data(self):
+        return True

@@ -149,7 +149,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         for method_to_remove in [x for x in self.METHODS if x.get_name() != method.get_name()]:
             method_to_remove.remove_method_data(extraction_data.extraction_identifier)
 
-        if len(extraction_data.samples) < RETRAIN_SAMPLES_THRESHOLD:
+        if len(extraction_data.samples) < RETRAIN_SAMPLES_THRESHOLD and method.should_be_retrained_with_more_data():
             method.train(extraction_data)
 
         self.extraction_identifier.save_multi_value(extraction_data.multi_value)

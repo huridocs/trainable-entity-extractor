@@ -115,5 +115,10 @@ class PdfMultiOptionMethod:
 
         return True
 
+    def should_be_retrained_with_more_data(self):
+        if self.multi_label_method:
+            return self.multi_label_method.should_be_retrained_with_more_data()
+        return True
+
     def remove_method_data(self, extraction_identifier: ExtractionIdentifier):
         shutil.rmtree(join(extraction_identifier.get_path(), self.get_name()), ignore_errors=True)

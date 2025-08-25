@@ -16,6 +16,10 @@ class PDFGeminiMultiLabelMethod(MultiLabelMethod):
     def can_be_used(self, extraction_data):
         return self._text_gemini.can_be_used(extraction_data)
 
+    @staticmethod
+    def should_be_retrained_with_more_data():
+        return False
+
     def train(self, multi_option_data: ExtractionData):
         training_samples: list[TrainingSample] = list()
         for sample in multi_option_data.samples:

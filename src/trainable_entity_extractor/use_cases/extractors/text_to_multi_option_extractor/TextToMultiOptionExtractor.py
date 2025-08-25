@@ -136,7 +136,8 @@ class TextToMultiOptionExtractor(ExtractorBase):
         if not best_method_instance:
             return False, "Training canceled"
 
-        best_method_instance.train(extraction_data)
+        if best_method_instance.should_be_retrained_with_more_data():
+            best_method_instance.train(extraction_data)
 
         self.extraction_identifier.save_multi_value(extraction_data.multi_value)
         self.extraction_identifier.save_method_used(best_method_instance.get_name())

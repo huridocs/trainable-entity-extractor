@@ -18,6 +18,9 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
             return True
         return False
 
+    def should_be_retrained_with_more_data(self):
+        return False
+
     def train(self, extraction_data: ExtractionData):
         number_of_options = len(self.options)
         options_labels = [option.label for option in self.options]

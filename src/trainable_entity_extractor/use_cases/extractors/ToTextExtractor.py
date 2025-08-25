@@ -78,7 +78,10 @@ class ToTextExtractor(ExtractorBase):
 
         self.extraction_identifier.save_method_used(best_method_instance.get_name())
 
-        if len(extraction_data.samples) < RETRAIN_SAMPLES_THRESHOLD:
+        if (
+            len(extraction_data.samples) < RETRAIN_SAMPLES_THRESHOLD
+            and best_method_instance.should_be_retrained_with_more_data()
+        ):
             best_method_instance.train(extraction_data)
 
         return True, ""

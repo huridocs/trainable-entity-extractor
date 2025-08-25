@@ -111,3 +111,6 @@ class TextToMultiOptionMethod:
     @abstractmethod
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         pass
+
+    def should_be_retrained_with_more_data(self):
+        return True

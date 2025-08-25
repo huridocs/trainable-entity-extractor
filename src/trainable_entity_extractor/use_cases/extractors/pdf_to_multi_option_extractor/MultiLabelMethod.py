@@ -93,3 +93,7 @@ class MultiLabelMethod(ABC):
     @staticmethod
     def can_be_used(extraction_data: ExtractionData) -> bool:
         pass
+
+    @staticmethod
+    def should_be_retrained_with_more_data():
+        return True
