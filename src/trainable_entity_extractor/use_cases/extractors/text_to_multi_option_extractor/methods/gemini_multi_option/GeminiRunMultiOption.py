@@ -91,7 +91,7 @@ class GeminiRunMultiOption(GeminiRun):
     def from_extractor_identifier_multioption(
         extraction_identifier: ExtractionIdentifier, options: list[Option], multi_value: bool = True, method_name: str = ""
     ) -> "GeminiRunMultiOption":
-        path = Path(extraction_identifier.get_path()) / (method_name + "__" + CODE_FILE_NAME)
+        path = Path(extraction_identifier.get_path()) / method_name / CODE_FILE_NAME
         code = path.read_text(encoding="utf-8") if path.exists() else ""
         return GeminiRunMultiOption(
             code=code, options=[option.label for option in options], multi_value=multi_value, from_class_name=method_name

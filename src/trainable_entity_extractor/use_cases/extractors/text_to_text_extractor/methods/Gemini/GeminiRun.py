@@ -139,7 +139,7 @@ class GeminiRun(BaseModel):
         )
 
     def get_file_name(self, file_name: str) -> str:
-        return self.from_class_name + "__" + file_name
+        return str(Path(self.from_class_name) / file_name)
 
     def save_code(self, extraction_identifier: ExtractionIdentifier):
         if not self.code:
@@ -215,7 +215,7 @@ class GeminiRun(BaseModel):
 
     @staticmethod
     def from_extractor_identifier(extraction_identifier: ExtractionIdentifier, from_class_name: str) -> "GeminiRun":
-        path = Path(extraction_identifier.get_path()) / (from_class_name + "__" + CODE_FILE_NAME)
+        path = Path(extraction_identifier.get_path()) / from_class_name / CODE_FILE_NAME
         code = path.read_text(encoding="utf-8") if path.exists() else ""
         return GeminiRun(code=code, from_class_name=from_class_name)
 

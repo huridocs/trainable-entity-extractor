@@ -35,7 +35,6 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
         self.assertEqual(len(predictions), 1)
         self.assertEqual(predictions[0], "This is other output")
 
-    @unittest.SkipTest
     def test_gemini_with_other_data(self):
         extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_other_data")
         gemini_text_method = GeminiTextMethod(extraction_identifier, self.__class__.__name__)
