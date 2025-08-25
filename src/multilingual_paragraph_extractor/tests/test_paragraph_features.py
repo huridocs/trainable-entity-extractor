@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest import TestCase
 
 from pdf_token_type_labels.TokenType import TokenType
@@ -60,7 +59,7 @@ class TestParagraphFeatures(TestCase):
         self.assertEqual([".", ":", ":"], paragraph.non_alphanumeric_characters)
         self.assertEqual("Distr.:", paragraph.first_word)
 
-        self.assertEqual(10, paragraph.font.font_size)
+        self.assertEqual(11, paragraph.font.font_size)
         self.assertEqual(False, paragraph.font.bold)
         self.assertEqual(False, paragraph.font.italics)
 
@@ -98,8 +97,8 @@ class TestParagraphFeatures(TestCase):
         self.assertEqual(["/"], paragraph.non_alphanumeric_characters)
         self.assertEqual("2/2", paragraph.first_word)
 
-        self.assertEqual(9, paragraph.font.font_size)
-        self.assertEqual(False, paragraph.font.bold)
+        self.assertEqual(8, paragraph.font.font_size)
+        self.assertEqual(True, paragraph.font.bold)
         self.assertEqual(False, paragraph.font.italics)
 
     def test_super_index(self):

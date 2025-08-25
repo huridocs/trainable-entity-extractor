@@ -4,6 +4,7 @@ from pdf_features.PdfFont import PdfFont
 from pdf_features.PdfToken import PdfToken
 from pdf_features.Rectangle import Rectangle
 from pdf_token_type_labels.TokenType import TokenType
+from pdf_features.PdfTokenStyle import PdfTokenStyle
 
 from trainable_entity_extractor.domain.PdfData import PdfData
 
@@ -13,6 +14,7 @@ class TestPDFData(TestCase):
     def create_token(content: str, font_size: int, left: int = 0):
         font_12 = PdfFont(font_id="1", font_size=font_size, bold=False, italics=False, color="black")
         bounding_box = Rectangle.from_width_height(left, 0, 0, 0)
+        token_style = PdfTokenStyle(font=font_12)
         token = PdfToken(
             page_number=1,
             id="tag",
@@ -21,6 +23,7 @@ class TestPDFData(TestCase):
             reading_order_no=0,
             bounding_box=bounding_box,
             token_type=TokenType.TEXT,
+            token_style=token_style,
         )
         return token
 
