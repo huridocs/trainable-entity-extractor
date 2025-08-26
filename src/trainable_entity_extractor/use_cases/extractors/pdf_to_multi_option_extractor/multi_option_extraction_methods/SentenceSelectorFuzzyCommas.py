@@ -65,7 +65,8 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
 
         return sentences_across_pages
 
-    def get_segments_merged(self, segments):
+    @staticmethod
+    def get_segments_merged(segments):
         segments = [segment for segment in segments if segment.text_content.strip()]
         if not segments:
             return list()

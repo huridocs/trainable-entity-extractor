@@ -134,29 +134,24 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
         text_type_segments_set = set(text_type_segments)
 
         fixed_segments = []
-        merged_segment = None
+        removed_segments = set()
 
-        for i, segment in enumerate(pdf_data_segments):
-            if segment == merged_segment:
-                merged_segment = None
+        for segment in pdf_data_segments:
+            if segment in removed_segments:
                 continue
 
-            new_segment, merged_segment = self._fix_segment(
-                segment, text_type_segments, text_type_segments_set, i, pdf_data_segments
-            )
+            new_segment, merged_segment = self._fix_segment(segment, text_type_segments, text_type_segments_set)
             fixed_segments.append(new_segment)
+            if merged_segment is not None:
+                removed_segments.add(merged_segment)
 
         return fixed_segments
 
+    @staticmethod
     def _fix_segment(
-        self,
-        segment: PdfDataSegment,
-        text_type_segments: list[PdfDataSegment],
-        text_type_segments_set: set[PdfDataSegment],
-        index: int,
-        pdf_data_segments: list[PdfDataSegment],
+        segment: PdfDataSegment, text_type_segments: list[PdfDataSegment], text_type_segments_set: set[PdfDataSegment]
     ):
-        if segment in text_type_segments_set and segment.text_content and segment.text_content[-1] == ",":
+        if segment in text_type_segments_set and segment.text_content and segment.text_content[-1] != ".":
             segment_index = text_type_segments.index(segment)
             if (
                 segment_index + 1 < len(text_type_segments)
