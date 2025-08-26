@@ -25,6 +25,9 @@ from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.meth
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.NerLastAppearanceMethod import (
     NerLastAppearanceMethod,
 )
+from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.NoSpacesRegexMethod import (
+    NoSpacesRegexMethod,
+)
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.RegexMethod import RegexMethod
 from trainable_entity_extractor.use_cases.extractors.text_to_text_extractor.methods.RegexSubtractionMethod import (
     RegexSubtractionMethod,
@@ -39,6 +42,7 @@ class TextToTextExtractor(ToTextExtractor):
         SameInputOutputMethod,
         InputWithoutSpaces,
         RegexMethod,
+        NoSpacesRegexMethod,
         RegexSubtractionMethod,
         DateParserWithBreaksMethod,
         DateParserMethod,
