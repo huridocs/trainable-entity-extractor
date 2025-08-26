@@ -109,5 +109,31 @@ class ExtractionIdentifier(BaseModel):
         is_cancel_file_path.parent.mkdir(parents=True, exist_ok=True)
         is_cancel_file_path.write_text("true")
 
+    def clean_extractor_folder(self):
+        if not os.path.exists(self.get_path()):
+            return
+
+        method_used = self.get_method_used()
+
+        for name in os.listdir(self.get_path()):
+            if name.strip().lower() == method_used.strip().lower():
+                continue
+
+            path = Path(self.get_path(), name)
+
+            if path.is_file():
+                continue
+
+            for key_word_to_delete in ["setfit", "t5", "bert"]:
+                if key_word_to_delete in name.lower():
+                    shutil.rmtree(path, ignore_errors=True)
+                    break
+
     def __str__(self):
         return f"{self.run_name} / {self.extraction_name}"
+
+
+if __name__ == "__main__":
+    e = ExtractionIdentifier(run_name="unit_test", extraction_name="test")
+    # e.save_method_used("MT5TrueCaseEnglishSpanishMethod")
+    e.clean_extractor_folder()

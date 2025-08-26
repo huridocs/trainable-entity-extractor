@@ -1,3 +1,4 @@
+import shutil
 from time import time
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -50,10 +51,11 @@ class TrainableEntityExtractor:
             send_logs(self.extraction_identifier, f"Creating models with {len(extraction_data.samples)} samples")
             self.extraction_identifier.save_extractor_used(extractor_instance.get_name())
             success, message = extractor_instance.create_model(extraction_data)
+            self.extraction_identifier.clean_extractor_folder()
             return success, message
 
+        shutil.rmtree(self.extraction_identifier.get_path(), ignore_errors=True)
         send_logs(self.extraction_identifier, "Error creating extractor", LogSeverity.error)
-
         return False, "Error creating extractor"
 
     def predict(self, prediction_samples: list[PredictionSample]) -> list[Suggestion]:
