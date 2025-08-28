@@ -13,7 +13,7 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.End750 import (
     End750,
 )
-
+from html import escape
 
 class Suggestion(BaseModel):
     tenant: str
@@ -66,6 +66,10 @@ class Suggestion(BaseModel):
             for x in values
         ]
 
+    @staticmethod
+    def _build_segment_html(context_texts: list[str]) -> str:
+        return "".join(f"<p>{escape(text)}</p>" for text in context_texts)
+
     def add_segments(self, pdf_data: PdfData, context_from_the_end: bool = False):
         context_segments: list[PdfDataSegment] = [x for x in pdf_data.pdf_data_segments if x.ml_label]
         valid_types = [TokenType.LIST_ITEM, TokenType.TITLE, TokenType.TEXT, TokenType.SECTION_HEADER, TokenType.CAPTION]
@@ -83,7 +87,7 @@ class Suggestion(BaseModel):
         self.page_number = context_segments[0].page_number
         pages = pdf_data.pdf_features.pages if pdf_data.pdf_features else []
         self.segments_boxes = [SegmentBox.from_pdf_segment(pdf_segment, pages) for pdf_segment in context_segments]
-        self.segment_text = " ________ ".join([pdf_segment.text_content for pdf_segment in context_segments])
+        self.segment_text = self._build_segment_html([pdf_segment.text_content for pdf_segment in context_segments])
 
     def scale_up(self):
         for segment_box in self.segments_boxes:
