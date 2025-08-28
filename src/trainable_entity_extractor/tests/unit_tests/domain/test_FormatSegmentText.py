@@ -137,9 +137,34 @@ class TestFormatSegmentText(TestCase):
     def test_empty_strings_in_list(self):
         formatter = FormatSegmentText(["First text", "", "Third text"], "text")
         result = formatter.format()
-        self.assertIn("<b>text</b>", result)
+        self.assertEqual("<p>First <b>text</b></p><p>Third <b>text</b></p>", result)
+
+    def test_formating_dates(self):
+        formatter = FormatSegmentText(["United Nations6", "General 6 October 2010"], "2010/10/06")
+        result = formatter.format()
+        self.assertEqual("<p>United Nations6</p><p>General <b>6</b> <b>October</b> <b>2010</b></p>", result)
+
+    def test_formating_other_date(self):
+        formatter = FormatSegmentText(["United Nations1", "General 1 September 2005"], "2005/09/01")
+        result = formatter.format()
+        self.assertEqual("<p>United Nations1</p><p>General <b>1</b> <b>September</b> <b>2005</b></p>", result)
 
     def test_list_with_only_empty_strings(self):
         formatter = FormatSegmentText(["", "", ""], "item")
         result = formatter.format()
         self.assertEqual(result, "")
+
+    def test_shorter_segment_text(self):
+        texts = [
+            "1",
+            "2",
+            "3",
+            "Text appearance",
+            "4",
+            "5",
+            "6",
+            "7",
+        ]
+        formatter = FormatSegmentText(texts, "text")
+        result = formatter.format()
+        self.assertEqual("<p>3</p><p><b>Text</b> appearance</p><p>4</p>", result)
