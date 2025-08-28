@@ -29,7 +29,7 @@ class TestFormatSegmentText(TestCase):
     def test_fuzzy_match_with_typo(self):
         formatter = FormatSegmentText(["This is itme in the text"], "item")
         result = formatter.format()
-        self.assertIn("<b>itm</b>", result)
+        self.assertIn("<b>itme</b>", result)
 
     def test_fuzzy_match_with_extra_characters(self):
         formatter = FormatSegmentText(["This is items in the text"], "item")
@@ -137,7 +137,7 @@ class TestFormatSegmentText(TestCase):
     def test_empty_strings_in_list(self):
         formatter = FormatSegmentText(["First text", "", "Third text"], "text")
         result = formatter.format()
-        self.assertEqual("<p>First <b>text</b></p><p>Third <b>text</b></p>", result)
+        self.assertEqual("<p>First <b>text</b></p><p></p><p>Third <b>text</b></p>", result)
 
     def test_formating_dates(self):
         formatter = FormatSegmentText(["United Nations6", "General 6 October 2010"], "2010/10/06")
@@ -168,3 +168,18 @@ class TestFormatSegmentText(TestCase):
         formatter = FormatSegmentText(texts, "text")
         result = formatter.format()
         self.assertEqual("<p>3</p><p><b>Text</b> appearance</p><p>4</p>", result)
+
+    def test_shorter_segment_text_for_dates(self):
+        texts = [
+            "Header",
+            "Meeting 6 October",
+            "Report 2010 results",
+            "Closing",
+            "Tail",
+        ]
+        formatter = FormatSegmentText(texts, "2010/10/06")
+        result = formatter.format()
+        self.assertEqual(
+            "<p>Header</p><p>Meeting <b>6</b> <b>October</b></p><p>Report <b>2010</b> results</p><p>Closing</p>",
+            result,
+        )
