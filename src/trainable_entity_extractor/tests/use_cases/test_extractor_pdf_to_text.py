@@ -174,7 +174,7 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual("unit_test", suggestion.tenant)
         self.assertEqual(extraction_id, suggestion.id)
         self.assertEqual("test.xml", suggestion.xml_file_name)
-        self.assertTrue("15 February 2021" in suggestion.segment_text)
+        self.assertTrue("<b>15</b> February 2021" in suggestion.segment_text)
         self.assertEqual("15", suggestion.text)
 
     def test_get_suggestions_blank_document(self):

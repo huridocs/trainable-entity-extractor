@@ -15,6 +15,12 @@ class FormatSegmentText:
         if not self.texts or not any(self.texts):
             return ""
 
+        if "<b>" in self.combined_text and "</b>" in self.combined_text:
+            return "".join(self.texts)
+
+        if "<p>" in self.combined_text and "</p>" in self.combined_text:
+            return "".join(self.texts)
+
         if not self.label:
             formatted_texts = [f"<p>{escape(text)}</p>" for text in self.texts if text]
             return "".join(formatted_texts)
