@@ -115,7 +115,7 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
 
     def get_marked_segments(self, training_sample: TrainingSample) -> list[PdfDataSegment]:
         cleaned_values = self.get_cleaned_options(training_sample.labeled_data.values)
-        appearances_threshold = math.ceil(len(cleaned_values) * 0.68)
+        appearances_threshold = 1
 
         if not appearances_threshold:
             return training_sample.pdf_data.pdf_data_segments

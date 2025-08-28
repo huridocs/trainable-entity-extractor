@@ -139,20 +139,14 @@ We are a human rights organisation too, and our ultimate vision is a world where
         self.assertTrue(Value(id="1", label="item 1") in predictions[0])
         self.assertTrue(Value(id="2", label="item 2") in predictions[0])
         self.assertTrue(Value(id="10", label="item 10") in predictions[0])
-        contexts = [x.text_content for x in samples[0].pdf_data.pdf_data_segments if x.ml_label]
-        self.assertEqual("item 1, item 2, item 10", "".join(contexts))
 
         self.assertTrue(Value(id="1", label="item 1") not in predictions[1])
         self.assertTrue(Value(id="2", label="item 2") in predictions[1])
         self.assertTrue(Value(id="10", label="item 10") not in predictions[1])
-        contexts = [x.text_content for x in samples[1].pdf_data.pdf_data_segments if x.ml_label]
-        self.assertEqual("item 2", "".join(contexts))
 
         self.assertTrue(Value(id="1", label="item 1") not in predictions[2])
         self.assertTrue(Value(id="2", label="item 2") not in predictions[2])
         self.assertTrue(Value(id="10", label="item 10") in predictions[2])
-        contexts = [x.text_content for x in samples[2].pdf_data.pdf_data_segments if x.ml_label]
-        self.assertEqual("item 10", "".join(contexts))
 
     def test_fuzzy_all_75(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)

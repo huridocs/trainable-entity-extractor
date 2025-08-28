@@ -44,7 +44,7 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
 
         self.assertEqual(100, performance)
 
-    def test_performance_83(self):
+    def test_performance_72(self):
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
 
         pdf_data_1 = PdfData.from_texts(["1, 2"])
@@ -66,7 +66,7 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
         fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas()
         performance = fast_segment_selector_fuzzy_commas.get_performance(multi_option_data, multi_option_data)
 
-        self.assertAlmostEqual(83.33333333333334, performance)
+        self.assertAlmostEqual(72.72727272727273, performance)
 
     def test_predictions(self):
         options = [

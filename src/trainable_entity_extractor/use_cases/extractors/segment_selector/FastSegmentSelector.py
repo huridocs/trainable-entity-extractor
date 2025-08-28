@@ -120,7 +120,14 @@ class FastSegmentSelector(SegmentSelectorBase):
         train_data = lgb.Dataset(x, y)
         num_round = 50
 
-        light_gbm_model = lgb.train({}, train_data, num_round)
+        params = {
+            "min_data_in_leaf": 1,  # Minimum samples in a leaf
+            "min_data_in_bin": 1,  # Minimum samples in a bin
+            "min_child_samples": 1,  # Minimum samples in child node
+            "verbosity": -1,  # Suppress warnings
+        }
+
+        light_gbm_model = lgb.train(params, train_data, num_round)
         light_gbm_model.save_model(self.model_path)
 
     def get_x_y(self, segments):
