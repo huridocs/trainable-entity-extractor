@@ -26,10 +26,10 @@ class FormatSegmentText:
         return self._build_output_from_indices(context_indices, match_indices)
 
     def _has_existing_html(self) -> bool:
-        return any("<p>" in text or "<b>" in text for text in self.texts)
+        return any("<p>" in text or "<b>" in text or 'class="ix_' in text or "<span" in text for text in self.texts)
 
     def _format_all_unlabeled(self) -> str:
-        return "".join(f"<p>{escape(text)}</p>" for text in self.texts)
+        return "".join(f'<p class="ix_paragraph">{escape(text)}</p>' for text in self.texts)
 
     def _get_match_indices(self) -> List[int]:
         if self._is_date_format():
@@ -79,10 +79,20 @@ class FormatSegmentText:
     def _build_output_from_indices(self, context_indices: List[int], match_indices: List[int]) -> str:
         output: List[str] = []
         is_date = self._is_date_format()
+        match_set = set(match_indices)
+
         for i in context_indices:
             text = self.texts[i]
-            highlighted = self._highlight_text(text, is_date) if i in match_indices else escape(text)
-            output.append(f"<p>{highlighted}</p>")
+
+            # Determine the paragraph class based on whether it has matches or is adjacent
+            if i in match_set:
+                paragraph_class = "ix_matching_paragraph"
+                highlighted = self._highlight_text(text, is_date)
+            else:
+                paragraph_class = "ix_adjacent_paragraph"
+                highlighted = escape(text)
+
+            output.append(f'<p class="{paragraph_class}">{highlighted}</p>')
         return "".join(output)
 
     def _highlight_text(self, text: str, is_date: bool) -> str:
@@ -108,7 +118,7 @@ class FormatSegmentText:
         for match in matches:
             if match.start() > last:
                 parts.append(escape(text[last : match.start()]))
-            parts.append(f"<b>{escape(match.group(0))}</b>")
+            parts.append(f'<span class="ix_match">{escape(match.group(0))}</span>')
             last = match.end()
         parts.append(escape(text[last:]))
         return "".join(parts)
@@ -205,4 +215,4 @@ class FormatSegmentText:
     @staticmethod
     def _apply_fuzzy_highlight(text: str, fuzzy_match: Tuple[int, int, str]) -> str:
         start, end, substring = fuzzy_match
-        return f"{escape(text[:start])}<b>{escape(substring)}</b>{escape(text[end:])}"
+        return f'{escape(text[:start])}<span class="ix_match">{escape(substring)}</span>{escape(text[end:])}'
