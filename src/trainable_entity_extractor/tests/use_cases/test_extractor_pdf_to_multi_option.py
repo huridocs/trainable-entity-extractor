@@ -43,5 +43,9 @@ class TestExtractorPdfToMultiOption(TestCase):
         self.assertEqual(1, len(suggestions))
         self.assertEqual(extraction_id, suggestions[0].id)
         self.assertEqual("test.xml", suggestions[0].xml_file_name)
-        segment_text = '<p class="ix_paragraph">A</p><p class="ix_paragraph">United Nations</p><p class="ix_paragraph">/INF/76/1</p><p class="ix_paragraph">General Assembly</p><p class="ix_paragraph">Distr.: General</p><p class="ix_paragraph"><span class="ix_match">15</span> February 2021</p><p class="ix_paragraph">Original: English</p><p class="ix_paragraph">Seventy-sixth session</p><p class="ix_paragraph">Opening dates of forthcoming regular sessions of the</p><p class="ix_paragraph">General Assembly and of the general debate</p><p class="ix_paragraph">Note by the Secretariat</p><p class="ix_paragraph">1.</p><p class="ix_paragraph">In paragraph 1 of its resolution</p><p class="ix_paragraph">57/301</p><p class="ix_paragraph">, the General Assembly decided to amend</p><p class="ix_paragraph">rule 1 of its rules of procedure to read: “The General Assembly shall meet every year</p><p class="ix_paragraph">in regular session commencing on the Tuesday of the third week in September,</p><p class="ix_paragraph">counting from the first week that contains at least one working day.” In paragraph 2</p><p class="ix_paragraph">of the resolution, the Assembly also decided that the general debate in the Assembly</p>'
+        segment_text = (
+            '<p class="ix_adjacent_paragraph">Distr.: General</p>'
+            '<p class="ix_matching_paragraph"><span class="ix_match">15</span> February 2021</p>'
+            '<p class="ix_adjacent_paragraph">Original: English</p>'
+        )
         self.assertEqual([Value(id="id15", label="15", segment_text=segment_text)], suggestions[0].values)

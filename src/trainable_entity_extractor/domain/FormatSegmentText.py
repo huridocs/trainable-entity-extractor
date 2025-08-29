@@ -3,6 +3,7 @@ from re import IGNORECASE, compile, Match
 from re import escape as re_escape
 from rapidfuzz import fuzz
 from typing import Optional, List, Tuple
+import re
 
 
 class FormatSegmentText:
@@ -10,11 +11,9 @@ class FormatSegmentText:
         self.texts = texts
         self.label = (label or "").strip()
 
-    def format(self) -> str:
+    def get_text(self) -> str:
         if not self.texts or not any(self.texts):
             return ""
-        if self._has_existing_html():
-            return "".join(self.texts)
         if not self.label:
             return self._format_all_unlabeled()
 
@@ -24,9 +23,6 @@ class FormatSegmentText:
 
         context_indices = self._get_context_indices(match_indices)
         return self._build_output_from_indices(context_indices, match_indices)
-
-    def _has_existing_html(self) -> bool:
-        return any("<p>" in text or "<b>" in text or 'class="ix_' in text or "<span" in text for text in self.texts)
 
     def _format_all_unlabeled(self) -> str:
         return "".join(f'<p class="ix_paragraph">{escape(text)}</p>' for text in self.texts)
@@ -84,7 +80,6 @@ class FormatSegmentText:
         for i in context_indices:
             text = self.texts[i]
 
-            # Determine the paragraph class based on whether it has matches or is adjacent
             if i in match_set:
                 paragraph_class = "ix_matching_paragraph"
                 highlighted = self._highlight_text(text, is_date)
@@ -130,30 +125,22 @@ class FormatSegmentText:
         min_len = max(1, label_len - 2)
         max_len = min(len(text), label_len + 5)  # Increased range for punctuation variations
 
-        # Import re at the top of the method
-        import re
-
-        # First, try to find word-like sequences that might contain our target
-        # This pattern captures sequences of word characters, hyphens, underscores, and periods
         word_pattern = re.compile(r"\b[\w\-_.]+\b")
         words = [(m.start(), m.end(), m.group()) for m in word_pattern.finditer(text)]
 
-        # Check individual words first (most common case for punctuation differences and typos)
         for start, end, word in words:
             if min_len <= len(word) <= max_len:
-                # Calculate fuzzy score
                 score = fuzz.ratio(self.label.lower(), word.lower())
-                if score >= 75 and score > best_score:  # Lowered threshold to catch more fuzzy matches
+                if score >= 75 and score > best_score:
                     best_score = score
                     best_match = (start, end, word)
 
-        # If no good word match found, fall back to sliding window approach
         if not best_match:
             for start in range(len(text)):
                 for length in range(min_len, min(max_len + 1, len(text) - start + 1)):
                     substring = text[start : start + length]
                     score = fuzz.ratio(self.label.lower(), substring.lower())
-                    if score >= 75 and score > best_score:  # Lowered threshold
+                    if score >= 75 and score > best_score:
                         best_score = score
                         best_match = (start, start + length, substring)
 

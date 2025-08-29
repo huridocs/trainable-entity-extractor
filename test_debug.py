@@ -9,14 +9,14 @@ from rapidfuzz import fuzz
 # Test the failing cases
 print("=== Testing fuzzy_match_with_typo ===")
 formatter = FormatSegmentText(["This is itme in the text"], "item")
-result = formatter.format()
+result = formatter.get_text()
 print(f"Result: {result}")
 print(f"Expected: contains <b>itme</b>")
 print(f'Actual contains: {"<b>itme</b>" in result}')
 
 print("\n=== Testing fuzzy_match_with_punctuation ===")
 formatter2 = FormatSegmentText(["This is item_1 in the text"], "item-1")
-result2 = formatter2.format()
+result2 = formatter2.get_text()
 print(f"Result: {result2}")
 print(f"Expected: contains <b>item_1</b>")
 print(f'Actual contains: {"<b>item_1</b>" in result2}')

@@ -25,6 +25,7 @@ class Suggestion(BaseModel):
     empty_suggestion: bool = False
     values: list[Value] = list()
     segment_text: str = ""
+    _raw_context: list[str] = list()
     page_number: int = 1
     segments_boxes: list[SegmentBox] = list()
 
@@ -62,10 +63,13 @@ class Suggestion(BaseModel):
         self, training_sample: TrainingSample, values: list[Value], use_context_from_the_end: bool
     ):
         self.add_segments(training_sample.pdf_data, use_context_from_the_end)
-        self.values = [
-            Value(id=x.id, label=x.label, segment_text=x.segment_text if x.segment_text else self.segment_text)
-            for x in values
-        ]
+        for value in values:
+            if value.segment_text:
+                segment_text = FormatSegmentText([value.segment_text], value.label).get_text()
+            else:
+                segment_text = FormatSegmentText(self._raw_context, value.label).get_text()
+
+            self.values.append(Value(id=value.id, label=value.label, segment_text=segment_text))
 
     def add_segments(self, pdf_data: PdfData, context_from_the_end: bool = False):
         context_segments: list[PdfDataSegment] = [x for x in pdf_data.pdf_data_segments if x.ml_label]
@@ -85,9 +89,8 @@ class Suggestion(BaseModel):
         pages = pdf_data.pdf_features.pages if pdf_data.pdf_features else []
         self.segments_boxes = [SegmentBox.from_pdf_segment(pdf_segment, pages) for pdf_segment in context_segments]
 
-        context = [pdf_segment.text_content for pdf_segment in context_segments]
-        formatter = FormatSegmentText(context, self.text)
-        self.segment_text = formatter.format()
+        self._raw_context = [pdf_segment.text_content for pdf_segment in context_segments]
+        self.segment_text = FormatSegmentText(self._raw_context, self.text).get_text()
 
     def scale_up(self):
         for segment_box in self.segments_boxes:
