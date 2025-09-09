@@ -150,7 +150,7 @@ class FormatSegmentText:
         return self._get_date_parts() is not None
 
     def _get_date_parts(self) -> Optional[Tuple[str, str, List[str]]]:
-        parts = self.label.split("/")
+        parts = self.label.split("-")
         if len(parts) != 3:
             return None
         year, month, day = parts

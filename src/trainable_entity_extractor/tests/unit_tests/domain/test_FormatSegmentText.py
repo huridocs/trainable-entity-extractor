@@ -146,7 +146,7 @@ class TestFormatSegmentText(TestCase):
         )
 
     def test_formating_dates(self):
-        formatter = FormatSegmentText(["United Nations6", "General 6 October 2010"], "2010/10/06")
+        formatter = FormatSegmentText(["United Nations6", "General 6 October 2010"], "2010-10-06")
         result = formatter.get_text()
         self.assertEqual(
             '<p class="ix_adjacent_paragraph">United Nations6</p><p class="ix_matching_paragraph">General <span class="ix_match">6</span> <span class="ix_match">October</span> <span class="ix_match">2010</span></p>',
@@ -154,7 +154,7 @@ class TestFormatSegmentText(TestCase):
         )
 
     def test_formating_other_date(self):
-        formatter = FormatSegmentText(["United Nations1", "General 1 September 2005"], "2005/09/01")
+        formatter = FormatSegmentText(["United Nations1", "General 1 September 2005"], "2005-09-01")
         result = formatter.get_text()
         self.assertEqual(
             '<p class="ix_adjacent_paragraph">United Nations1</p><p class="ix_matching_paragraph">General <span class="ix_match">1</span> <span class="ix_match">September</span> <span class="ix_match">2005</span></p>',
@@ -192,7 +192,7 @@ class TestFormatSegmentText(TestCase):
             "Closing",
             "Tail",
         ]
-        formatter = FormatSegmentText(texts, "2010/10/06")
+        formatter = FormatSegmentText(texts, "2010-10-06")
         result = formatter.get_text()
         self.assertEqual(
             '<p class="ix_adjacent_paragraph">Header</p><p class="ix_matching_paragraph">Meeting <span class="ix_match">6</span> <span class="ix_match">October</span></p><p class="ix_matching_paragraph">Report <span class="ix_match">2010</span> results</p><p class="ix_adjacent_paragraph">Closing</p>',
