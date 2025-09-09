@@ -43,5 +43,9 @@ class TestExtractorPdfToMultiOption(TestCase):
         self.assertEqual(1, len(suggestions))
         self.assertEqual(extraction_id, suggestions[0].id)
         self.assertEqual("test.xml", suggestions[0].xml_file_name)
-        segment_text = "A ________ United Nations ________ /INF/76/1 ________ General Assembly ________ Distr.: General ________ 15 February 2021 ________ Original: English ________ Seventy-sixth session ________ Opening dates of forthcoming regular sessions of the ________ General Assembly and of the general debate ________ Note by the Secretariat ________ 1. ________ In paragraph 1 of its resolution ________ 57/301 ________ , the General Assembly decided to amend ________ rule 1 of its rules of procedure to read: “The General Assembly shall meet every year ________ in regular session commencing on the Tuesday of the third week in September, ________ counting from the first week that contains at least one working day.” In paragraph 2 ________ of the resolution, the Assembly also decided that the general debate in the Assembly"
+        segment_text = (
+            '<p class="ix_adjacent_paragraph">Distr.: General</p>'
+            '<p class="ix_matching_paragraph"><span class="ix_match">15</span> February 2021</p>'
+            '<p class="ix_adjacent_paragraph">Original: English</p>'
+        )
         self.assertEqual([Value(id="id15", label="15", segment_text=segment_text)], suggestions[0].values)

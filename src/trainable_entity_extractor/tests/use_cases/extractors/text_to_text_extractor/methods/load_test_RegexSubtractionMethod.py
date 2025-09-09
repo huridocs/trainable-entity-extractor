@@ -47,27 +47,27 @@ def generate_realistic_training_samples(num_samples: int) -> list[TrainingSample
 
         if pattern_type == "prefix":
             prefix_word = generate_random_word()
-            prefix = random.choice(prefix_patterns).format(prefix_word)
+            prefix = random.choice(prefix_patterns).get_text(prefix_word)
             full_text = f"{prefix}{content}"
             label_text = content
         elif pattern_type == "suffix":
             suffix_word = generate_random_word()
-            suffix = random.choice(suffix_patterns).format(suffix_word)
+            suffix = random.choice(suffix_patterns).get_text(suffix_word)
             full_text = f"{content}{suffix}"
             label_text = content
         elif pattern_type == "both":
             prefix_word = generate_random_word()
             suffix_word = generate_random_word()
-            prefix = random.choice(prefix_patterns).format(prefix_word)
-            suffix = random.choice(suffix_patterns).format(suffix_word)
+            prefix = random.choice(prefix_patterns).get_text(prefix_word)
+            suffix = random.choice(suffix_patterns).get_text(suffix_word)
             full_text = f"{prefix}{content}{suffix}"
             label_text = content
         elif pattern_type == "multiple":
             # Multiple occurrences of the content with different patterns
             prefix_word = generate_random_word()
             suffix_word = generate_random_word()
-            prefix = random.choice(prefix_patterns).format(prefix_word)
-            suffix = random.choice(suffix_patterns).format(suffix_word)
+            prefix = random.choice(prefix_patterns).get_text(prefix_word)
+            suffix = random.choice(suffix_patterns).get_text(suffix_word)
             # Add the content multiple times in different contexts
             extra_content = generate_random_identifier()
             full_text = f"{generate_random_text(2)} {prefix}{extra_content} {generate_random_text(1)} {content}{suffix} {generate_random_text(2)}"
