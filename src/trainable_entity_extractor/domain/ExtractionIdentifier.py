@@ -131,9 +131,3 @@ class ExtractionIdentifier(BaseModel):
 
     def __str__(self):
         return f"{self.run_name} / {self.extraction_name}"
-
-
-if __name__ == "__main__":
-    e = ExtractionIdentifier(run_name="unit_test", extraction_name="test")
-    # e.save_method_used("MT5TrueCaseEnglishSpanishMethod")
-    e.clean_extractor_folder()

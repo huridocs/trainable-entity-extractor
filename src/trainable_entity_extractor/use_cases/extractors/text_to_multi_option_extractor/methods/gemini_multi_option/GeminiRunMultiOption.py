@@ -81,9 +81,7 @@ class GeminiRunMultiOption(GeminiRun):
             try:
                 result = extract_func(sample.input_text)
                 outputs.append(result)
-            except Exception as e:
-                extraction_identifier = ExtractionIdentifier(extraction_name="debug")
-                send_logs(extraction_identifier, f"Error processing sample with input '{sample.input_text}': {e}")
+            except Exception:
                 outputs.append([])
         return outputs
 

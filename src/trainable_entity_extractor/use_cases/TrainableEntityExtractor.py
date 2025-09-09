@@ -1,5 +1,4 @@
 import shutil
-from time import time
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
