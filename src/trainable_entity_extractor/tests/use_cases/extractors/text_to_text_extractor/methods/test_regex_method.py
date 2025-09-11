@@ -19,7 +19,7 @@ class TestRegexMethod(TestCase):
         extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
         regex_method = RegexMethod(extraction_identifier)
 
-        self.assertEqual(100, regex_method.performance(extraction_data, extraction_data))
+        self.assertEqual(100, regex_method.get_performance(extraction_data, extraction_data))
 
     def test_performance_0(self):
         sample = TrainingSample(
@@ -29,7 +29,7 @@ class TestRegexMethod(TestCase):
         extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
         regex_method = RegexMethod(extraction_identifier)
 
-        self.assertEqual(0, regex_method.performance(extraction_data, extraction_data))
+        self.assertEqual(0, regex_method.get_performance(extraction_data, extraction_data))
 
     def test_performance_75(self):
         sample_1 = [
@@ -44,12 +44,12 @@ class TestRegexMethod(TestCase):
 
         regex_method = RegexMethod(extraction_identifier)
 
-        self.assertEqual(75, regex_method.performance(extraction_data, extraction_data))
+        self.assertEqual(75, regex_method.get_performance(extraction_data, extraction_data))
 
     def test_performance_no_samples(self):
         regex_method = RegexMethod(extraction_identifier)
         extraction_data = ExtractionData(samples=[], extraction_identifier=extraction_identifier)
-        self.assertEqual(0, regex_method.performance(extraction_data, extraction_data))
+        self.assertEqual(0, regex_method.get_performance(extraction_data, extraction_data))
 
     def test_performance_one_sample(self):
         sample = [
@@ -58,7 +58,7 @@ class TestRegexMethod(TestCase):
         extraction_data = ExtractionData(samples=sample, extraction_identifier=extraction_identifier)
 
         regex_method = RegexMethod(extraction_identifier)
-        self.assertEqual(100, regex_method.performance(extraction_data, extraction_data))
+        self.assertEqual(100, regex_method.get_performance(extraction_data, extraction_data))
 
     def test_predict(self):
         sample_1 = [

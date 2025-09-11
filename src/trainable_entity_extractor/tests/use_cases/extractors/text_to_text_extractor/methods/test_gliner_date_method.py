@@ -53,7 +53,7 @@ class TestGlinerDateMethod(TestCase):
         extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
         gliner_method = GlinerDateParserMethod(extraction_identifier)
 
-        self.assertEqual(100, gliner_method.performance(extraction_data, extraction_data))
+        self.assertEqual(100, gliner_method.get_performance(extraction_data, extraction_data))
 
     def test_is_valid_execution_file_functionality(self):
         """Test that IS_VALID_EXECUTION_FILE_NAME properly controls prediction behavior"""

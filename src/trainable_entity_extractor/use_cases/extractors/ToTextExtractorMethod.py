@@ -12,13 +12,14 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.CleanBeginningDot250 import (
     CleanBeginningDot250,
 )
+from trainable_entity_extractor.use_cases.extractors.MethodBase import MethodBase
 
 
-class ToTextExtractorMethod:
+class ToTextExtractorMethod(MethodBase):
 
     def __init__(self, extraction_identifier: ExtractionIdentifier, from_class_name: str = ""):
+        super().__init__(extraction_identifier)
         self.from_class_name = from_class_name
-        self.extraction_identifier = extraction_identifier
         os.makedirs(self.extraction_identifier.get_path(), exist_ok=True)
 
     def get_path(self):
@@ -51,6 +52,9 @@ class ToTextExtractorMethod:
         with open(path, "r") as file:
             return json.load(file)
 
+    def remove_method_data(self):
+        shutil.rmtree(self.get_path(), ignore_errors=True)
+
     @abstractmethod
     def train(self, extraction_data: ExtractionData):
         pass
@@ -63,12 +67,13 @@ class ToTextExtractorMethod:
     def clean_text(text: str) -> str:
         return " ".join(text.split())
 
-    def performance(self, performance_train_set: ExtractionData, performance_test_set: ExtractionData) -> float:
-        if not performance_train_set.samples:
+    def get_performance(self, train_set: ExtractionData, test_set: ExtractionData) -> float:
+        """Get performance using standardized train/test sets"""
+        if not train_set.samples:
             return 0
 
-        self.train(performance_train_set)
-        samples = performance_test_set.samples
+        self.train(train_set)
+        samples = test_set.samples
         predictions = self.predict(
             [
                 PredictionSample(
@@ -80,10 +85,10 @@ class ToTextExtractorMethod:
 
         correct = [
             sample
-            for sample, prediction in zip(performance_test_set.samples, predictions)
+            for sample, prediction in zip(test_set.samples, predictions)
             if self.clean_text(sample.labeled_data.label_text) == self.clean_text(prediction)
         ]
-        return 100 * len(correct) / len(performance_test_set.samples)
+        return 100 * len(correct) / len(test_set.samples)
 
     def log_performance_sample(self, extraction_data: ExtractionData, predictions: list[str]):
         config_logger.info(f"Performance predictions for {self.get_name()}")
@@ -100,9 +105,3 @@ class ToTextExtractorMethod:
             message += f"document text         : {document_text[:70].strip()}\n"
 
         config_logger.info(message)
-
-    def remove_method_data(self):
-        shutil.rmtree(self.get_path(), ignore_errors=True)
-
-    def should_be_retrained_with_more_data(self):
-        return True

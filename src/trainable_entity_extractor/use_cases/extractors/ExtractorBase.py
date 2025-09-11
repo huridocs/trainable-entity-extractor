@@ -34,7 +34,7 @@ class ExtractorBase:
         pass
 
     @abstractmethod
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         pass
 
     @staticmethod
@@ -118,8 +118,8 @@ class ExtractorBase:
         send_logs(extraction_data.extraction_identifier, f"\nChecking {method_name}")
 
         try:
-            prepared_data = self.prepare_for_performance(extraction_data)
-            performance_score = method_instance.performance(prepared_data)
+            train_set, test_set = self.prepare_for_performance(extraction_data)
+            performance_score = method_instance.get_performance(train_set, test_set)
             performance_score = float(performance_score) if performance_score is not None else 0.0
         except Exception as e:
             send_logs(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)

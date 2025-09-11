@@ -13,9 +13,10 @@ from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extract
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.FilterSegmentsMethod import (
     FilterSegmentsMethod,
 )
+from trainable_entity_extractor.use_cases.extractors.MethodBase import MethodBase
 
 
-class PdfMultiOptionMethod:
+class PdfMultiOptionMethod(MethodBase):
     REPORT_ERRORS = True
 
     def __init__(
@@ -23,9 +24,10 @@ class PdfMultiOptionMethod:
         filter_segments_method: Type[FilterSegmentsMethod] = None,
         multi_label_method: Type[MultiLabelMethod] = None,
     ):
+        # Initialize with a default extraction_identifier - will be updated via set_parameters
+        super().__init__(ExtractionIdentifier(run_name="not set", extraction_name="not set"))
         self.filter_segments_method = filter_segments_method
         self.multi_label_method = multi_label_method
-        self.extraction_identifier = ExtractionIdentifier(run_name="not set", extraction_name="not set")
         self.options: list[Option] = list()
         self.multi_value = False
         self.extraction_data = None
@@ -120,5 +122,5 @@ class PdfMultiOptionMethod:
             return self.multi_label_method.should_be_retrained_with_more_data()
         return True
 
-    def remove_method_data(self, extraction_identifier: ExtractionIdentifier):
-        shutil.rmtree(join(extraction_identifier.get_path(), self.get_name()), ignore_errors=True)
+    def remove_method_data(self) -> None:
+        shutil.rmtree(join(self.extraction_identifier.get_path(), self.get_name()), ignore_errors=True)

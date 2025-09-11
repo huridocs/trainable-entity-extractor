@@ -124,7 +124,8 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         self.options: list[Option] = list()
         self.multi_value = False
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+        """Prepare the extractor for performance evaluation by setting up options and segment selectors"""
         self.options = extraction_data.options
         self.multi_value = extraction_data.multi_value
 
@@ -134,26 +135,25 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         FastSegmentSelector(self.extraction_identifier).prepare_model_folder()
         FastAndPositionsSegmentSelector(self.extraction_identifier).prepare_model_folder()
 
-        return extraction_data
+        return ExtractorBase.get_train_test_sets(extraction_data)
 
     def create_model(self, extraction_data: ExtractionData):
-        self.prepare_for_performance(extraction_data)
+        performance_train_set, performance_test_set = self.prepare_for_performance(extraction_data)
 
         send_logs(self.extraction_identifier, f"options {[x.model_dump() for x in self.options]}")
         send_logs(self.extraction_identifier, self.get_stats(extraction_data))
 
-        performance_train_set, performance_test_set = ExtractorBase.get_train_test_sets(extraction_data)
         samples_info = f"Train: {len(performance_train_set.samples)} samples\n"
         samples_info += f"Test: {len(performance_test_set.samples)} samples"
         send_logs(self.extraction_identifier, samples_info)
 
-        method = self.get_best_method(extraction_data)
+        method = self.get_best_method(extraction_data, performance_train_set, performance_test_set)
 
         if not method:
             return False, "Training is canceled"
 
         for method_to_remove in [x for x in self.METHODS if x.get_name() != method.get_name()]:
-            method_to_remove.remove_method_data(extraction_data.extraction_identifier)
+            method_to_remove.remove_method_data()
 
         if len(extraction_data.samples) < RETRAIN_SAMPLES_THRESHOLD and method.should_be_retrained_with_more_data():
             method.train(extraction_data)
@@ -199,10 +199,11 @@ class PdfToMultiOptionExtractor(ExtractorBase):
 
         return method.get_samples_for_context(extraction_data), prediction
 
-    def get_best_method(self, multi_option_data: ExtractionData) -> Optional[PdfMultiOptionMethod]:
+    def get_best_method(
+        self, multi_option_data: ExtractionData, training_set: ExtractionData, test_set: ExtractionData
+    ) -> Optional[PdfMultiOptionMethod]:
         best_method_instance = self.METHODS[0]
         best_performance = 0
-        training_set, test_set = ExtractorBase.get_train_test_sets(multi_option_data)
         performance_summary = PerformanceSummary.from_extraction_data(
             extractor_name=self.get_name(),
             training_samples_count=len(training_set.samples),

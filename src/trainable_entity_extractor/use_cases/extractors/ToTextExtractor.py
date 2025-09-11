@@ -18,8 +18,9 @@ class ToTextExtractor(ExtractorBase):
     def __init__(self, extraction_identifier: ExtractionIdentifier):
         super().__init__(extraction_identifier)
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
-        return extraction_data
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+        """Base preparation for text extractors - return train/test sets"""
+        return self.get_train_test_sets(extraction_data)
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         pass
@@ -62,7 +63,7 @@ class ToTextExtractor(ExtractorBase):
         if not extraction_data or not extraction_data.samples:
             return False, "No samples to create model"
 
-        performance_train_set, performance_test_set = self.get_train_test_sets(extraction_data)
+        performance_train_set, performance_test_set = self.prepare_for_performance(extraction_data)
 
         samples_info = f"Train: {len(performance_train_set.samples)} samples\n"
         samples_info += f"Test: {len(performance_test_set.samples)} samples"
@@ -74,7 +75,7 @@ class ToTextExtractor(ExtractorBase):
             best_method_instance.train(extraction_data)
             return True, ""
 
-        best_method_instance = self.get_best_method(extraction_data)
+        best_method_instance = self.get_best_method(extraction_data, performance_train_set, performance_test_set)
 
         if not best_method_instance:
             return False, "Training canceled"
@@ -90,7 +91,7 @@ class ToTextExtractor(ExtractorBase):
         return True, ""
 
     @staticmethod
-    def get_train_test_sets(extraction_data: ExtractionData) -> (ExtractionData, ExtractionData):
+    def get_train_test_sets(extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         return ExtractorBase.get_train_test_sets(extraction_data)
 
     def remove_data_from_methods_not_selected(self, best_method_instance):
@@ -99,11 +100,10 @@ class ToTextExtractor(ExtractorBase):
             if method_instance.get_name() != best_method_instance.get_name():
                 method_instance.remove_method_data()
 
-    def get_best_method(self, extraction_data: ExtractionData):
+    def get_best_method(self, extraction_data: ExtractionData, training_set: ExtractionData, test_set: ExtractionData):
         best_performance = 0
         best_method_instance = self.METHODS[0](self.extraction_identifier)
 
-        training_set, test_set = self.get_train_test_sets(extraction_data)
         performance_summary = PerformanceSummary.from_extraction_data(
             extractor_name=self.get_name(),
             training_samples_count=len(training_set.samples),
@@ -119,7 +119,8 @@ class ToTextExtractor(ExtractorBase):
             method_instance = method(self.extraction_identifier)
             send_logs(self.extraction_identifier, f"Checking {method_instance.get_name()}")
             try:
-                performance = method_instance.performance(training_set, test_set)
+                # Use standardized get_performance method only
+                performance = method_instance.get_performance(training_set, test_set)
             except Exception as e:
                 message = f"Error checking {method_instance.get_name()}"
                 send_logs(self.extraction_identifier, message, LogSeverity.error, e)

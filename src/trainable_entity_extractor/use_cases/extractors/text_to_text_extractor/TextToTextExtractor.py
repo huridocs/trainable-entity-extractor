@@ -53,11 +53,13 @@ class TextToTextExtractor(ToTextExtractor):
         MT5TrueCaseEnglishSpanishMethod,
     ]
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+        """Prepare the extractor for performance evaluation by setting up segment selector texts"""
+        # Set up segment selector texts like in create_model
         for sample in extraction_data.samples:
             if not sample.segment_selector_texts and sample.labeled_data.source_text:
                 sample.segment_selector_texts = [sample.labeled_data.source_text]
-        return extraction_data
+        return self.get_train_test_sets(extraction_data)
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         for sample in extraction_data.samples:
@@ -67,12 +69,6 @@ class TextToTextExtractor(ToTextExtractor):
         return False
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        if not extraction_data or not extraction_data.samples:
-            return super().create_model(extraction_data)
-
-        # Use the shared preparation logic
-        self.prepare_for_performance(extraction_data)
-
         return super().create_model(extraction_data)
 
     @staticmethod

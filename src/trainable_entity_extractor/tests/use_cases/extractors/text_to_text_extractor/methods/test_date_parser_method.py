@@ -18,7 +18,7 @@ class TestDateParserMethod(TestCase):
 
         extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
         date_parser_method = DateParserMethod(extraction_identifier)
-        self.assertEqual(100, date_parser_method.performance(extraction_data, extraction_data))
+        self.assertEqual(100, date_parser_method.get_performance(extraction_data, extraction_data))
 
     def test_predict(self):
         sample = TrainingSample(
@@ -55,4 +55,4 @@ class TestDateParserMethod(TestCase):
         extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
         date_parser_method = DateParserMethod(extraction_identifier)
 
-        self.assertEqual(100, date_parser_method.performance(extraction_data, extraction_data))
+        self.assertEqual(100, date_parser_method.get_performance(extraction_data, extraction_data))

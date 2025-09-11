@@ -11,18 +11,18 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
-from trainable_entity_extractor.use_cases.extractors.ExtractorBase import ExtractorBase
+from trainable_entity_extractor.use_cases.extractors.MethodBase import MethodBase
 
 
-class TextToMultiOptionMethod:
+class TextToMultiOptionMethod(MethodBase):
     def __init__(self, extraction_identifier: ExtractionIdentifier, options=None, multi_value: bool = False, method_name=""):
+        super().__init__(extraction_identifier)
         if options is None:
             options = []
         self.options = options
         self.multi_value = multi_value
-        self.extraction_identifier = extraction_identifier
-        os.makedirs(self.extraction_identifier.get_path(), exist_ok=True)
         self.method_name = method_name
+        os.makedirs(self.extraction_identifier.get_path(), exist_ok=True)
 
     def get_name(self):
         return self.__class__.__name__
@@ -46,6 +46,9 @@ class TextToMultiOptionMethod:
     def remove_model(self):
         shutil.rmtree(join(self.extraction_identifier.get_path(), self.get_name()), ignore_errors=True)
 
+    def remove_method_data(self) -> None:
+        self.remove_model()
+
     @abstractmethod
     def train(self, extraction_data: ExtractionData):
         pass
@@ -54,20 +57,19 @@ class TextToMultiOptionMethod:
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
         pass
 
-    def performance(self, extraction_data: ExtractionData) -> float:
-        if not extraction_data.samples:
+    def get_performance(self, train_set: ExtractionData, test_set: ExtractionData) -> float:
+        """Get performance using standardized train/test sets"""
+        if not test_set.samples:
             return 0
 
-        performance_train_set, performance_test_set = ExtractorBase.get_train_test_sets(extraction_data)
+        self.train(train_set)
 
-        self.train(performance_train_set)
-
-        prediction_samples = [PredictionSample(source_text=x.labeled_data.source_text) for x in performance_test_set.samples]
+        prediction_samples = [PredictionSample(source_text=x.labeled_data.source_text) for x in test_set.samples]
         predictions = self.predict(prediction_samples)
 
         self.remove_model()
 
-        correct_one_hot_encoding = self.get_one_hot_encoding(performance_test_set)
+        correct_one_hot_encoding = self.get_one_hot_encoding(test_set)
         predictions_one_hot_encoding = [
             [1 if option in prediction else 0 for option in self.options] for prediction in predictions
         ]

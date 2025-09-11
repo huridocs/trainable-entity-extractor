@@ -21,7 +21,7 @@ class TestInputWithoutSpaces(TestCase):
         extraction_data = ExtractionData(samples=[sample], extraction_identifier=extraction_identifier)
 
         same_input_output_method = InputWithoutSpaces(extraction_identifier)
-        self.assertEqual(100, same_input_output_method.performance(extraction_data, extraction_data))
+        self.assertEqual(100, same_input_output_method.get_performance(extraction_data, extraction_data))
 
     def test_performance_50(self):
         sample_1 = TrainingSample(
@@ -35,7 +35,7 @@ class TestInputWithoutSpaces(TestCase):
 
         same_input_output_method = InputWithoutSpaces(extraction_identifier)
 
-        self.assertEqual(50, same_input_output_method.performance(extraction_data, extraction_data))
+        self.assertEqual(50, same_input_output_method.get_performance(extraction_data, extraction_data))
 
     def test_predict(self):
         same_input_output_method = InputWithoutSpaces(extraction_identifier)

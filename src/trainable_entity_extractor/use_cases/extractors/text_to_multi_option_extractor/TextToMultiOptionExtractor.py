@@ -93,11 +93,12 @@ class TextToMultiOptionExtractor(ExtractorBase):
         self.options: list[Option] = list()
         self.multi_value = False
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+        """Prepare the extractor for performance evaluation by fixing empty data and setting up options"""
         self.fix_empty_data(extraction_data)
         self.options = extraction_data.options
         self.multi_value = extraction_data.multi_value
-        return extraction_data
+        return self.get_train_test_sets(extraction_data)
 
     def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
         if not predictions_samples:
@@ -132,12 +133,13 @@ class TextToMultiOptionExtractor(ExtractorBase):
         return self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        self.prepare_for_performance(extraction_data)
+        # Get train/test sets from preparation
+        performance_train_set, performance_test_set = self.prepare_for_performance(extraction_data)
 
         self.extraction_identifier.save_options(extraction_data.options)
 
         send_logs(self.extraction_identifier, self.get_stats(extraction_data))
-        best_method_instance = self.get_best_method(extraction_data)
+        best_method_instance = self.get_best_method(extraction_data, performance_train_set, performance_test_set)
         if not best_method_instance:
             return False, "Training canceled"
 
@@ -148,10 +150,11 @@ class TextToMultiOptionExtractor(ExtractorBase):
         self.extraction_identifier.save_method_used(best_method_instance.get_name())
         return True, ""
 
-    def get_best_method(self, extraction_data: ExtractionData) -> TextToMultiOptionMethod | None:
+    def get_best_method(
+        self, extraction_data: ExtractionData, performance_train_set: ExtractionData, performance_test_set: ExtractionData
+    ) -> TextToMultiOptionMethod | None:
         best_performance = 0
         best_method_instance = self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
-        performance_train_set, performance_test_set = ExtractorBase.get_train_test_sets(extraction_data)
         performance_summary = PerformanceSummary.from_extraction_data(
             extractor_name=self.get_name(),
             training_samples_count=len(performance_train_set.samples),
@@ -172,7 +175,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
             if not method_instance.can_be_used(extraction_data):
                 continue
 
-            performance = self.get_performance(extraction_data, method_instance)
+            performance = self.get_performance_for_method(method_instance, performance_train_set, performance_test_set)
             performance_summary.add_performance(method_instance.get_name(), performance)
 
             if performance == 100:
@@ -188,19 +191,18 @@ class TextToMultiOptionExtractor(ExtractorBase):
         send_logs(self.extraction_identifier, performance_summary.to_log())
         return best_method_instance
 
-    @staticmethod
-    def get_performance(extraction_data, method_instance):
-        send_logs(extraction_data.extraction_identifier, f"\nChecking {method_instance.get_name()}")
+    def get_performance_for_method(self, method_instance, train_set: ExtractionData, test_set: ExtractionData):
+        send_logs(self.extraction_identifier, f"\nChecking {method_instance.get_name()}")
         try:
-            performance = method_instance.performance(extraction_data)
+            performance = method_instance.get_performance(train_set, test_set)
         except IndexError as e:
             performance = 0
             if "setfit" in method_instance.get_name().lower():
-                send_logs(extraction_data.extraction_identifier, "Insufficient data to train SetFit model")
+                send_logs(self.extraction_identifier, "Insufficient data to train SetFit model")
             else:
-                send_logs(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
+                send_logs(self.extraction_identifier, "ERROR", LogSeverity.info, e)
         except Exception as e:
-            send_logs(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
+            send_logs(self.extraction_identifier, "ERROR", LogSeverity.info, e)
             performance = 0
 
         return performance
