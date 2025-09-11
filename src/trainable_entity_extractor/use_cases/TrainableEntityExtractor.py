@@ -1,6 +1,6 @@
 import shutil
 
-from trainable_entity_extractor.domain.DistributedPerformance import DistributedPerformance
+from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.ExtractionDistributedTask import ExtractionDistributedTask
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
@@ -94,7 +94,7 @@ class TrainableEntityExtractor:
 
     def get_performance(
         self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
-    ) -> DistributedPerformance:
+    ) -> Performance:
         extractor_name = extraction_distributed_task.extractor_name
         for extractor in self.EXTRACTORS:
             extractor_instance = extractor(self.extraction_identifier)
@@ -103,7 +103,7 @@ class TrainableEntityExtractor:
 
             return extractor_instance.get_performance(extraction_distributed_task, extraction_data)
 
-        return DistributedPerformance()
+        return Performance()
 
     def train_one_method(
         self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.domain.Performance import Performance
+from trainable_entity_extractor.domain.PerformanceLog import PerformanceLog
 from time import time
 
 from trainable_entity_extractor.use_cases.send_logs import send_logs
@@ -14,14 +14,14 @@ class PerformanceSummary(BaseModel):
     languages: list[str] = list()
     training_samples_count: int = 0
     testing_samples_count: int = 0
-    performances: list[Performance] = []
+    performances: list[PerformanceLog] = []
     extraction_identifier: ExtractionIdentifier | None = None
     previous_timestamp: int = Field(default_factory=lambda: int(time()))
     empty_pdf_count: int = 0
 
     def add_performance(self, method_name: str, performance: float):
         current_time = int(time())
-        performance = Performance(
+        performance = PerformanceLog(
             method_name=method_name, performance=performance, execution_seconds=int(current_time - self.previous_timestamp)
         )
         self.previous_timestamp = current_time
@@ -34,7 +34,7 @@ class PerformanceSummary(BaseModel):
         text = "Performance summary\n"
         text += f"Id: {self.extraction_identifier} / {self.extractor_name}\n" if self.extraction_identifier else ""
         text += f"Best method: {self.get_best_method().to_log(self.testing_samples_count)}\n"
-        text += f"Training time: {Performance.get_execution_time_string(total_time)}\n"
+        text += f"Training time: {PerformanceLog.get_execution_time_string(total_time)}\n"
         text += f"Samples: {self.samples_count}\n"
         text += f"Train/test: {self.training_samples_count}/{self.testing_samples_count}\n"
         text += f"{len(self.languages)} language(s): {', '.join(self.languages) if self.languages else 'None'}\n"
@@ -46,9 +46,9 @@ class PerformanceSummary(BaseModel):
 
         return text
 
-    def get_best_method(self) -> Performance:
+    def get_best_method(self) -> PerformanceLog:
         if not self.performances:
-            return Performance(method_name="No methods", performance=0.0)
+            return PerformanceLog(method_name="No methods", performance=0.0)
 
         return max(self.performances, key=lambda x: x.performance)
 

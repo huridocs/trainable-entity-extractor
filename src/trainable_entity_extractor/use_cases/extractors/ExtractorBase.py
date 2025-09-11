@@ -1,6 +1,5 @@
 from abc import abstractmethod
 import time
-from trainable_entity_extractor.domain.DistributedPerformance import DistributedPerformance
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionDistributedTask import ExtractionDistributedTask
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -101,19 +100,19 @@ class ExtractorBase:
 
     def get_performance(
         self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
-    ) -> DistributedPerformance:
+    ) -> Performance:
         method_name = extraction_distributed_task.method_name
         start_time = time.time()
 
         method_instance = self._get_method_instance_by_name(method_name)
         if not method_instance:
             send_logs(extraction_data.extraction_identifier, f"Method {method_name} not found")
-            return DistributedPerformance()
+            return Performance()
 
         if hasattr(method_instance, "can_be_used"):
             if not method_instance.can_be_used(extraction_data):
                 send_logs(extraction_data.extraction_identifier, f"Method {method_name} cannot be used with current data")
-                return DistributedPerformance()
+                return Performance()
 
         send_logs(extraction_data.extraction_identifier, f"\nChecking {method_name}")
 
@@ -132,7 +131,7 @@ class ExtractorBase:
             performance_score = 0.0
 
         execution_time = int(time.time() - start_time)
-        return DistributedPerformance(
+        return Performance(
             performance=performance_score,
             execution_seconds=execution_time,
             should_be_retrained_with_more_data=should_be_retrained_with_more_data,
