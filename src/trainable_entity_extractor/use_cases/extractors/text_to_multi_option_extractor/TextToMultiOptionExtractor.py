@@ -93,6 +93,12 @@ class TextToMultiOptionExtractor(ExtractorBase):
         self.options: list[Option] = list()
         self.multi_value = False
 
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
+        self.fix_empty_data(extraction_data)
+        self.options = extraction_data.options
+        self.multi_value = extraction_data.multi_value
+        return extraction_data
+
     def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
         if not predictions_samples:
             return []
@@ -126,10 +132,9 @@ class TextToMultiOptionExtractor(ExtractorBase):
         return self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        self.fix_empty_data(extraction_data)
+        self.prepare_for_performance(extraction_data)
+
         self.extraction_identifier.save_options(extraction_data.options)
-        self.options = extraction_data.options
-        self.multi_value = extraction_data.multi_value
 
         send_logs(self.extraction_identifier, self.get_stats(extraction_data))
         best_method_instance = self.get_best_method(extraction_data)

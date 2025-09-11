@@ -82,13 +82,18 @@ class PdfToTextExtractor(ToTextExtractor):
     METHODS += [pdf_to_text_method_builder(PdfToTextSegmentSelector, GeminiTextMethod)]
     METHODS += t5_methods
 
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
+        SegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
+        FastSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
+        FastAndPositionsSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
+        return extraction_data
+
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
         if not extraction_data or not extraction_data.samples:
             return False, "No data to create model"
 
-        SegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
-        FastSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
-        FastAndPositionsSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
+        self.prepare_for_performance(extraction_data)
+
         return super().create_model(extraction_data)
 
     @staticmethod

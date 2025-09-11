@@ -53,6 +53,12 @@ class TextToTextExtractor(ToTextExtractor):
         MT5TrueCaseEnglishSpanishMethod,
     ]
 
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
+        for sample in extraction_data.samples:
+            if not sample.segment_selector_texts and sample.labeled_data.source_text:
+                sample.segment_selector_texts = [sample.labeled_data.source_text]
+        return extraction_data
+
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         for sample in extraction_data.samples:
             if sample.segment_selector_texts or sample.labeled_data.source_text:
@@ -64,9 +70,8 @@ class TextToTextExtractor(ToTextExtractor):
         if not extraction_data or not extraction_data.samples:
             return super().create_model(extraction_data)
 
-        for sample in extraction_data.samples:
-            if not sample.segment_selector_texts and sample.labeled_data.source_text:
-                sample.segment_selector_texts = [sample.labeled_data.source_text]
+        # Use the shared preparation logic
+        self.prepare_for_performance(extraction_data)
 
         return super().create_model(extraction_data)
 

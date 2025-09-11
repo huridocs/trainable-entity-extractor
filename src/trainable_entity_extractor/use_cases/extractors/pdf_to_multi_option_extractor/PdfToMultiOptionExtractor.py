@@ -124,16 +124,22 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         self.options: list[Option] = list()
         self.multi_value = False
 
-    def create_model(self, extraction_data: ExtractionData):
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
         self.options = extraction_data.options
-        self.extraction_identifier.save_options(extraction_data.options)
         self.multi_value = extraction_data.multi_value
-        send_logs(self.extraction_identifier, f"options {[x.model_dump() for x in self.options]}")
+
+        self.extraction_identifier.save_options(extraction_data.options)
 
         SegmentSelector(self.extraction_identifier).prepare_model_folder()
         FastSegmentSelector(self.extraction_identifier).prepare_model_folder()
         FastAndPositionsSegmentSelector(self.extraction_identifier).prepare_model_folder()
 
+        return extraction_data
+
+    def create_model(self, extraction_data: ExtractionData):
+        self.prepare_for_performance(extraction_data)
+
+        send_logs(self.extraction_identifier, f"options {[x.model_dump() for x in self.options]}")
         send_logs(self.extraction_identifier, self.get_stats(extraction_data))
 
         performance_train_set, performance_test_set = ExtractorBase.get_train_test_sets(extraction_data)

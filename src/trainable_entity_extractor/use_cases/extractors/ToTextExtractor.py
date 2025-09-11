@@ -18,6 +18,9 @@ class ToTextExtractor(ExtractorBase):
     def __init__(self, extraction_identifier: ExtractionIdentifier):
         super().__init__(extraction_identifier)
 
+    def prepare_for_performance(self, extraction_data: ExtractionData) -> ExtractionData:
+        return extraction_data
+
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         pass
 
