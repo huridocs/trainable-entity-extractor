@@ -37,8 +37,8 @@ class SegmentCommonWordsWeights:
                 break
 
         self.pdf_segments: PdfData = pdf_segments
-        self.page_width = self.pdf_segments.pdf_features.pages[0].page_width
-        self.page_height = self.pdf_segments.pdf_features.pages[0].page_height
+        self.page_width = self.pdf_segments.pdf_features.pages[0].page_width if self.pdf_segments.pdf_features.pages else 1
+        self.page_height = self.pdf_segments.pdf_features.pages[0].page_height if self.pdf_segments.pdf_features.pages else 1
         self.text_content: str = ""
         self.text_len: int = 0
         self.top: float = 0

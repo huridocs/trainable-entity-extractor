@@ -1,11 +1,12 @@
 import shutil
 
+from trainable_entity_extractor.domain.ExtractionDistributedTask import ExtractionDistributedTask
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
+from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.use_cases.extractors.ExtractorBase import ExtractorBase
-from trainable_entity_extractor.use_cases.extractors.NaiveExtractor import NaiveExtractor
 from trainable_entity_extractor.use_cases.extractors.pdf_to_text_extractor.PdfToTextExtractor import PdfToTextExtractor
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
@@ -24,7 +25,6 @@ class TrainableEntityExtractor:
         TextToMultiOptionExtractor,
         PdfToTextExtractor,
         TextToTextExtractor,
-        NaiveExtractor,
     ]
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):
@@ -77,3 +77,31 @@ class TrainableEntityExtractor:
 
         send_logs(self.extraction_identifier, f"No extractor available", LogSeverity.error)
         return []
+
+    def get_distributed_tasks(self, extraction_data: ExtractionData) -> list[ExtractionDistributedTask]:
+        tasks = list()
+        for extractor in self.EXTRACTORS:
+            extractor_instance = extractor(self.extraction_identifier)
+
+            if not extractor_instance.can_be_used(extraction_data):
+                continue
+
+            send_logs(self.extraction_identifier, f"Getting tasks for extractor {extractor_instance.get_name()}")
+            tasks = extractor_instance.get_distributed_tasks(extraction_data)
+            break
+
+        return tasks
+
+    def get_performance(
+        self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
+    ) -> Performance:
+        extractor_name = extraction_distributed_task.extractor_name
+        for extractor in self.EXTRACTORS:
+            extractor_instance = extractor(self.extraction_identifier)
+            if extractor_instance.get_name() != extractor_name:
+                continue
+
+            performance = extractor_instance.get_performance(extraction_distributed_task, extraction_data)
+            return performance
+
+        return Performance(method_name="No methods", performance=0.0)

@@ -23,7 +23,7 @@ from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 
 class SingleLabelSetFitEnglishMethod(MultiLabelMethod):
-
+    gpu_needed = True
     model_name = "sentence-transformers/multi-qa-mpnet-base-dot-v1"
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:

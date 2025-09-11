@@ -5,6 +5,7 @@ from trainable_entity_extractor.use_cases.extractors.GlinerDateExtractor import 
 
 
 class GlinerDateParserMethod(ToTextExtractorMethod):
+    gpu_needed = True
     IS_VALID_EXECUTION_FILE_NAME = "gliner_date_is_valid.json"
 
     @staticmethod

@@ -70,7 +70,7 @@ class TestExtractorPdfToText(TestCase):
 
         trainable_entity_extractor = TrainableEntityExtractor(extraction_identifier=extraction_identifier)
         success, error = trainable_entity_extractor.train(extraction_data)
-        self.assertEqual(success, True)
+        self.assertEqual(success, False)
 
     def test_calculate_suggestions(self):
         segment_box = SegmentBox(

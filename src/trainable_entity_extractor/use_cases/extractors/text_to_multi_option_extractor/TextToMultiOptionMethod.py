@@ -15,9 +15,9 @@ from trainable_entity_extractor.use_cases.extractors.ExtractorBase import Extrac
 
 
 class TextToMultiOptionMethod:
-    def __init__(
-        self, extraction_identifier: ExtractionIdentifier, options: list[Option], multi_value: bool, method_name=""
-    ):
+    def __init__(self, extraction_identifier: ExtractionIdentifier, options=None, multi_value: bool = False, method_name=""):
+        if options is None:
+            options = []
         self.options = options
         self.multi_value = multi_value
         self.extraction_identifier = extraction_identifier
