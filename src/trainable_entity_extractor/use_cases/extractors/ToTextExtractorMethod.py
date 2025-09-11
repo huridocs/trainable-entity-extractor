@@ -55,14 +55,6 @@ class ToTextExtractorMethod(MethodBase):
     def remove_method_data(self):
         shutil.rmtree(self.get_path(), ignore_errors=True)
 
-    @abstractmethod
-    def train(self, extraction_data: ExtractionData):
-        pass
-
-    @abstractmethod
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
-        pass
-
     @staticmethod
     def clean_text(text: str) -> str:
         return " ".join(text.split())

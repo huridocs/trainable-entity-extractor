@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import time
+from trainable_entity_extractor.domain.DistributedPerformance import DistributedPerformance
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionDistributedTask import ExtractionDistributedTask
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -34,7 +35,7 @@ class ExtractorBase:
         pass
 
     @abstractmethod
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+    def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         pass
 
     @staticmethod
@@ -100,33 +101,85 @@ class ExtractorBase:
 
     def get_performance(
         self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
-    ) -> Performance:
+    ) -> DistributedPerformance:
         method_name = extraction_distributed_task.method_name
         start_time = time.time()
 
         method_instance = self._get_method_instance_by_name(method_name)
         if not method_instance:
             send_logs(extraction_data.extraction_identifier, f"Method {method_name} not found")
-            return Performance(method_name=method_name, performance=0.0, execution_seconds=0)
+            return DistributedPerformance()
 
         if hasattr(method_instance, "can_be_used"):
             if not method_instance.can_be_used(extraction_data):
                 send_logs(extraction_data.extraction_identifier, f"Method {method_name} cannot be used with current data")
-                execution_time = int(time.time() - start_time)
-                return Performance(method_name=method_name, performance=0.0, execution_seconds=execution_time)
+                return DistributedPerformance()
 
         send_logs(extraction_data.extraction_identifier, f"\nChecking {method_name}")
 
         try:
-            train_set, test_set = self.prepare_for_performance(extraction_data)
+            train_set, test_set = self.prepare_for_training(extraction_data)
             performance_score = method_instance.get_performance(train_set, test_set)
+            should_be_retrained_with_more_data = (
+                method_instance.should_be_retrained_with_more_data()
+                if hasattr(method_instance, "should_be_retrained_with_more_data")
+                else True
+            )
             performance_score = float(performance_score) if performance_score is not None else 0.0
         except Exception as e:
+            should_be_retrained_with_more_data = True
             send_logs(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             performance_score = 0.0
 
         execution_time = int(time.time() - start_time)
-        return Performance(method_name=method_name, performance=performance_score, execution_seconds=execution_time)
+        return DistributedPerformance(
+            performance=performance_score,
+            execution_seconds=execution_time,
+            should_be_retrained_with_more_data=should_be_retrained_with_more_data,
+        )
+
+    def train_one_method(
+        self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
+    ) -> tuple[bool, str]:
+        method_name = extraction_distributed_task.method_name
+        start_time = time.time()
+
+        method_instance = self._get_method_instance_by_name(method_name)
+        if not method_instance:
+            return False, f"Method {method_name} not found"
+
+        if hasattr(method_instance, "can_be_used"):
+            if not method_instance.can_be_used(extraction_data):
+                return False, f"Method {method_name} cannot be used with current data"
+
+        try:
+            self.prepare_for_training(extraction_data)
+            training_success = method_instance.train(extraction_data)
+
+            if isinstance(training_success, tuple):
+                success = training_success[0]
+                message = training_success[1] if len(training_success) > 1 else ""
+                if message:
+                    send_logs(extraction_data.extraction_identifier, f"Training result: {message}")
+            else:
+                success = bool(training_success)
+                message = ""
+
+            execution_time = int(time.time() - start_time)
+            status = "" if success else "failed"
+            status_msg = f"Training {method_name} {status} in {execution_time}s"
+            send_logs(extraction_data.extraction_identifier, status_msg)
+
+            if success:
+                return True, message if message else status_msg
+            else:
+                return False, message if message else f"Training {method_name} failed"
+
+        except Exception as e:
+            error_msg = f"Training {method_name} failed with error: {str(e)}"
+            send_logs(extraction_data.extraction_identifier, error_msg, LogSeverity.error)
+            send_logs(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
+            return False, error_msg
 
     def _get_method_instance_by_name(self, method_name: str):
         for method in self.METHODS:

@@ -93,7 +93,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         self.options: list[Option] = list()
         self.multi_value = False
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+    def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         """Prepare the extractor for performance evaluation by fixing empty data and setting up options"""
         self.fix_empty_data(extraction_data)
         self.options = extraction_data.options
@@ -134,7 +134,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
         # Get train/test sets from preparation
-        performance_train_set, performance_test_set = self.prepare_for_performance(extraction_data)
+        performance_train_set, performance_test_set = self.prepare_for_training(extraction_data)
 
         self.extraction_identifier.save_options(extraction_data.options)
 

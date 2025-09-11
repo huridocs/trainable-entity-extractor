@@ -50,10 +50,6 @@ class TextToMultiOptionMethod(MethodBase):
         self.remove_model()
 
     @abstractmethod
-    def train(self, extraction_data: ExtractionData):
-        pass
-
-    @abstractmethod
     def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
         pass
 
@@ -113,6 +109,3 @@ class TextToMultiOptionMethod(MethodBase):
     @abstractmethod
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         pass
-
-    def should_be_retrained_with_more_data(self):
-        return True

@@ -82,7 +82,7 @@ class PdfToTextExtractor(ToTextExtractor):
     METHODS += [pdf_to_text_method_builder(PdfToTextSegmentSelector, GeminiTextMethod)]
     METHODS += t5_methods
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+    def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         """Prepare the extractor for performance evaluation by setting up segment selectors"""
         SegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
         FastSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
@@ -94,7 +94,7 @@ class PdfToTextExtractor(ToTextExtractor):
             return False, "No data to create model"
 
         # Use the shared preparation logic
-        performance_train_set, performance_test_set = self.prepare_for_performance(extraction_data)
+        performance_train_set, performance_test_set = self.prepare_for_training(extraction_data)
 
         return super().create_model(extraction_data)
 

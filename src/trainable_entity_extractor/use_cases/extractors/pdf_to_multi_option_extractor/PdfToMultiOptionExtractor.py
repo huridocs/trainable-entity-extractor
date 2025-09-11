@@ -124,8 +124,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         self.options: list[Option] = list()
         self.multi_value = False
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
-        """Prepare the extractor for performance evaluation by setting up options and segment selectors"""
+    def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         self.options = extraction_data.options
         self.multi_value = extraction_data.multi_value
 
@@ -138,7 +137,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         return ExtractorBase.get_train_test_sets(extraction_data)
 
     def create_model(self, extraction_data: ExtractionData):
-        performance_train_set, performance_test_set = self.prepare_for_performance(extraction_data)
+        performance_train_set, performance_test_set = self.prepare_for_training(extraction_data)
 
         send_logs(self.extraction_identifier, f"options {[x.model_dump() for x in self.options]}")
         send_logs(self.extraction_identifier, self.get_stats(extraction_data))

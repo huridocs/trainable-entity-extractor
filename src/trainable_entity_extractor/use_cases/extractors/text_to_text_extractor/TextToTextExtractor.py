@@ -53,7 +53,7 @@ class TextToTextExtractor(ToTextExtractor):
         MT5TrueCaseEnglishSpanishMethod,
     ]
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+    def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         """Prepare the extractor for performance evaluation by setting up segment selector texts"""
         # Set up segment selector texts like in create_model
         for sample in extraction_data.samples:

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 
 
 class MethodBase(ABC):
@@ -20,6 +21,10 @@ class MethodBase(ABC):
 
     @abstractmethod
     def train(self, extraction_data: ExtractionData) -> None:
+        pass
+
+    @abstractmethod
+    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
         pass
 
     def should_be_retrained_with_more_data(self) -> bool:

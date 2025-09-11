@@ -18,7 +18,7 @@ class ToTextExtractor(ExtractorBase):
     def __init__(self, extraction_identifier: ExtractionIdentifier):
         super().__init__(extraction_identifier)
 
-    def prepare_for_performance(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
+    def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         """Base preparation for text extractors - return train/test sets"""
         return self.get_train_test_sets(extraction_data)
 
@@ -63,7 +63,7 @@ class ToTextExtractor(ExtractorBase):
         if not extraction_data or not extraction_data.samples:
             return False, "No samples to create model"
 
-        performance_train_set, performance_test_set = self.prepare_for_performance(extraction_data)
+        performance_train_set, performance_test_set = self.prepare_for_training(extraction_data)
 
         samples_info = f"Train: {len(performance_train_set.samples)} samples\n"
         samples_info += f"Test: {len(performance_test_set.samples)} samples"

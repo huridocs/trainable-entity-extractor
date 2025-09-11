@@ -1,9 +1,9 @@
 import shutil
 
+from trainable_entity_extractor.domain.DistributedPerformance import DistributedPerformance
 from trainable_entity_extractor.domain.ExtractionDistributedTask import ExtractionDistributedTask
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
-from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.use_cases.extractors.ExtractorBase import ExtractorBase
@@ -94,14 +94,26 @@ class TrainableEntityExtractor:
 
     def get_performance(
         self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
-    ) -> Performance:
+    ) -> DistributedPerformance:
         extractor_name = extraction_distributed_task.extractor_name
         for extractor in self.EXTRACTORS:
             extractor_instance = extractor(self.extraction_identifier)
             if extractor_instance.get_name() != extractor_name:
                 continue
 
-            performance = extractor_instance.get_performance(extraction_distributed_task, extraction_data)
-            return performance
+            return extractor_instance.get_performance(extraction_distributed_task, extraction_data)
 
-        return Performance(method_name="No methods", performance=0.0)
+        return DistributedPerformance()
+
+    def train_one_method(
+        self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
+    ) -> tuple[bool, str]:
+        extractor_name = extraction_distributed_task.extractor_name
+        for extractor in self.EXTRACTORS:
+            extractor_instance = extractor(self.extraction_identifier)
+            if extractor_instance.get_name() != extractor_name:
+                continue
+
+            return extractor_instance.train_one_method(extraction_distributed_task, extraction_data)
+
+        return False, f"Extractor {extractor_name} not found"
