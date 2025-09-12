@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import time
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.ExtractionDistributedTask import ExtractionDistributedTask
+from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
@@ -74,8 +74,8 @@ class ExtractorBase:
             extraction_identifier=extraction_data.extraction_identifier,
         )
 
-    def get_distributed_tasks(self, extraction_data: ExtractionData) -> list[ExtractionDistributedTask]:
-        tasks = list()
+    def get_distributed_jobs(self, extraction_data: ExtractionData) -> list[TrainableEntityExtractorJob]:
+        jobs = list()
         for method in self.METHODS:
             if isinstance(method, type):
                 method_instance = method(self.extraction_identifier)
@@ -86,7 +86,7 @@ class ExtractorBase:
                 if not method_instance.can_be_used(extraction_data):
                     continue
 
-            task = ExtractionDistributedTask(
+            job = TrainableEntityExtractorJob(
                 run_name=extraction_data.extraction_identifier.run_name,
                 extraction_name=extraction_data.extraction_identifier.extraction_name,
                 extractor_name=self.get_name(),
@@ -94,14 +94,12 @@ class ExtractorBase:
                 gpu_needed=getattr(method_instance, "gpu_needed", False),
                 timeout=getattr(method_instance, "timeout", 3600),
             )
-            tasks.append(task)
+            jobs.append(job)
 
-        return tasks
+        return jobs
 
-    def get_performance(
-        self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
-    ) -> Performance:
-        method_name = extraction_distributed_task.method_name
+    def get_performance(self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData) -> Performance:
+        method_name = extractor_job.method_name
         start_time = time.time()
 
         method_instance = self._get_method_instance_by_name(method_name)
@@ -138,9 +136,9 @@ class ExtractorBase:
         )
 
     def train_one_method(
-        self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
+        self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData
     ) -> tuple[bool, str]:
-        method_name = extraction_distributed_task.method_name
+        method_name = extractor_job.method_name
         start_time = time.time()
 
         method_instance = self._get_method_instance_by_name(method_name)

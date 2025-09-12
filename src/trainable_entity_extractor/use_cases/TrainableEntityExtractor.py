@@ -1,7 +1,7 @@
 import shutil
 
 from trainable_entity_extractor.domain.Performance import Performance
-from trainable_entity_extractor.domain.ExtractionDistributedTask import ExtractionDistributedTask
+from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
@@ -78,42 +78,40 @@ class TrainableEntityExtractor:
         send_logs(self.extraction_identifier, f"No extractor available", LogSeverity.error)
         return []
 
-    def get_distributed_tasks(self, extraction_data: ExtractionData) -> list[ExtractionDistributedTask]:
-        tasks = list()
+    def get_distributed_jobs(self, extraction_data: ExtractionData) -> list[TrainableEntityExtractorJob]:
+        jobs = list()
         for extractor in self.EXTRACTORS:
             extractor_instance = extractor(self.extraction_identifier)
 
             if not extractor_instance.can_be_used(extraction_data):
                 continue
 
-            send_logs(self.extraction_identifier, f"Getting tasks for extractor {extractor_instance.get_name()}")
-            tasks = extractor_instance.get_distributed_tasks(extraction_data)
+            send_logs(self.extraction_identifier, f"Getting jobs for extractor {extractor_instance.get_name()}")
+            jobs = extractor_instance.get_distributed_jobs(extraction_data)
             break
 
-        return tasks
+        return jobs
 
-    def get_performance(
-        self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
-    ) -> Performance:
-        extractor_name = extraction_distributed_task.extractor_name
+    def get_performance(self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData) -> Performance:
+        extractor_name = extractor_job.extractor_name
         for extractor in self.EXTRACTORS:
             extractor_instance = extractor(self.extraction_identifier)
             if extractor_instance.get_name() != extractor_name:
                 continue
 
-            return extractor_instance.get_performance(extraction_distributed_task, extraction_data)
+            return extractor_instance.get_performance(extractor_job, extraction_data)
 
         return Performance()
 
     def train_one_method(
-        self, extraction_distributed_task: ExtractionDistributedTask, extraction_data: ExtractionData
+        self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData
     ) -> tuple[bool, str]:
-        extractor_name = extraction_distributed_task.extractor_name
+        extractor_name = extractor_job.extractor_name
         for extractor in self.EXTRACTORS:
             extractor_instance = extractor(self.extraction_identifier)
             if extractor_instance.get_name() != extractor_name:
                 continue
 
-            return extractor_instance.train_one_method(extraction_distributed_task, extraction_data)
+            return extractor_instance.train_one_method(extractor_job, extraction_data)
 
         return False, f"Extractor {extractor_name} not found"
