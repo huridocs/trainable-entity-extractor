@@ -129,5 +129,9 @@ class ExtractionIdentifier(BaseModel):
                     shutil.rmtree(path, ignore_errors=True)
                     break
 
+    @staticmethod
+    def get_default():
+        return ExtractionIdentifier(extraction_name="default")
+
     def __str__(self):
         return f"{self.run_name} / {self.extraction_name}"
