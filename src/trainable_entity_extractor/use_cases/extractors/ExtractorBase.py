@@ -8,12 +8,13 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
+from trainable_entity_extractor.use_cases.extractors.MethodBase import MethodBase
 from trainable_entity_extractor.use_cases.send_logs import send_logs
 
 
 class ExtractorBase:
 
-    METHODS = list()
+    METHODS: list[MethodBase] = list()
 
     def __init__(self, extraction_identifier: ExtractionIdentifier):
         self.extraction_identifier = extraction_identifier
@@ -93,6 +94,7 @@ class ExtractorBase:
                 method_name=method_instance.get_name(),
                 gpu_needed=getattr(method_instance, "gpu_needed", False),
                 timeout=getattr(method_instance, "timeout", 3600),
+                should_be_retrained_with_more_data=method_instance.should_be_retrained_with_more_data(),
             )
             jobs.append(job)
 
@@ -117,14 +119,9 @@ class ExtractorBase:
         try:
             train_set, test_set = self.prepare_for_training(extraction_data)
             performance_score = method_instance.get_performance(train_set, test_set)
-            should_be_retrained_with_more_data = (
-                method_instance.should_be_retrained_with_more_data()
-                if hasattr(method_instance, "should_be_retrained_with_more_data")
-                else True
-            )
             performance_score = float(performance_score) if performance_score is not None else 0.0
         except Exception as e:
-            should_be_retrained_with_more_data = True
+            extractor_job.should_be_retrained_with_more_data = True
             send_logs(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             performance_score = 0.0
 
@@ -132,7 +129,6 @@ class ExtractorBase:
         return Performance(
             performance=performance_score,
             execution_seconds=execution_time,
-            should_be_retrained_with_more_data=should_be_retrained_with_more_data,
         )
 
     def train_one_method(
