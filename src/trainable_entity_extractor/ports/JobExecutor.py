@@ -37,9 +37,7 @@ class JobExecutor(ABC):
         pass
 
     @abstractmethod
-    def start_prediction(
-        self, extraction_identifier: ExtractionIdentifier, distributed_sub_job: DistributedSubJob
-    ):
+    def start_prediction(self, extraction_identifier: ExtractionIdentifier, distributed_sub_job: DistributedSubJob):
         pass
 
     @abstractmethod
