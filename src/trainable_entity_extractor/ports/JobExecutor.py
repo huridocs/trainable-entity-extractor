@@ -37,9 +37,9 @@ class JobExecutor(ABC):
         pass
 
     @abstractmethod
-    def execute_prediction(
-        self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob
-    ) -> Tuple[bool, str]:
+    def start_prediction(
+        self, extraction_identifier: ExtractionIdentifier, distributed_sub_job: DistributedSubJob
+    ):
         pass
 
     @abstractmethod
@@ -83,21 +83,21 @@ class JobExecutor(ABC):
 
     def check_and_wait_for_model(self, extraction_identifier: ExtractionIdentifier) -> bool:
         try:
-            model_downloaded = self.model_storage.download_model(extraction_identifier)
-            if not model_downloaded:
-                self.logger.log(
-                    extraction_identifier, "Model download failed, checking completion signal", LogSeverity.warning
-                )
-
             completion_signal_exists = self.model_storage.check_model_completion_signal(extraction_identifier)
 
-            if completion_signal_exists:
-                self.logger.log(extraction_identifier, "Model completion signal found, model is ready")
-                return True
-            else:
+            if not completion_signal_exists:
                 self.logger.log(extraction_identifier, "Model completion signal not found, model may still be uploading")
                 return False
 
+            self.logger.log(extraction_identifier, "Model completion signal found, model is ready")
+            model_downloaded = self.model_storage.download_model(extraction_identifier)
+            if model_downloaded:
+                self.logger.log(
+                    extraction_identifier, "Model download failed, checking completion signal", LogSeverity.warning
+                )
+                return True
+
+            return False
         except Exception as e:
             self.logger.log(extraction_identifier, f"Error checking model availability: {e}", LogSeverity.error)
             return False

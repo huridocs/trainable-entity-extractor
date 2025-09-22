@@ -47,14 +47,25 @@ class TrainableEntityExtractor:
         if not self._is_training_valid(extraction_data):
             return False, "Training validation failed"
 
-        if not self._cache_training_data(extraction_data):
-            return False, "Failed to cache extraction data"
+        self.data_retriever.save_extraction_data(self.extraction_identifier, extraction_data)
 
         jobs = self._get_training_jobs(extraction_data)
         if not jobs:
             return False, "No suitable extractors found for training"
 
         return self._execute_training_workflow(jobs)
+
+    def predict(self, prediction_samples: list[PredictionSample]) -> list[Suggestion]:
+        if not self._is_prediction_valid(prediction_samples):
+            return []
+
+        self.data_retriever.save_prediction_data(self.extraction_identifier, prediction_samples)
+        extractor_job = self._get_extractor_job()
+        if not extractor_job:
+            return []
+
+        self._execute_prediction(extractor_job)
+        return self.data_retriever.get_suggestions(self.extraction_identifier)
 
     def _is_training_valid(self, extraction_data: ExtractionData) -> bool:
         if extraction_data.extraction_identifier.is_training_canceled():
@@ -65,15 +76,6 @@ class TrainableEntityExtractor:
             return False
 
         return True
-
-    def _cache_training_data(self, extraction_data: ExtractionData) -> bool:
-        cache_success = self.data_retriever.cache_extraction_data(self.extraction_identifier, extraction_data)
-        if cache_success:
-            self.logger.log(self.extraction_identifier, "Extraction data cached successfully")
-        else:
-            self.logger.log(self.extraction_identifier, "Warning: Failed to cache extraction data", LogSeverity.warning)
-
-        return cache_success
 
     def _get_training_jobs(self, extraction_data: ExtractionData) -> list:
         trainer = TrainUseCase(extractors=self.EXTRACTORS)
@@ -132,16 +134,6 @@ class TrainableEntityExtractor:
         shutil.rmtree(self.extraction_identifier.get_path(), ignore_errors=True)
         return False, error_message
 
-    def predict(self, prediction_samples: list[PredictionSample]) -> list[Suggestion]:
-        if not self._is_prediction_valid(prediction_samples):
-            return []
-        self.data_retriever.cache_prediction_data(self.extraction_identifier, prediction_samples)
-        extractor_job = self._get_extractor_job()
-        if not extractor_job:
-            return []
-
-        return self._execute_prediction(extractor_job)
-
     @staticmethod
     def _is_prediction_valid(prediction_samples: list[PredictionSample]) -> bool:
         return bool(prediction_samples)
@@ -154,29 +146,39 @@ class TrainableEntityExtractor:
 
         return extractor_job
 
-    def _execute_prediction(self, extractor_job, prediction_samples: list[PredictionSample]) -> list[Suggestion]:
-        prediction_orchestrator = PredictionOrchestratorUseCase(self.job_executor)
+    def _execute_prediction(self, extractor_job) -> None:
+        distributed_jobs = self._create_distributed_prediction_jobs(extractor_job)
+        prediction_orchestrator = PredictionOrchestratorUseCase(self.job_executor, self.logger)
+        prediction_orchestrator.distributed_jobs = distributed_jobs
+
+        self.logger.log(self.extraction_identifier, f"Predicting using method {extractor_job.method_name}")
 
         try:
-            success, message, suggestions = self._process_prediction(
-                prediction_orchestrator, extractor_job, prediction_samples
-            )
-
-            if success:
-                self._log_prediction_success(suggestions, extractor_job.method_name)
-                return suggestions
-            else:
-                self.logger.log(self.extraction_identifier, f"Prediction failed: {message}", LogSeverity.error)
-                return []
-
+            self._process_prediction_jobs(prediction_orchestrator, distributed_jobs)
         except Exception as e:
             self._handle_prediction_exception(e)
-            return []
 
-    def _process_prediction(self, prediction_orchestrator, extractor_job, prediction_samples):
-        return prediction_orchestrator.process_prediction_with_samples(
-            extractor_job, prediction_samples, self.extraction_identifier, wait_for_model=False
-        )
+    def _create_distributed_prediction_jobs(self, extractor_job) -> list[DistributedJob]:
+        return [
+            DistributedJob(
+                extraction_identifier=self.extraction_identifier,
+                type=JobType.PREDICT,
+                sub_jobs=[DistributedSubJob(extractor_job=extractor_job)],
+            )
+        ]
+
+    def _process_prediction_jobs(
+        self, prediction_orchestrator: PredictionOrchestratorUseCase, distributed_jobs: list
+    ) -> None:
+        while prediction_orchestrator.exists_jobs_to_be_done():
+            success, message = prediction_orchestrator.process_job(distributed_jobs[0])
+
+            if success:
+                self.logger.log(self.extraction_identifier, f"Prediction completed: {message}")
+                break
+            elif "in progress" not in message.lower():
+                self.logger.log(self.extraction_identifier, f"Prediction failed: {message}", LogSeverity.error)
+                break
 
     def _log_prediction_success(self, suggestions: list[Suggestion], method_name: str):
         self.logger.log(self.extraction_identifier, f"Generated {len(suggestions)} suggestions using {method_name}")

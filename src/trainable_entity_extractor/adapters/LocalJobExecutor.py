@@ -18,6 +18,7 @@ from trainable_entity_extractor.domain.JobStatus import JobStatus
 from trainable_entity_extractor.ports.JobExecutor import JobExecutor
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.use_cases.TrainUseCase import TrainUseCase
+from trainable_entity_extractor.use_cases.PredictUseCase import PredictUseCase
 
 
 class LocalJobExecutor(JobExecutor):
@@ -71,22 +72,26 @@ class LocalJobExecutor(JobExecutor):
         distributed_sub_job.status = JobStatus.FAILURE
         return False, "Training failed"
 
-    def execute_prediction(self, extractor_job: TrainableEntityExtractorJob) -> Tuple[bool, str]:
-        job_id = f"predict_{extractor_job.method_name}"
-        extractor_job.status = JobStatus.RUNNING
-
+    def start_prediction(self, extraction_identifier: ExtractionIdentifier, distributed_sub_job: DistributedSubJob) -> None:
         try:
-            extractor_instance = self._get_extractor_instance(extractor_job.extractor_name)
-            if not extractor_instance:
-                extractor_job.status = JobStatus.FAILURE
-                return False, f"Extractor {extractor_job.extractor_name} not found"
+            prediction_data = self.data_retriever.get_prediction_data(extraction_identifier)
+            if not prediction_data:
+                distributed_sub_job.status = JobStatus.FAILURE
+                distributed_sub_job.result = False
+                return
 
-            extractor_job.status = JobStatus.SUCCESS
-            return True, "Prediction job completed successfully"
-
+            predict_use_case = PredictUseCase(extractors=self.EXTRACTORS)
+            suggestions = predict_use_case.predict(distributed_sub_job.extractor_job, prediction_data)
+            success = self.data_retriever.save_suggestions(extraction_identifier, suggestions)
+            if success:
+                distributed_sub_job.status = JobStatus.SUCCESS
+                distributed_sub_job.result = True
+            else:
+                distributed_sub_job.status = JobStatus.FAILURE
+                distributed_sub_job.result = False
         except Exception as e:
-            extractor_job.status = JobStatus.FAILURE
-            return False, str(e)
+            distributed_sub_job.status = JobStatus.FAILURE
+            distributed_sub_job.result = False
 
     def execute_prediction_with_samples(
         self, extractor_job: TrainableEntityExtractorJob, prediction_samples: List[PredictionSample]

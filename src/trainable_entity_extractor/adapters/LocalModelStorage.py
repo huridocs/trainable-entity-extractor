@@ -44,12 +44,10 @@ class LocalModelStorage(ModelStorage):
             return False
 
     def check_model_completion_signal(self, extraction_identifier: ExtractionIdentifier) -> bool:
-        """Check if model training is complete"""
         key = f"{extraction_identifier.run_name}_{extraction_identifier.extraction_name}"
         return self.completion_signals.get(key, False)
 
     def create_model_completion_signal(self, extraction_identifier: ExtractionIdentifier) -> bool:
-        """Create completion signal for model training"""
         try:
             key = f"{extraction_identifier.run_name}_{extraction_identifier.extraction_name}"
             self.completion_signals[key] = True

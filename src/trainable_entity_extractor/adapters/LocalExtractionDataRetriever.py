@@ -4,6 +4,7 @@ from pathlib import Path
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.config import CACHE_PATH
 from trainable_entity_extractor.ports.ExtractionDataRetriever import ExtractionDataRetriever
 
@@ -21,7 +22,7 @@ class LocalExtractionDataRetriever(ExtractionDataRetriever):
 
         return None
 
-    def cache_extraction_data(self, extraction_identifier: ExtractionIdentifier, extraction_data: ExtractionData) -> bool:
+    def save_extraction_data(self, extraction_identifier: ExtractionIdentifier, extraction_data: ExtractionData) -> bool:
         try:
             cache_path = self._get_cache_path(extraction_identifier)
             cache_path.mkdir(parents=True, exist_ok=True)
@@ -35,7 +36,7 @@ class LocalExtractionDataRetriever(ExtractionDataRetriever):
             print(f"Failed to cache extraction data: {e}")
             return False
 
-    def cache_prediction_data(
+    def save_prediction_data(
         self, extraction_identifier: ExtractionIdentifier, prediction_data: list[PredictionSample]
     ) -> bool:
         try:
@@ -82,15 +83,29 @@ class LocalExtractionDataRetriever(ExtractionDataRetriever):
             self.cache_base_path / "extraction_data" / extraction_identifier.run_name / extraction_identifier.extraction_name
         )
 
-    def clear_cache(self, extraction_identifier: ExtractionIdentifier) -> bool:
-        """Clear cached data for a specific extraction"""
+    def get_suggestions(self, extraction_identifier: ExtractionIdentifier) -> list[Suggestion]:
         try:
             cache_path = self._get_cache_path(extraction_identifier)
-            if cache_path.exists():
-                import shutil
+            pickle_file = cache_path / "suggestions_data.pickle"
 
-                shutil.rmtree(cache_path)
-                return True
+            if pickle_file.exists():
+                with open(pickle_file, "rb") as f:
+                    return pickle.load(f)
         except Exception as e:
-            print(f"Failed to clear cache: {e}")
-        return False
+            print(f"Failed to load cached suggestions data: {e}")
+
+        return []
+
+    def save_suggestions(self, extraction_identifier: ExtractionIdentifier, suggestions: list[Suggestion]) -> bool:
+        try:
+            cache_path = self._get_cache_path(extraction_identifier)
+            cache_path.mkdir(parents=True, exist_ok=True)
+
+            pickle_file = cache_path / "suggestions_data.pickle"
+            with open(pickle_file, "wb") as f:
+                pickle.dump(suggestions, f)
+
+            return True
+        except Exception as e:
+            print(f"Failed to cache suggestions data: {e}")
+            return False
