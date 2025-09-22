@@ -8,10 +8,10 @@ from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.domain.FormatSegmentText import FormatSegmentText
-from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.Beginning750 import (
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.filter_segments_methods.Beginning750 import (
     Beginning750,
 )
-from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.End750 import (
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.filter_segments_methods.End750 import (
     End750,
 )
 

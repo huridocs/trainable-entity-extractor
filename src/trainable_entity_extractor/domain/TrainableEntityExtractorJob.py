@@ -8,4 +8,4 @@ class TrainableEntityExtractorJob(BaseModel):
     method_name: str
     gpu_needed: bool
     timeout: int
-    should_be_retrained_with_more_data: bool = True
+    should_be_retrained_with_more_data: bool = False

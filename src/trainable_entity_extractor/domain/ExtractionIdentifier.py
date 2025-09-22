@@ -64,18 +64,6 @@ class ExtractionIdentifier(BaseModel):
     def save_multi_value(self, multi_value: bool):
         self.save_content(MULTI_VALUE_FILE_NAME, multi_value)
 
-    def get_method_used(self) -> str:
-        return self.get_file_content(METHOD_USED_FILE_NAME, "")
-
-    def save_method_used(self, method_used: str):
-        self.save_content(METHOD_USED_FILE_NAME, method_used)
-
-    def get_extractor_used(self) -> str:
-        return self.get_file_content(EXTRACTOR_USED_FILE_NAME, "")
-
-    def save_extractor_used(self, method_used: str):
-        self.save_content(EXTRACTOR_USED_FILE_NAME, method_used)
-
     def is_old(self):
         path = self.get_path()
         return exists(path) and os.path.isdir(path) and os.path.getmtime(path) < (time() - (2 * 24 * 3600))

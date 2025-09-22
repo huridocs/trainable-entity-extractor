@@ -8,7 +8,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
-from trainable_entity_extractor.use_cases.TrainableEntityExtractor import TrainableEntityExtractor
+from trainable_entity_extractor.drivers.TrainableEntityExtractor import TrainableEntityExtractor
 
 extraction_id = "test_get_distributed_jobs"
 extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
@@ -64,7 +64,7 @@ class TestGetDistributedJobs(TestCase):
         mock_extractor_instance.get_distributed_jobs.return_value = [mock_job]
 
         with patch.object(self.trainable_extractor, "EXTRACTORS", [Mock(return_value=mock_extractor_instance)]):
-            jobs = self.trainable_extractor.get_distributed_jobs(extraction_data)
+            jobs = self.trainable_extractor.get_jobs(extraction_data)
 
         self.assertEqual(len(jobs), 1)
         self.assertEqual(jobs[0].extractor_name, "MockExtractor")
@@ -81,7 +81,7 @@ class TestGetDistributedJobs(TestCase):
         mock_extractor_instance.get_name.return_value = "IncompatibleExtractor"
 
         with patch.object(self.trainable_extractor, "EXTRACTORS", [Mock(return_value=mock_extractor_instance)]):
-            jobs = self.trainable_extractor.get_distributed_jobs(extraction_data)
+            jobs = self.trainable_extractor.get_jobs(extraction_data)
 
         self.assertEqual(len(jobs), 0)
         mock_extractor_instance.can_be_used.assert_called_once_with(extraction_data)
@@ -112,7 +112,7 @@ class TestGetDistributedJobs(TestCase):
         with patch.object(
             self.trainable_extractor, "EXTRACTORS", [Mock(return_value=mock_extractor1), Mock(return_value=mock_extractor2)]
         ):
-            jobs = self.trainable_extractor.get_distributed_jobs(extraction_data)
+            jobs = self.trainable_extractor.get_jobs(extraction_data)
 
         self.assertEqual(len(jobs), 1)
         self.assertEqual(jobs[0].extractor_name, "FirstExtractor")
@@ -145,7 +145,7 @@ class TestGetDistributedJobs(TestCase):
         with patch.object(
             self.trainable_extractor, "EXTRACTORS", [Mock(return_value=mock_extractor1), Mock(return_value=mock_extractor2)]
         ):
-            jobs = self.trainable_extractor.get_distributed_jobs(extraction_data)
+            jobs = self.trainable_extractor.get_jobs(extraction_data)
 
         self.assertEqual(len(jobs), 1)
         self.assertEqual(jobs[0].extractor_name, "SecondExtractor")
@@ -165,7 +165,7 @@ class TestGetDistributedJobs(TestCase):
         mock_extractor_instance.can_be_used.return_value = False
 
         with patch.object(self.trainable_extractor, "EXTRACTORS", [Mock(return_value=mock_extractor_instance)]):
-            jobs = self.trainable_extractor.get_distributed_jobs(extraction_data)
+            jobs = self.trainable_extractor.get_jobs(extraction_data)
 
         self.assertEqual(len(jobs), 0)
         mock_extractor_instance.can_be_used.assert_called_once_with(extraction_data)
@@ -199,7 +199,7 @@ class TestGetDistributedJobs(TestCase):
         mock_extractor_instance.get_distributed_jobs.return_value = mock_jobs
 
         with patch.object(self.trainable_extractor, "EXTRACTORS", [Mock(return_value=mock_extractor_instance)]):
-            jobs = self.trainable_extractor.get_distributed_jobs(extraction_data)
+            jobs = self.trainable_extractor.get_jobs(extraction_data)
 
         self.assertEqual(len(jobs), 2)
         self.assertEqual(jobs[0].method_name, "method_1")

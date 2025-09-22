@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from pdf_token_type_labels.TokenType import TokenType
 
-from trainable_entity_extractor.use_cases.XmlFile import XmlFile
+from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
 from trainable_entity_extractor.config import APP_PATH
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -14,7 +14,7 @@ from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
-from trainable_entity_extractor.use_cases.TrainableEntityExtractor import TrainableEntityExtractor
+from trainable_entity_extractor.drivers.TrainableEntityExtractor import TrainableEntityExtractor
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 
 extraction_id = "test_pdf_to_text"
@@ -62,7 +62,7 @@ class TestExtractorPdfToText(TestCase):
         )
 
         blank_xml = join(TEST_XML_PATH, "blank.xml")
-        xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=blank_xml)
+        xml_file = XmlFileUseCase(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=blank_xml)
         pdf_data = PdfData.from_xml_file(xml_file, segmentation_data)
         samples = [TrainingSample(pdf_data=pdf_data, labeled_data=labeled_data)]
 
@@ -90,7 +90,7 @@ class TestExtractorPdfToText(TestCase):
         )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
-        xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
+        xml_file = XmlFileUseCase(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
         pdf_data = PdfData.from_xml_file(xml_file, segmentation_data)
         samples = [TrainingSample(pdf_data=pdf_data, labeled_data=labeled_data)] * 7
 
@@ -123,7 +123,7 @@ class TestExtractorPdfToText(TestCase):
         )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
-        xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
+        xml_file = XmlFileUseCase(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
         pdf_data = PdfData.from_xml_file(xml_file, segmentation_data)
         samples = [TrainingSample(pdf_data=pdf_data, labeled_data=labeled_data)] * 7
 
@@ -158,7 +158,7 @@ class TestExtractorPdfToText(TestCase):
         )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
-        xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
+        xml_file = XmlFileUseCase(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
         pdf_data = PdfData.from_xml_file(xml_file, segmentation_data)
         samples = [TrainingSample(pdf_data=pdf_data, labeled_data=labeled_data)] * 7
 
@@ -186,7 +186,7 @@ class TestExtractorPdfToText(TestCase):
         )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
-        xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
+        xml_file = XmlFileUseCase(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
         pdf_data = PdfData.from_xml_file(xml_file, segmentation_data)
         samples = [TrainingSample(pdf_data=pdf_data, labeled_data=labeled_data)] * 7
 
@@ -196,7 +196,7 @@ class TestExtractorPdfToText(TestCase):
         task_calculated, error_message = trainable_entity_extractor.train(extraction_data)
 
         blank_xml = join(TEST_XML_PATH, "blank.xml")
-        xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=False, xml_file_name=blank_xml)
+        xml_file = XmlFileUseCase(extraction_identifier=extraction_identifier, to_train=False, xml_file_name=blank_xml)
         pdf_data = PdfData.from_xml_file(xml_file, segmentation_data)
 
         samples = [PredictionSample(pdf_data=pdf_data, entity_name="blank.xml")]
@@ -218,7 +218,7 @@ class TestExtractorPdfToText(TestCase):
         )
 
         test_xml = join(TEST_XML_PATH, "test.xml")
-        xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
+        xml_file = XmlFileUseCase(extraction_identifier=extraction_identifier, to_train=True, xml_file_name=test_xml)
         pdf_data = PdfData.from_xml_file(xml_file, segmentation_data)
         samples = [TrainingSample(pdf_data=pdf_data, labeled_data=labeled_data)] * 7
 
@@ -228,7 +228,7 @@ class TestExtractorPdfToText(TestCase):
         task_calculated, error_message = trainable_entity_extractor.train(extraction_data)
 
         no_pages_xml = join(TEST_XML_PATH, "no_pages.xml")
-        xml_file = XmlFile(extraction_identifier=extraction_identifier, to_train=False, xml_file_name=no_pages_xml)
+        xml_file = XmlFileUseCase(extraction_identifier=extraction_identifier, to_train=False, xml_file_name=no_pages_xml)
         pdf_data = PdfData.from_xml_file(xml_file, segmentation_data)
 
         samples = [PredictionSample(pdf_data=pdf_data, entity_name="no_pages.xml")]

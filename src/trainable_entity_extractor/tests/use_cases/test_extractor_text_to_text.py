@@ -1,7 +1,7 @@
 import shutil
 from unittest import TestCase
 
-from trainable_entity_extractor.use_cases.TrainableEntityExtractor import TrainableEntityExtractor
+from trainable_entity_extractor.drivers.TrainableEntityExtractor import TrainableEntityExtractor
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData

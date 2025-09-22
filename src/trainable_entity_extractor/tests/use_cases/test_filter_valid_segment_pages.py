@@ -9,7 +9,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.PredictionData import PredictionData
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
-from trainable_entity_extractor.use_cases.FilterValidSegmentsPages import FilterValidSegmentsPages
+from trainable_entity_extractor.use_cases.FilterValidSegmentsPages import FilterValidSegmentsPagesUseCase
 
 DATA_FOLDER_PATH = (
     f"{os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))}/models_data"
@@ -60,7 +60,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data = self.get_labeled_data(labels_page_numbers=[1, 3, 6])
@@ -74,7 +74,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data_1 = self.get_labeled_data(labels_page_numbers=[1], number_of_pages=10)
@@ -89,7 +89,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data_1 = self.get_labeled_data(labels_page_numbers=[1, 3, 6])
@@ -105,7 +105,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data_1 = self.get_labeled_data(labels_page_numbers=[1])
@@ -121,7 +121,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data_1 = self.get_labeled_data(labels_page_numbers=[2], number_of_pages=18)
@@ -137,7 +137,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data_1 = self.get_labeled_data(labels_page_numbers=[4, 5])
@@ -153,7 +153,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data_1 = self.get_labeled_data(labels_page_numbers=[10, 11, 12, 13])
@@ -169,7 +169,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data_1 = self.get_labeled_data(labels_page_numbers=[3], number_of_pages=4)
@@ -185,7 +185,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data = self.get_labeled_data(labels_page_numbers=[1, 2, 3])
@@ -202,7 +202,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data = self.get_labeled_data(labels_page_numbers=[10, 11, 12, 13])
@@ -219,7 +219,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         filter_valid_segment_pages.for_training([])
@@ -236,7 +236,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data_json_path = Path(filter_valid_segment_pages.labeled_data_json_path)
@@ -254,7 +254,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         prediction_data = self.get_prediction_data(page_numbers=[2])
@@ -268,7 +268,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
         labeled_data = self.get_labeled_data(labels_page_numbers=[1])
@@ -284,7 +284,7 @@ class TestFilterValidSegmentPages(TestCase):
 
         shutil.rmtree(join(DATA_FOLDER_PATH, tenant), ignore_errors=True)
 
-        filter_valid_segment_pages = FilterValidSegmentsPages(
+        filter_valid_segment_pages = FilterValidSegmentsPagesUseCase(
             ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id)
         )
 

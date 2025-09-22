@@ -4,8 +4,6 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.PerformanceLog import PerformanceLog
 from time import time
 
-from trainable_entity_extractor.use_cases.send_logs import send_logs
-
 
 class PerformanceSummary(BaseModel):
     extractor_name: str = "Unknown Extractor"
@@ -26,7 +24,6 @@ class PerformanceSummary(BaseModel):
         )
         self.previous_timestamp = current_time
         self.performances.append(performance)
-        send_logs(self.extraction_identifier, f"Performance {performance.to_log(self.testing_samples_count)}")
 
     def to_log(self) -> str:
         total_time = sum(performance.execution_seconds for performance in self.performances)
