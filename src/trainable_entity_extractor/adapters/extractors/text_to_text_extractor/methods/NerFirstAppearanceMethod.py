@@ -3,7 +3,7 @@ from statistics import mode
 from flair.nn import Classifier
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from flair.data import Sentence
 
@@ -28,13 +28,13 @@ class NerFirstAppearanceMethod(ToTextExtractorMethod):
 
         self.save_json(TAG_TYPE_JSON, mode(types) if types else "")
 
-    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
         tag_type = self.load_json(TAG_TYPE_JSON)
         if not tag_type:
-            return [""] * len(prediction_samples.prediction_samples)
+            return [""] * len(prediction_samples_data.prediction_samples)
 
         predictions = list()
-        for prediction_sample in prediction_samples.prediction_samples:
+        for prediction_sample in prediction_samples_data.prediction_samples:
             text = self.clean_text(prediction_sample.get_input_text())
             sentence = Sentence(text)
             tagger.predict(sentence)

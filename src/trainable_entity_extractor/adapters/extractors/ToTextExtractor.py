@@ -1,7 +1,7 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
@@ -27,7 +27,7 @@ class ToTextExtractor(ExtractorBase):
     def get_name(self):
         return self.__class__.__name__
 
-    def get_suggestions(self, method_name: str, prediction_samples: PredictionSamples) -> list[Suggestion]:
+    def get_suggestions(self, method_name: str, prediction_samples: PredictionSamplesData) -> list[Suggestion]:
         method_instance = self.get_predictions_method(method_name)
         self.logger.log(
             self.extraction_identifier,

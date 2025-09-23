@@ -4,7 +4,7 @@ from rapidfuzz import fuzz
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -29,7 +29,7 @@ class TextFuzzyAll100(TextToMultiOptionMethod):
 
         return list(set(appearances))
 
-    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
+    def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
         predictions: list[list[Option]] = list()
         option_labels = [option.label.lower() for option in prediction_samples.options]
         for sample in prediction_samples.prediction_samples:

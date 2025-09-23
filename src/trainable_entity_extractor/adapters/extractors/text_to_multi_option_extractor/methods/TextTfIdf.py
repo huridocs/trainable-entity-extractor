@@ -11,7 +11,7 @@ from sklearn.multiclass import OneVsRestClassifier
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -60,7 +60,7 @@ class TextTfIdf(TextToMultiOptionMethod):
         one_vs_rest_classifier = one_vs_rest_classifier.fit(tfidf_train_vectors, labels)
         dump(one_vs_rest_classifier, self.get_model_path())
 
-    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
+    def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
         train_texts = load(self.get_data_path())
 
         vectorized = TfidfVectorizer()

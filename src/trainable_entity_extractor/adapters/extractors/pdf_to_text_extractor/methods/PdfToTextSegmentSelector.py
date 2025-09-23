@@ -5,14 +5,12 @@ from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
-from trainable_entity_extractor.ports.Logger import Logger
 
 
 class PdfToTextSegmentSelector(SegmentSelector):
 
-    def __init__(self, extraction_identifier: ExtractionIdentifier, logger: Logger):
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
         super().__init__(extraction_identifier)
-        self.logger = logger
 
     def train(self, extraction_data: ExtractionData):
         samples_with_label_segments_boxes = [x for x in extraction_data.samples if x.labeled_data.label_segments_boxes]
@@ -22,7 +20,6 @@ class PdfToTextSegmentSelector(SegmentSelector):
         success, error = self.create_segment_selector_model(extraction_data_with_samples)
 
         if not success:
-            self.logger.log(extraction_identifier=self.extraction_identifier, message=error)
             return
 
         for sample in extraction_data.samples:

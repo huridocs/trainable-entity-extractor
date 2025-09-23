@@ -2,8 +2,8 @@ import os
 from abc import ABC, abstractmethod
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.domain.Option import Option
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
+from trainable_entity_extractor.domain.Value import Value
 
 
 class MethodBase(ABC):
@@ -28,7 +28,7 @@ class MethodBase(ABC):
         pass
 
     @abstractmethod
-    def predict(self, prediction_samples: PredictionSamples) -> list[str] | list[list[Option]]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str] | list[list[Value]]:
         pass
 
     def should_be_retrained_with_more_data(self) -> bool:

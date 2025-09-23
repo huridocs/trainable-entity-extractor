@@ -8,6 +8,7 @@ from country_named_entity_recognition import find_countries
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -41,29 +42,11 @@ class TextToCountries(TextToMultiOptionMethod):
         percentage_matched = sum(1 for label in option_labels if self._find_countries(label)) / total_options
         return percentage_matched > 0.5
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
-        predictions = []
-        option_keywords = self._load_option_keywords()
-
-        if not option_keywords:
-            return [] * len(predictions_samples)
-
-        option_keywords_dict = {option_keyword.keyword: option_keyword for option_keyword in option_keywords}
-        for sample in predictions_samples:
-            predictions.append([])
-            sample_text = (
-                sample.get_input_text() if sample.get_input_text() else " ".join([x for x in sample.segment_selector_texts])
-            )
-            found_countries = self._find_countries(sample_text)
-            if found_countries:
-                options = [
-                    option_keywords_dict[country.name].option
-                    for country in found_countries
-                    if country.name in option_keywords_dict
-                ]
-                predictions[-1].extend(options)
-
-            predictions[-1].extend(self.get_no_country_strings(sample_text, option_keywords))
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
+        predictions: list[list[Option]] = list()
+        for sample in prediction_samples_data.prediction_samples:
+            country_codes = self.get_country_codes(sample.get_input_text())
+            predictions.append([option for option in prediction_samples_data.options if option.label in country_codes])
 
         return predictions
 

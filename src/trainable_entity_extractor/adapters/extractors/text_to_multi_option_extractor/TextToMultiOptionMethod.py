@@ -11,7 +11,7 @@ from sklearn.metrics import f1_score
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.ports.MethodBase import MethodBase
 
@@ -47,9 +47,6 @@ class TextToMultiOptionMethod(MethodBase):
     def remove_method_data(self) -> None:
         self.remove_model()
 
-    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
-        pass
-
     def get_performance(self, train_set: ExtractionData, test_set: ExtractionData) -> float:
         """Get performance using standardized train/test sets"""
         if not test_set.samples:
@@ -58,12 +55,10 @@ class TextToMultiOptionMethod(MethodBase):
         self.train(train_set)
 
         prediction_samples_list = [PredictionSample(source_text=x.labeled_data.source_text) for x in test_set.samples]
-        prediction_samples = PredictionSamples(
-            prediction_samples=prediction_samples_list,
-            options=self.options,
-            multi_value=self.multi_value
+        prediction_samples = PredictionSamplesData(
+            prediction_samples=prediction_samples_list, options=self.options, multi_value=self.multi_value
         )
-        predictions = self.predict_multi_option(prediction_samples)
+        predictions = self.predict(prediction_samples)
 
         self.remove_model()
 

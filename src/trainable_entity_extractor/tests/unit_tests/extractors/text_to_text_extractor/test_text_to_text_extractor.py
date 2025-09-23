@@ -8,7 +8,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.TextToTextExtractor import TextToTextExtractor
 
@@ -35,7 +35,9 @@ class TestTextToTextExtractor(TestCase):
         text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier)
         text_to_text_extractor.can_be_used(extraction_data)
         texts = ["test 0", "test 1", "test 2"]
-        predictions_samples = PredictionSamples(prediction_samples= [PredictionSample.from_text(text, str(i)) for i, text in enumerate(texts)])
+        predictions_samples = PredictionSamplesData(
+            prediction_samples=[PredictionSample.from_text(text, str(i)) for i, text in enumerate(texts)]
+        )
         suggestions = text_to_text_extractor.get_suggestions(predictions_samples)
 
         self.assertEqual(3, len(suggestions))
@@ -55,7 +57,9 @@ class TestTextToTextExtractor(TestCase):
 
         text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier, logger=ExtractorLogger())
         text_to_text_extractor.create_model(extraction_data)
-        predictions_samples = PredictionSamples(prediction_samples= [PredictionSample(source_text="one two", entity_name="entity_name")])
+        predictions_samples = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text="one two", entity_name="entity_name")]
+        )
         suggestions = text_to_text_extractor.get_suggestions(predictions_samples)
 
         self.assertEqual(1, len(suggestions))

@@ -6,11 +6,11 @@ from pathlib import Path
 
 from trainable_entity_extractor.config import config_logger
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.filter_segments_methods.CleanBeginningDot250 import (
     CleanBeginningDot250,
 )
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.ports.MethodBase import MethodBase
 
 
@@ -59,15 +59,18 @@ class ToTextExtractorMethod(MethodBase):
 
         self.train(train_set)
         samples = test_set.samples
-        prediction_samples = PredictionSamples(
-            samples=[
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[
                 PredictionSample(
                     pdf_data=x.pdf_data.model_copy() if x.pdf_data else None, segment_selector_texts=x.segment_selector_texts
                 )
                 for x in samples
-            ])
+            ],
+            options=train_set.options,
+            multi_value=train_set.multi_value,
+        )
 
-        predictions = self.predict(prediction_samples)
+        predictions = self.predict(prediction_samples_data)
 
         correct = [
             sample

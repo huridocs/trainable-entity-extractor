@@ -5,6 +5,7 @@ from rapidfuzz import fuzz
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -32,12 +33,12 @@ class TextFuzzyLast(TextToMultiOptionMethod):
 
         return []
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
         predictions: list[list[Option]] = list()
-        option_labels = [option.label.lower() for option in self.options]
-        for sample in predictions_samples:
+        option_labels = [option.label.lower() for option in prediction_samples_data.options]
+        for sample in prediction_samples_data.prediction_samples:
             values = self.get_appearance(sample.get_input_text(), option_labels)
-            predictions.append([option for option in self.options if option.label in values])
+            predictions.append([option for option in prediction_samples_data.options if option.label in values])
 
         return predictions
 

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from tdda import *
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -19,7 +19,7 @@ class FirstWordRegex(TextToMultiOptionMethod):
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         return True
 
-    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
+    def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
         predictions: list[list[Option]] = list()
         options_regex: list[OptionRegex] = [self.load_option_regex(option) for option in prediction_samples.options]
         options_regex.sort(key=lambda x: len(x.regex_list))
@@ -28,7 +28,9 @@ class FirstWordRegex(TextToMultiOptionMethod):
             if options_ids:
                 predictions.append([option for option in prediction_samples.options if option.id in options_ids])
             else:
-                predictions.append([option for option in prediction_samples.options if option.id == options_regex[-1].option_id])
+                predictions.append(
+                    [option for option in prediction_samples.options if option.id == options_regex[-1].option_id]
+                )
 
         return predictions
 

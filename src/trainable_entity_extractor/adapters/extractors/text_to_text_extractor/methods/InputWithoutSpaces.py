@@ -1,5 +1,5 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 
 
@@ -15,5 +15,5 @@ class InputWithoutSpaces(ToTextExtractorMethod):
         text = "".join(tag_texts)
         return "".join(text.split())
 
-    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
-        return [self.trim_text(x.get_input_text_by_lines()) for x in prediction_samples.prediction_samples]
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        return [self.trim_text(x.get_input_text_by_lines()) for x in prediction_samples_data.prediction_samples]

@@ -1,7 +1,7 @@
 from trainable_entity_extractor.config import GEMINI_API_KEY
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.Option import Option
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -53,11 +53,13 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
         gemini_with_code.sort(key=lambda run: len(run.mistakes_samples))
         gemini_with_code[0].save_code(self.extraction_identifier)
 
-    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
+    def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
         gemini_run = GeminiRunMultiOption.from_extractor_identifier_multioption(
             self.extraction_identifier, prediction_samples.options, prediction_samples.multi_value, self.method_name
         )
-        gemini_samples = [GeminiSample.from_prediction_sample(sample, True) for sample in prediction_samples.prediction_samples]
+        gemini_samples = [
+            GeminiSample.from_prediction_sample(sample, True) for sample in prediction_samples.prediction_samples
+        ]
         predictions = gemini_run.run_code(gemini_samples)
         options_labels_to_option = {option.label: option for option in prediction_samples.options}
         return [

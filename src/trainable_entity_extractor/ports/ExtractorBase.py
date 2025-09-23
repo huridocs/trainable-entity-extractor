@@ -4,7 +4,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
@@ -28,9 +28,7 @@ class ExtractorBase:
         pass
 
     @abstractmethod
-    def get_suggestions(
-        self, method_name: str, prediction_samples: PredictionSamples
-    ) -> list[Suggestion]:
+    def get_suggestions(self, method_name: str, prediction_samples: PredictionSamplesData) -> list[Suggestion]:
         pass
 
     def get_predictions_method(self, method_name: str) -> MethodBase:
@@ -98,6 +96,11 @@ class ExtractorBase:
                 if not method_instance.can_be_used(extraction_data):
                     continue
 
+            if hasattr(method_instance, "should_be_retrained_with_more_data"):
+                should_be_retrained_with_more_data = method_instance.should_be_retrained_with_more_data()
+            else:
+                should_be_retrained_with_more_data = True
+
             job = TrainableEntityExtractorJob(
                 run_name=extraction_data.extraction_identifier.run_name,
                 extraction_name=extraction_data.extraction_identifier.extraction_name,
@@ -105,7 +108,9 @@ class ExtractorBase:
                 method_name=method_instance.get_name(),
                 gpu_needed=getattr(method_instance, "gpu_needed", False),
                 timeout=getattr(method_instance, "timeout", 3600),
-                should_be_retrained_with_more_data=method_instance.should_be_retrained_with_more_data(),
+                should_be_retrained_with_more_data=should_be_retrained_with_more_data,
+                options=extraction_data.options if extraction_data.options else [],
+                multi_value=extraction_data.multi_value if extraction_data.multi_value else False,
             )
             jobs.append(job)
 

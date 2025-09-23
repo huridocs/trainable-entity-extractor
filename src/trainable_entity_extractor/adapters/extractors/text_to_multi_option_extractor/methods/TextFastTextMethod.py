@@ -7,7 +7,7 @@ import fasttext
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -67,7 +67,7 @@ class TextFastTextMethod(TextToMultiOptionMethod):
         model = fasttext.train_supervised(**fasttext_params)
         model.save_model(self.get_model_path())
 
-    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
+    def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
         texts = [sample.get_input_text() for sample in prediction_samples.prediction_samples]
         texts = [text.replace("\n", " ") for text in texts]
 
@@ -84,7 +84,13 @@ class TextFastTextMethod(TextToMultiOptionMethod):
             prediction_options = list()
             for prediction_label, prediction_score in zip(prediction_labels, prediction_scores):
                 if prediction_score > 0.5:
-                    prediction_options.append([option for option in prediction_samples.options if self.clean_labels([option])[0] == prediction_label][0])
+                    prediction_options.append(
+                        [
+                            option
+                            for option in prediction_samples.options
+                            if self.clean_labels([option])[0] == prediction_label
+                        ][0]
+                    )
 
             predictions.append(prediction_options)
 

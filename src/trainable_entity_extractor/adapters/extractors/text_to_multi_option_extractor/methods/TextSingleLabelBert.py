@@ -25,6 +25,7 @@ from trainable_entity_extractor.adapters.extractors.bert_method_scripts.EarlySto
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 
 MODEL_NAME = "google-bert/bert-base-uncased"
 
@@ -157,35 +158,43 @@ class TextSingleLabelBert(TextToMultiOptionMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
-        texts = [self.get_text(sample.get_input_text()) for sample in predictions_samples]
-        labels = [[0] * len(self.options) for _ in predictions_samples]
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
+        labels_number = len(prediction_samples_data.options)
 
-        self.save_dataset(texts, labels, "predict")
+        texts = [self.get_text(sample.get_input_text()) for sample in prediction_samples_data.prediction_samples]
+        labels = [[0] * len(prediction_samples_data.options) for _ in prediction_samples_data.prediction_samples]
 
-        id2class = {index: label for index, label in enumerate([x.label for x in self.options])}
-        class2id = {label: index for index, label in enumerate([x.label for x in self.options])}
-
-        model = AutoModelForSequenceClassification.from_pretrained(
-            self.get_model_path(),
-            num_labels=len(self.options),
-            id2label=id2class,
-            label2id=class2id,
-            problem_type="multi_label_classification",
+        predict_path = self.save_dataset(texts, labels, "predict")
+        model_arguments = ModelArguments(self.get_model_path(), ignore_mismatched_sizes=True)
+        data_training_arguments = MultiLabelDataTrainingArguments(
+            train_file=predict_path,
+            validation_file=predict_path,
+            test_file=predict_path,
+            max_seq_length=256,
+            labels_number=labels_number,
         )
 
-        model.eval()
-
-        inputs = tokenizer(
-            texts,
-            return_tensors="pt",
-            padding="max_length",
-            truncation="only_first",
-            max_length=self.get_token_length(),
+        batch_size = get_batch_size(len(prediction_samples_data.prediction_samples))
+        training_arguments = TrainingArguments(
+            report_to=[],
+            output_dir=self.get_model_path(),
+            overwrite_output_dir=False,
+            per_device_train_batch_size=batch_size,
+            per_device_eval_batch_size=batch_size,
+            gradient_accumulation_steps=batch_size,
+            eval_accumulation_steps=batch_size,
+            do_train=False,
+            do_eval=False,
+            do_predict=True,
         )
-        output = model(inputs["input_ids"], attention_mask=inputs["attention_mask"])
 
-        return self.predictions_to_options_list([self.logit_to_probabilities(logit) for logit in output.logits])
+        logits = multi_label_run(model_arguments, data_training_arguments, training_arguments)
+
+        predictions = [self.logit_to_probabilities(logit) for logit in logits]
+        return [
+            [option for i, option in enumerate(prediction_samples_data.options) if prediction[i] > 0.5]
+            for prediction in predictions
+        ]
 
     def get_token_length(self):
         data = pd.read_csv(self.get_data_path("train"))

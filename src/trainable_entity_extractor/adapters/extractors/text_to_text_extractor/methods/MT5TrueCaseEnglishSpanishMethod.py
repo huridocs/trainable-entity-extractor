@@ -15,7 +15,7 @@ from transformers import AutoTokenizer, MT5ForConditionalGeneration
 
 from trainable_entity_extractor.config import DATA_PATH, config_logger
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 
@@ -157,13 +157,16 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
     def exists_model(self):
         return exists(self.get_model_path())
 
-    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
-        texts = [" ".join(x.get_input_text_by_lines()) for x in prediction_samples.prediction_samples]
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        texts = [" ".join(x.get_input_text_by_lines()) for x in prediction_samples_data.prediction_samples]
 
         if not self.exists_model():
             return texts
 
-        samples = [TrainingSample(segment_selector_texts=sample.get_input_text_by_lines()) for sample in prediction_samples.prediction_samples]
+        samples = [
+            TrainingSample(segment_selector_texts=sample.get_input_text_by_lines())
+            for sample in prediction_samples_data.prediction_samples
+        ]
         predict_data_path = self.prepare_dataset(ExtractionData(samples=samples))
 
         if not predict_data_path:

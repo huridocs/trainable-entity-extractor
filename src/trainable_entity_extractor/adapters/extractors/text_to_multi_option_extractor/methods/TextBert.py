@@ -8,7 +8,7 @@ from transformers import TrainingArguments
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.adapters.extractors.bert_method_scripts.get_batch_size import get_batch_size, get_max_steps
 
@@ -126,7 +126,7 @@ class TextBert(TextToMultiOptionMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
+    def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
         labels_number = len(prediction_samples.options)
 
         texts = [self.get_text(sample.get_input_text()) for sample in prediction_samples.prediction_samples]

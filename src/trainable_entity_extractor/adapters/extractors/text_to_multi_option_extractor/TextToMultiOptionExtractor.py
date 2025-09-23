@@ -7,7 +7,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
-from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
@@ -89,29 +89,27 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     def __init__(self, extraction_identifier: ExtractionIdentifier, logger: Logger):
         super().__init__(extraction_identifier, logger)
-
         self.options: list[Option] = list()
         self.multi_value = False
 
     def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
-        """Prepare the extractor for performance evaluation by fixing empty data and setting up options"""
         self.fix_empty_data(extraction_data)
         self.options = extraction_data.options
         self.multi_value = extraction_data.multi_value
         return self.get_train_test_sets(extraction_data)
 
-    def get_suggestions(self, method_name: str, prediction_samples: PredictionSamples) -> list[Suggestion]:
-        if not prediction_samples.prediction_samples:
+    def get_suggestions(self, method_name: str, prediction_samples_data: PredictionSamplesData) -> list[Suggestion]:
+        if not prediction_samples_data.prediction_samples:
             return []
 
-        self.fix_empty_prediction_data(prediction_samples.prediction_samples)
-        predictions = self.get_predictions_method(method_name).predict_multi_option(prediction_samples)
+        self.fix_empty_prediction_data(prediction_samples_data.prediction_samples)
+        predictions: list[list[Value]] = self.get_predictions_method(method_name).predict(prediction_samples_data)
 
-        if not prediction_samples.multi_value:
+        if not prediction_samples_data.multi_value:
             predictions = [x[:1] for x in predictions]
 
         suggestions = list()
-        for prediction_sample, prediction in zip(prediction_samples.prediction_samples, predictions):
+        for prediction_sample, prediction in zip(prediction_samples_data.prediction_samples, predictions):
             segment_text = prediction_sample.source_text if prediction_sample.source_text else ""
             values = [Value(id=x.id, label=x.label, segment_text=segment_text) for x in prediction]
             suggestion = Suggestion.from_prediction_multi_option(
@@ -120,16 +118,6 @@ class TextToMultiOptionExtractor(ExtractorBase):
             suggestions.append(suggestion)
 
         return suggestions
-
-    def get_predictions_method(self, method_name: str = "") -> TextToMultiOptionMethod:
-        self.options = self.extraction_identifier.get_options()
-        self.multi_value = self.extraction_identifier.get_multi_value()
-        for method in self.METHODS:
-            method_instance = method(self.extraction_identifier, self.options, self.multi_value)
-            if method_instance.get_name() == method_name:
-                return method_instance
-
-        return self.METHODS[0](self.extraction_identifier, self.options, self.multi_value)
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
         self.logger.log(self.extraction_identifier, self.get_stats(extraction_data))
@@ -151,10 +139,6 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
                 if performance_score >= 1:
                     perfect_score_method = method_instance
-                    break
-
-                if config_logger.stop_training:
-                    self.logger.log(self.extraction_identifier, "Training canceled")
                     break
 
                 try:
@@ -189,11 +173,6 @@ class TextToMultiOptionExtractor(ExtractorBase):
         except:
             self.logger.log(self.extraction_identifier, "ERROR", LogSeverity.info, e)
             return 0.0
-
-    def remove_models(self):
-        for method in self.METHODS:
-            method_instance = method(self.extraction_identifier, self.options, self.multi_value)
-            method_instance.remove_model()
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if not extraction_data.options and not extraction_data.extraction_identifier.get_options_path().exists():
