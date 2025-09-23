@@ -1,6 +1,6 @@
 from trainable_entity_extractor.config import GEMINI_API_KEY
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.Gemini.GeminiRun import GeminiRun
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.Gemini.GeminiSample import GeminiSample
@@ -33,7 +33,8 @@ class GeminiTextMethod(ToTextExtractorMethod):
         gemini_with_code.sort(key=lambda run: len(run.mistakes_samples))
         gemini_with_code[0].save_code(self.extraction_identifier)
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        predictions_samples = prediction_samples_data.prediction_samples
         gemini_run = GeminiRun.from_extractor_identifier(self.extraction_identifier, self.from_class_name)
         gemini_samples = [GeminiSample.from_prediction_sample(sample) for sample in predictions_samples]
         return gemini_run.run_code(gemini_samples)

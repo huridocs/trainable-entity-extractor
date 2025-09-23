@@ -3,8 +3,6 @@ import json
 from dateparser.search import search_dates
 from gliner import GLiNER
 
-gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
-
 
 class GlinerDateExtractor:
     @staticmethod
@@ -27,6 +25,8 @@ class GlinerDateExtractor:
         return result
 
     def extract_dates(self, text: str):
+        gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
+
         words = text.split()
 
         entities = []

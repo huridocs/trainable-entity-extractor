@@ -1,5 +1,5 @@
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from trainable_entity_extractor.adapters.extractors.pdf_to_text_extractor.methods.PdfToTextSegmentSelector import (
     PdfToTextSegmentSelector,
@@ -24,7 +24,8 @@ class PdfToTextFastSegmentSelector(PdfToTextSegmentSelector):
         fast_segment_selector.create_model(segments=segments)
         return True, ""
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        predictions_samples = prediction_samples_data.prediction_samples
         if not predictions_samples:
             return [""] * len(predictions_samples)
 
@@ -36,7 +37,7 @@ class PdfToTextFastSegmentSelector(PdfToTextSegmentSelector):
             sample.segment_selector_texts = self.get_predicted_texts(sample.pdf_data)
 
         semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
-        return semantic_metadata_extraction.predict(predictions_samples)
+        return semantic_metadata_extraction.predict(prediction_samples_data)
 
     @staticmethod
     def mark_predicted_segments(segments: list[PdfDataSegment]):

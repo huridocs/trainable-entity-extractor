@@ -3,7 +3,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
 
 
@@ -28,7 +28,8 @@ class PdfToTextSegmentSelector(SegmentSelector):
         semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
         semantic_metadata_extraction.train(extraction_data_with_samples)
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        predictions_samples = prediction_samples_data.prediction_samples
         segment_selector = SegmentSelector(self.extraction_identifier)
         if not segment_selector.model or not predictions_samples:
             return [""] * len(predictions_samples)
@@ -39,7 +40,7 @@ class PdfToTextSegmentSelector(SegmentSelector):
             sample.segment_selector_texts = self.get_predicted_texts(sample.pdf_data)
 
         semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
-        return semantic_metadata_extraction.predict(predictions_samples)
+        return semantic_metadata_extraction.predict(prediction_samples_data)
 
     def create_segment_selector_model(self, extraction_data: ExtractionData):
         segment_selector = SegmentSelector(self.extraction_identifier)

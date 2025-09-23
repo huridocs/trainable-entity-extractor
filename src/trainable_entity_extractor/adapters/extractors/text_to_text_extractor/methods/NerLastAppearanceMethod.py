@@ -4,5 +4,6 @@ from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.metho
 
 
 class NerLastAppearanceMethod(NerFirstAppearanceMethod):
-    def get_appearance(self, prediction_texts):
+    @staticmethod
+    def get_appearance(prediction_texts):
         return prediction_texts[-1] if prediction_texts else ""

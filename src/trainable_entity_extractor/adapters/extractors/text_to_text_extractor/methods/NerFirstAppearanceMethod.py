@@ -9,11 +9,10 @@ from flair.data import Sentence
 
 TAG_TYPE_JSON = "types.json"
 
-tagger = Classifier.load("ner-ontonotes-large")
-
 
 class NerFirstAppearanceMethod(ToTextExtractorMethod):
     def train(self, extraction_data: ExtractionData):
+        tagger = Classifier.load("ner-ontonotes-large")
         texts = [self.clean_text(sample.get_input_text()) for sample in extraction_data.samples]
         labels = [self.clean_text(sample.labeled_data.label_text).lower() for sample in extraction_data.samples]
 
@@ -29,6 +28,7 @@ class NerFirstAppearanceMethod(ToTextExtractorMethod):
         self.save_json(TAG_TYPE_JSON, mode(types) if types else "")
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        tagger = Classifier.load("ner-ontonotes-large")
         tag_type = self.load_json(TAG_TYPE_JSON)
         if not tag_type:
             return [""] * len(prediction_samples_data.prediction_samples)

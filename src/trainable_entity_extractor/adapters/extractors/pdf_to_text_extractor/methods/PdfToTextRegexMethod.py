@@ -1,7 +1,7 @@
 import re
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from tdda import *
 
@@ -15,7 +15,8 @@ class PdfToTextRegexMethod(ToTextExtractorMethod):
         regex_list = [regex[1:-1] for regex in regex_list]
         self.save_json("regex_list.json", regex_list)
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        predictions_samples = prediction_samples_data.prediction_samples
         predictions = [""] * len(predictions_samples)
         regex_list = self.load_json("regex_list.json")
         for regex in regex_list:

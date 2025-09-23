@@ -1,4 +1,6 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
+from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.adapters.extractors.ToTextExtractor import ToTextExtractor
@@ -89,15 +91,6 @@ class PdfToTextExtractor(ToTextExtractor):
         FastAndPositionsSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
         return self.get_train_test_sets(extraction_data)
 
-    def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        if not extraction_data or not extraction_data.samples:
-            return False, "No data to create model"
-
-        # Use the shared preparation logic
-        performance_train_set, performance_test_set = self.prepare_for_training(extraction_data)
-
-        return super().create_model(extraction_data)
-
     @staticmethod
     def get_train_test_sets(extraction_data: ExtractionData) -> (ExtractionData, ExtractionData):
         samples_with_label_segments_boxes = [x for x in extraction_data.samples if x.labeled_data.label_segments_boxes]
@@ -146,3 +139,11 @@ class PdfToTextExtractor(ToTextExtractor):
                 return True
 
         return False
+
+    def get_suggestions(self, method_name: str, prediction_samples: PredictionSamplesData) -> list[Suggestion]:
+        suggestions = super().get_suggestions(method_name, prediction_samples)
+
+        for suggestion, prediction_sample in zip(suggestions, prediction_samples.prediction_samples):
+            suggestion.add_segments(prediction_sample.pdf_data)
+
+        return suggestions

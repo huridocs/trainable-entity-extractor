@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+from abc import abstractmethod
 from os.path import join, exists
 from pathlib import Path
 
@@ -11,10 +12,19 @@ from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extracto
     CleanBeginningDot250,
 )
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.ports.MethodBase import MethodBase
 
 
 class ToTextExtractorMethod(MethodBase):
+    @abstractmethod
+    def train(self, extraction_data: ExtractionData) -> None:
+        pass
+
+    @abstractmethod
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str] | list[list[Value]]:
+        pass
+
     def get_path(self):
         if self.from_class_name:
             path = join(self.extraction_identifier.get_path(), self.from_class_name, self.get_name())

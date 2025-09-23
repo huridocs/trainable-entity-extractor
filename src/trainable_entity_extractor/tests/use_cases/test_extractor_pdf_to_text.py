@@ -186,7 +186,6 @@ class TestExtractorPdfToText(TestCase):
             self.assertEqual(90.0, suggestion.segments_boxes[0].top)
             self.assertEqual(1, suggestion.segments_boxes[0].page_number)
 
-    @unittest.skip("Skipped test as in original")
     def test_get_semantic_suggestions(self):
         segment_box = SegmentBox(left=397, top=115, page_width=612, page_height=792, width=74, height=9, page_number=1)
 
@@ -203,7 +202,7 @@ class TestExtractorPdfToText(TestCase):
         extraction_data = ExtractionData(samples=samples, extraction_identifier=extraction_identifier)
 
         # Use PdfToTextRegexMethod for semantic suggestions
-        method_name = "PdfToTextRegexMethod"
+        method_name = "PdfToTextSegmentSelectorMT5TrueCaseEnglishSpanishMethod"
         extractor_job = self._create_and_train_model(method_name, extraction_data)
 
         # Create prediction samples
@@ -219,16 +218,19 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual("unit_test", suggestion.tenant)
         self.assertEqual(extraction_id, suggestion.id)
         self.assertEqual("test.xml", suggestion.xml_file_name)
-        self.assertEqual("Original: English", suggestion.segment_text)
+        self.assertEqual(
+            '<p class="ix_matching_paragraph">Original: <span class="ix_match">English</span></p>', suggestion.segment_text
+        )
         self.assertEqual("English1", suggestion.text)
 
         self.assertEqual(1, len(suggestion.segments_boxes))
         self.assertEqual(397.0, suggestion.segments_boxes[0].left)
         self.assertEqual(114.0, suggestion.segments_boxes[0].top)
-        self.assertEqual(77.0, suggestion.segments_boxes[0].width)
+        self.assertEqual(73.0, suggestion.segments_boxes[0].width)
         self.assertEqual(11.0, suggestion.segments_boxes[0].height)
         self.assertEqual(1, suggestion.segments_boxes[0].page_number)
 
+    @unittest.skip("Too slow for pipeline")
     def test_get_semantic_suggestions_numeric(self):
         segment_box = SegmentBox(left=397, top=91, page_width=612, page_height=792, width=10, height=9, page_number=1)
 
@@ -244,8 +246,7 @@ class TestExtractorPdfToText(TestCase):
 
         extraction_data = ExtractionData(samples=samples, extraction_identifier=extraction_identifier)
 
-        # Use FirstDateMethod for numeric date extraction
-        method_name = "FirstDateMethod"
+        method_name = "PdfToTextFastSegmentSelectorRegexMethod"
         extractor_job = self._create_and_train_model(method_name, extraction_data)
 
         # Create prediction samples

@@ -1,6 +1,6 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.DateParserMethod import DateParserMethod
@@ -12,7 +12,8 @@ class FirstDateMethod(ToTextExtractorMethod):
         languages = [x.labeled_data.language_iso for x in extraction_data.samples]
         self.save_json("languages.json", list(set(languages)))
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        predictions_samples = prediction_samples_data.prediction_samples
         predictions = [""] * len(predictions_samples)
         languages = self.load_json("languages.json")
         for index, prediction_sample in enumerate(predictions_samples):
