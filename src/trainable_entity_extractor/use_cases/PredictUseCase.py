@@ -4,11 +4,13 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
+from trainable_entity_extractor.ports.Logger import Logger
 
 
 class PredictUseCase:
-    def __init__(self, extractors: list[type[ExtractorBase]]):
+    def __init__(self, extractors: list[type[ExtractorBase]], logger: Logger):
         self.extractors: list[type[ExtractorBase]] = extractors
+        self.logger = logger
 
     def predict(self, extractor_job: TrainableEntityExtractorJob, samples: list[PredictionSample]) -> list[Suggestion]:
         extraction_identifier = ExtractionIdentifier(
@@ -17,10 +19,10 @@ class PredictUseCase:
 
         extractor_name = extractor_job.extractor_name
         for extractor in self.extractors:
-            extractor_instance = extractor(extraction_identifier)
+            extractor_instance = extractor(extraction_identifier, self.logger)
             if extractor_instance.get_name() != extractor_name:
                 continue
 
-            return extractor_instance.get_suggestions(samples)
+            return extractor_instance.get_suggestions(extractor_job, samples)
 
         return []

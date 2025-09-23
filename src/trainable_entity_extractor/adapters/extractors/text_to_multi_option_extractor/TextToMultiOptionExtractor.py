@@ -99,7 +99,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         self.multi_value = extraction_data.multi_value
         return self.get_train_test_sets(extraction_data)
 
-    def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
+    def get_suggestions(self, method_name: str, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
         if not predictions_samples:
             return []
 
@@ -120,10 +120,9 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
         return suggestions
 
-    def get_predictions_method(self):
+    def get_predictions_method(self, method_name: str = "") -> TextToMultiOptionMethod:
         self.options = self.extraction_identifier.get_options()
         self.multi_value = self.extraction_identifier.get_multi_value()
-        method_name = self.extraction_identifier.get_method_used()
         for method in self.METHODS:
             method_instance = method(self.extraction_identifier, self.options, self.multi_value)
             if method_instance.get_name() == method_name:

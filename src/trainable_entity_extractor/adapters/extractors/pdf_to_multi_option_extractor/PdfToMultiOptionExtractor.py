@@ -7,6 +7,7 @@ from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.Suggestion import Suggestion
+from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
@@ -135,11 +136,13 @@ class PdfToMultiOptionExtractor(ExtractorBase):
 
         return ExtractorBase.get_train_test_sets(extraction_data)
 
-    def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
+    def get_suggestions(
+        self, extractor_job: TrainableEntityExtractorJob, predictions_samples: list[PredictionSample]
+    ) -> list[Suggestion]:
         if not predictions_samples:
             return []
 
-        training_samples, predictions = self.get_predictions(predictions_samples)
+        training_samples, predictions = self.get_predictions(extractor_job, predictions_samples)
         prediction_method = self.get_predictions_method()
 
         use_context_from_the_end = "End" in prediction_method.get_name()
@@ -151,9 +154,11 @@ class PdfToMultiOptionExtractor(ExtractorBase):
 
         return suggestions
 
-    def get_predictions(self, predictions_samples: list[PredictionSample]) -> (list[TrainingSample], list[list[Value]]):
-        self.options = self.extraction_identifier.get_options()
-        self.multi_value = self.extraction_identifier.get_multi_value()
+    def get_predictions(
+        self, extractor_job: TrainableEntityExtractorJob, predictions_samples: list[PredictionSample]
+    ) -> (list[TrainingSample], list[list[Value]]):
+        self.options = extractor_job.options
+        self.multi_value = extractor_job.multi_label
         training_samples = [TrainingSample(pdf_data=sample.pdf_data) for sample in predictions_samples]
         extraction_data = ExtractionData(
             multi_value=self.multi_value,
@@ -162,8 +167,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
             extraction_identifier=self.extraction_identifier,
         )
         method = self.get_predictions_method()
-        method.set_parameters(extraction_data)
-        send_logs(self.extraction_identifier, f"Using method {method.get_name()} for suggestions")
+        self.logger.log(self.extraction_identifier, f"Using method {method.get_name()} for suggestions")
 
         prediction = method.predict(extraction_data)
 
@@ -185,13 +189,13 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         )
         for method in self.METHODS:
             if self.extraction_identifier.is_training_canceled():
-                send_logs(self.extraction_identifier, "Training canceled")
+                self.logger.log(self.extraction_identifier, "Training canceled")
                 return None
 
             performance = self.get_method_performance(method, training_set, test_set)
             performance_summary.add_performance(method.get_name(), performance)
             if performance == 100:
-                send_logs(self.extraction_identifier, performance_summary.to_log())
+                self.logger.log(self.extraction_identifier, performance_summary.to_log())
                 self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
                 return method
 
@@ -199,7 +203,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
                 best_performance = round(performance, 2)
                 best_method_instance = method
 
-        send_logs(self.extraction_identifier, performance_summary.to_log())
+        self.logger.log(self.extraction_identifier, performance_summary.to_log())
         self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
         return best_method_instance
 
@@ -209,28 +213,20 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         method.set_parameters(train_set)
 
         if not method.can_be_used(train_set):
-            send_logs(self.extraction_identifier, f"Not valid method {method.get_name()}")
+            self.logger.log(self.extraction_identifier, f"Not valid method {method.get_name()}")
             return 0
 
-        send_logs(self.extraction_identifier, f"Checking {method.get_name()}")
+        self.logger.log(self.extraction_identifier, f"Checking {method.get_name()}")
 
         try:
             performance = method.get_performance(train_set, test_set)
         except Exception as e:
             severity = LogSeverity.error if method.REPORT_ERRORS else LogSeverity.info
-            send_logs(self.extraction_identifier, f"Error checking {method.get_name()}", severity, e)
+            self.logger.log(self.extraction_identifier, f"Error checking {method.get_name()}", severity, e)
             performance = 0
 
         self.reset_extraction_data(train_set)
         return performance
-
-    def get_predictions_method(self):
-        method_name = self.extraction_identifier.get_method_used()
-        for method in self.METHODS:
-            if method.get_name() == method_name:
-                return method
-
-        return self.METHODS[0]
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if not extraction_data.options and not extraction_data.extraction_identifier.get_options():

@@ -14,7 +14,7 @@ from trainable_entity_extractor.ports.Logger import Logger
 
 class ExtractorBase:
 
-    METHODS: list[MethodBase] = list()
+    METHODS: list[type[MethodBase]] = list()
 
     def __init__(self, extraction_identifier: ExtractionIdentifier, logger: Logger):
         self.extraction_identifier = extraction_identifier
@@ -28,8 +28,18 @@ class ExtractorBase:
         pass
 
     @abstractmethod
-    def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
+    def get_suggestions(
+        self, extractor_job: TrainableEntityExtractorJob, predictions_samples: list[PredictionSample]
+    ) -> list[Suggestion]:
         pass
+
+    def get_predictions_method(self, method_name: str) -> MethodBase:
+        for method in self.METHODS:
+            method_instance = method(self.extraction_identifier)
+            if method_instance.get_name() == method_name:
+                return method_instance
+
+        raise ValueError(f"Method {method_name} not found in {self.get_name()}")
 
     @abstractmethod
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
@@ -128,7 +138,7 @@ class ExtractorBase:
                 extractor_job.should_be_retrained_with_more_data = method_instance.should_be_retrained_with_more_data()
 
             execution_time = int(time.time() - start_time)
-            is_perfect = performance_score >= 1.0
+            is_perfect = performance_score >= 99.99
 
             return Performance(
                 performance=performance_score, execution_seconds=execution_time, is_perfect=is_perfect, failed=False
@@ -145,8 +155,6 @@ class ExtractorBase:
         self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData
     ) -> tuple[bool, str]:
         method_name = extractor_job.method_name
-        start_time = time.time()
-
         method_instance = self._get_method_instance_by_name(method_name)
         if not method_instance:
             return False, f"Method {method_name} not found"
@@ -157,26 +165,8 @@ class ExtractorBase:
 
         try:
             self.prepare_for_training(extraction_data)
-            training_success = method_instance.train(extraction_data)
-
-            if isinstance(training_success, tuple):
-                success = training_success[0]
-                message = training_success[1] if len(training_success) > 1 else ""
-                if message:
-                    self.logger.log(extraction_data.extraction_identifier, f"Training result: {message}")
-            else:
-                success = bool(training_success)
-                message = ""
-
-            execution_time = int(time.time() - start_time)
-            status = "" if success else "failed"
-            status_msg = f"Training {method_name} {status} in {execution_time}s"
-            self.logger.log(extraction_data.extraction_identifier, status_msg)
-
-            if success:
-                return True, message if message else status_msg
-            else:
-                return False, message if message else f"Training {method_name} failed"
+            method_instance.train(extraction_data)
+            return True, ""
 
         except Exception as e:
             error_msg = f"Training {method_name} failed with error: {str(e)}"

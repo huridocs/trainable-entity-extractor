@@ -12,9 +12,7 @@ class LocalModelStorage(ModelStorage):
     def __init__(self):
         self.completion_signals = {}
 
-    def upload_model(
-        self, extraction_identifier: ExtractionIdentifier, method_name: str, extractor_job: TrainableEntityExtractorJob
-    ) -> bool:
+    def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
         try:
             model_path = extraction_identifier.get_path()
             if not os.path.exists(model_path):

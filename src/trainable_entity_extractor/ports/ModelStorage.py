@@ -7,9 +7,7 @@ from trainable_entity_extractor.domain.TrainableEntityExtractorJob import Traina
 class ModelStorage(ABC):
 
     @abstractmethod
-    def upload_model(
-        self, extraction_identifier: ExtractionIdentifier, method_name: str, extractor_job: TrainableEntityExtractorJob
-    ) -> bool:
+    def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
         pass
 
     @abstractmethod

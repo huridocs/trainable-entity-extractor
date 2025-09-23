@@ -1,4 +1,3 @@
-from trainable_entity_extractor.config import config_logger
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
@@ -28,8 +27,8 @@ class ToTextExtractor(ExtractorBase):
     def get_name(self):
         return self.__class__.__name__
 
-    def get_suggestions(self, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
-        method_instance = self.get_predictions_method()
+    def get_suggestions(self, method_name: str, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
+        method_instance = self.get_predictions_method(method_name)
         self.logger.log(
             self.extraction_identifier,
             f"And also using {method_instance.get_name()} to calculate {len(predictions_samples)} suggestions",
@@ -41,9 +40,6 @@ class ToTextExtractor(ExtractorBase):
             suggestions.append(Suggestion.from_prediction_text(self.extraction_identifier, entity_name, prediction))
 
         return suggestions
-
-    def get_predictions_method(self):
-        return [method for method in self.METHODS if method.is_the_main_prediction_method()][0](self.extraction_identifier)
 
     def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
         samples_info = (
@@ -67,10 +63,6 @@ class ToTextExtractor(ExtractorBase):
 
                     if performance_score >= 1:
                         perfect_score_method = method_instance
-                        break
-
-                    if config_logger.stop_training:
-                        self.logger.log(self.extraction_identifier, "Training canceled")
                         break
 
                 self.logger.log(self.extraction_identifier, f"Checking {method_instance.get_name()}")

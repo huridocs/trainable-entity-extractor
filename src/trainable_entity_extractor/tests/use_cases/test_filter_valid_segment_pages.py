@@ -9,7 +9,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.PredictionData import PredictionData
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
-from trainable_entity_extractor.use_cases.FilterValidSegmentsPages import FilterValidSegmentsPagesUseCase
+from trainable_entity_extractor.use_cases.FilterValidSegmentsPagesUseCase import FilterValidSegmentsPagesUseCase
 
 DATA_FOLDER_PATH = (
     f"{os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))}/models_data"

@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from trainable_entity_extractor.use_cases.FilterValidSegmentsPages import FilterValidSegmentsPagesUseCase
+from trainable_entity_extractor.use_cases.FilterValidSegmentsPagesUseCase import FilterValidSegmentsPagesUseCase
 
 
 class TestFilterXmlPages(TestCase):

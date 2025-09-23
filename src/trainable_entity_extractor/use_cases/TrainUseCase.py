@@ -2,18 +2,20 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
+from trainable_entity_extractor.ports.Logger import Logger
 
 
 class TrainUseCase:
-    def __init__(self, extractors: list[type[ExtractorBase]]):
+    def __init__(self, extractors: list[type[ExtractorBase]], logger: Logger):
         self.extractors: list[type[ExtractorBase]] = extractors
+        self.logger = logger
 
     def train_one_method(
         self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData
     ) -> tuple[bool, str]:
         extractor_name = extractor_job.extractor_name
         for extractor in self.extractors:
-            extractor_instance = extractor(extraction_data.extraction_identifier)
+            extractor_instance = extractor(extraction_data.extraction_identifier, self.logger)
             if extractor_instance.get_name() != extractor_name:
                 continue
 
@@ -26,7 +28,7 @@ class TrainUseCase:
     ) -> Performance | None:
         extractor_name = extractor_job.extractor_name
         for extractor in self.extractors:
-            extractor_instance = extractor(extraction_data.extraction_identifier)
+            extractor_instance = extractor(extraction_data.extraction_identifier, self.logger)
             if extractor_instance.get_name() != extractor_name:
                 continue
 
@@ -37,7 +39,7 @@ class TrainUseCase:
     def get_jobs(self, extraction_data: ExtractionData) -> list[TrainableEntityExtractorJob]:
         jobs = list()
         for extractor in self.extractors:
-            extractor_instance = extractor(extraction_data.extraction_identifier)
+            extractor_instance = extractor(extraction_data.extraction_identifier, self.logger)
 
             if not extractor_instance.can_be_used(extraction_data):
                 continue
