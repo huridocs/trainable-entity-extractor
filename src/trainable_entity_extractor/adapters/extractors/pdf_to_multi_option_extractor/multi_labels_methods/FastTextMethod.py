@@ -7,6 +7,7 @@ import fasttext
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 
@@ -43,7 +44,7 @@ class FastTextMethod(MultiLabelMethod):
     def prepare_data(self, multi_option_data: ExtractionData):
         texts = [sample.pdf_data.get_text() for sample in multi_option_data.samples]
         texts = [text.replace("\n", " ") for text in texts]
-        id_labels = {option.id: option.label for option in self.options}
+        id_labels = {option.id: option.label for option in multi_option_data.options}
 
         labels = [
             "__label__" + " __label__".join(self.clean_labels(sample.labeled_data.values, id_labels))
@@ -68,15 +69,15 @@ class FastTextMethod(MultiLabelMethod):
         model = fasttext.train_supervised(**fasttext_params)
         model.save_model(self.get_model_path())
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        texts = [sample.pdf_data.get_text() for sample in multi_option_data.samples]
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        texts = [sample.pdf_data.get_text() for sample in prediction_samples_data.prediction_samples]
         texts = [text.replace("\n", " ") for text in texts]
 
         model = fasttext.load_model(self.get_model_path())
-        id_labels = {option.id: option.label for option in self.options}
-        labels = self.clean_labels(self.options, id_labels)
+        id_labels = {option.id: option.label for option in prediction_samples_data.options}
+        labels = self.clean_labels(prediction_samples_data.options, id_labels)
 
-        if self.multi_value:
+        if prediction_samples_data.multi_value:
             prediction_labels_scores = model.predict(texts, k=len(labels))
         else:
             prediction_labels_scores = model.predict(texts, k=1)
@@ -87,6 +88,6 @@ class FastTextMethod(MultiLabelMethod):
             for prediction_label, score in zip(prediction_labels, scores):
                 if score > 0.5 and prediction_label[9:] in labels:
                     label_index = labels.index(prediction_label[9:])
-                    predictions[-1].append(Value.from_option(self.options[label_index]))
+                    predictions[-1].append(Value.from_option(prediction_samples_data.options[label_index]))
 
         return predictions

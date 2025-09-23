@@ -7,6 +7,8 @@ from sklearn.metrics import f1_score
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
@@ -31,6 +33,7 @@ class PdfMultiOptionMethod(MethodBase):
         self.options: list[Option] = list()
         self.multi_value = False
         self.extraction_data = None
+        self.prediction_samples_data = None
 
     def set_parameters(self, multi_option_data: ExtractionData):
         self.extraction_identifier = multi_option_data.extraction_identifier
@@ -89,30 +92,32 @@ class PdfMultiOptionMethod(MethodBase):
         filtered_multi_option_data = self.filter_segments_method().filter(multi_option_data)
 
         print("Creating model")
-        multi_label = self.multi_label_method(self.extraction_identifier, self.options, self.multi_value, self.get_name())
+        multi_label = self.multi_label_method(self.extraction_identifier, self.get_name())
         multi_label.train(filtered_multi_option_data)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        self.set_parameters(multi_option_data)
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
+        self.prediction_samples_data = prediction_samples_data
 
         print("Filtering segments")
-        filtered_multi_option_data = self.filter_segments_method().filter(multi_option_data)
+        prediction_samples_data = self.filter_segments_method().filter_prediction_samples(prediction_samples_data)
 
         print("Prediction")
-        multi_label = self.multi_label_method(self.extraction_identifier, self.options, self.multi_value, self.get_name())
-        predictions = multi_label.predict(filtered_multi_option_data)
+        multi_label = self.multi_label_method(self.extraction_identifier, self.get_name())
+        predictions = multi_label.predict(prediction_samples_data)
 
         return predictions
 
-    def get_samples_for_context(self, extraction_data: ExtractionData) -> list[TrainingSample]:
-        if self.extraction_data:
-            return self.extraction_data.samples
+    def get_samples_for_context(self, prediction_samples_data: PredictionSamplesData) -> list[PredictionSample]:
+        if self.prediction_samples_data:
+            return self.prediction_samples_data.prediction_samples
 
-        return extraction_data.samples
+        return prediction_samples_data.prediction_samples
 
     def can_be_used(self, multi_option_data: ExtractionData) -> bool:
         if self.multi_label_method:
-            multi_label = self.multi_label_method(self.extraction_identifier, self.options, self.multi_value)
+            multi_label = self.multi_label_method(self.extraction_identifier)
             return multi_label.can_be_used(multi_option_data)
 
         return True

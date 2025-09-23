@@ -1,5 +1,6 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
@@ -9,9 +10,9 @@ from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extract
 
 
 class PDFGeminiMultiLabelMethod(MultiLabelMethod):
-    def __init__(self, extraction_identifier, options, multi_value, method_name=""):
-        super().__init__(extraction_identifier, options, multi_value, method_name)
-        self._text_gemini = TextGeminiMultiOption(extraction_identifier, options, multi_value, method_name)
+    def __init__(self, extraction_identifier, method_name=""):
+        super().__init__(extraction_identifier, method_name)
+        self._text_gemini = TextGeminiMultiOption(extraction_identifier, method_name)
 
     def can_be_used(self, extraction_data):
         return self._text_gemini.can_be_used(extraction_data)
@@ -35,8 +36,8 @@ class PDFGeminiMultiLabelMethod(MultiLabelMethod):
         )
         return self._text_gemini.train(training_multi_option_data)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        texts = [sample.pdf_data.get_text() for sample in multi_option_data.samples]
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        texts = [sample.pdf_data.get_text() for sample in prediction_samples_data.prediction_samples]
         texts = [text.replace("\n", " ") for text in texts]
 
         prediction_samples = [PredictionSample.from_text(text) for text in texts]

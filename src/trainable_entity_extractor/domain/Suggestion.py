@@ -2,6 +2,7 @@ from pdf_token_type_labels.TokenType import TokenType
 from pydantic import BaseModel
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.PdfData import PdfData
@@ -60,9 +61,9 @@ class Suggestion(BaseModel):
         self.add_segments(prediction_pdf_data)
 
     def add_prediction_multi_option(
-        self, training_sample: TrainingSample, values: list[Value], use_context_from_the_end: bool
+        self, prediction_sample: PredictionSample, values: list[Value], use_context_from_the_end: bool
     ):
-        self.add_segments(training_sample.pdf_data, use_context_from_the_end)
+        self.add_segments(prediction_sample.pdf_data, use_context_from_the_end)
         for value in values:
             if value.segment_text:
                 segment_text = FormatSegmentText([value.segment_text], value.label).get_text()

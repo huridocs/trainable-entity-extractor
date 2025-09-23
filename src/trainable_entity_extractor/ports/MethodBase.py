@@ -2,6 +2,7 @@ import os
 from abc import ABC, abstractmethod
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Value import Value
 
@@ -14,6 +15,9 @@ class MethodBase(ABC):
 
     @abstractmethod
     def get_name(self) -> str:
+        pass
+
+    def get_samples_for_context(self, prediction_samples_data: PredictionSamplesData) -> list[PredictionSample]:
         pass
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:

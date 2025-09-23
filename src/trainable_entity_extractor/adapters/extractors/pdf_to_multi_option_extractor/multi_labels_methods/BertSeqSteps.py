@@ -20,6 +20,8 @@ from trainable_entity_extractor.adapters.extractors.bert_method_scripts.get_batc
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
+from trainable_entity_extractor.domain.Value import Value
 
 MODEL_NAME = "google-bert/bert-base-uncased"
 
@@ -139,32 +141,33 @@ class BertSeqSteps(MultiLabelMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        id2class = {index: label for index, label in enumerate([x.label for x in self.options])}
-        class2id = {label: index for index, label in enumerate([x.label for x in self.options])}
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        texts = [sample.pdf_data.get_text() for sample in prediction_samples_data.prediction_samples]
+        texts = [text.replace("\n", " ") for text in texts]
 
-        self.create_dataset(multi_option_data, "predict")
+        model = self.load_model()
+        predictions = model.predict(texts)
 
-        model = AutoModelForSequenceClassification.from_pretrained(
-            self.get_model_path(),
-            num_labels=len(self.options),
-            id2label=id2class,
-            label2id=class2id,
-            problem_type="multi_label_classification",
-        )
+        if prediction_samples_data.multi_value:
+            predictions_proba = model.predict_proba(texts)
+            threshold = 0.5
+            predictions = (predictions_proba > threshold).astype(int)
 
-        model.eval()
+        predictions_values = list()
+        for prediction in predictions:
+            if prediction_samples_data.multi_value:
+                prediction_indices = [i for i, value in enumerate(prediction) if value == 1]
+            else:
+                prediction_indices = [prediction] if isinstance(prediction, int) else prediction.tolist()
 
-        inputs = tokenizer(
-            [x.pdf_data.get_text() for x in multi_option_data.samples],
-            return_tensors="pt",
-            padding="max_length",
-            truncation="only_first",
-            max_length=self.get_token_length(),
-        )
-        output = model(inputs["input_ids"], attention_mask=inputs["attention_mask"])
+            sample_predictions = list()
+            for prediction_index in prediction_indices:
+                if 0 <= prediction_index < len(prediction_samples_data.options):
+                    sample_predictions.append(Value.from_option(prediction_samples_data.options[prediction_index]))
 
-        return self.predictions_to_options_list([self.logit_to_probabilities(logit) for logit in output.logits])
+            predictions_values.append(sample_predictions)
+
+        return predictions_values
 
     def get_token_length(self):
         data = pd.read_csv(self.get_data_path("train"))

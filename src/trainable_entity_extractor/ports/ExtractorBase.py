@@ -33,7 +33,10 @@ class ExtractorBase:
 
     def get_predictions_method(self, method_name: str) -> MethodBase:
         for method in self.METHODS:
-            method_instance = method(self.extraction_identifier)
+            if isinstance(method, type):
+                method_instance = method(self.extraction_identifier)
+            else:
+                method_instance = method
             if method_instance.get_name() == method_name:
                 return method_instance
 

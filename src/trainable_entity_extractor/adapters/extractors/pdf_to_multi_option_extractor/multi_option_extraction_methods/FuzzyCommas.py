@@ -18,6 +18,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.Appearance import (
     Appearance,
 )
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 
 
 class FuzzyCommas(PdfMultiOptionMethod):
@@ -88,8 +89,9 @@ class FuzzyCommas(PdfMultiOptionMethod):
     def clean_texts(self, texts: list[str], sort_words: bool) -> list[str]:
         return list([self.clean_text(option, sort_words) for option in texts])
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        self.set_parameters(multi_option_data)
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
         self.set_options_variants()
 
         try:
@@ -102,10 +104,10 @@ class FuzzyCommas(PdfMultiOptionMethod):
 
         predictions = list()
 
-        for multi_option_sample in multi_option_data.samples:
-            pdf_segments: list[PdfDataSegment] = [x for x in multi_option_sample.pdf_data.pdf_data_segments]
+        for prediction_sample in prediction_samples_data.prediction_samples:
+            pdf_segments: list[PdfDataSegment] = [x for x in prediction_sample.pdf_data.pdf_data_segments]
             appearances, _ = self.get_appearances_for_segments(pdf_segments, aliases)
-            prediction_options = [x.to_value(self.options_cleaned, self.options) for x in appearances]
+            prediction_options = [x.to_value(self.options_cleaned, prediction_samples_data.options) for x in appearances]
             predictions.append(prediction_options)
 
         return predictions

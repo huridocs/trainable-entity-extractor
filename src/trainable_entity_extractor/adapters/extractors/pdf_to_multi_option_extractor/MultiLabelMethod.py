@@ -11,16 +11,13 @@ from numpy import argmax
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Value import Value
 
 
 class MultiLabelMethod(ABC):
-    def __init__(
-        self, extraction_identifier: ExtractionIdentifier, options: list[Option], multi_value: bool, method_name: str = ""
-    ):
+    def __init__(self, extraction_identifier: ExtractionIdentifier, method_name: str = ""):
         self.extraction_identifier = extraction_identifier
-        self.options = options
-        self.multi_value = multi_value
         self.method_name = method_name
 
     def get_name(self):
@@ -40,7 +37,7 @@ class MultiLabelMethod(ABC):
         pass
 
     @abstractmethod
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
+    def predict(self, predict_samples_data: PredictionSamplesData) -> list[list[Value]]:
         pass
 
     def save_json(self, file_name: str, data: any):

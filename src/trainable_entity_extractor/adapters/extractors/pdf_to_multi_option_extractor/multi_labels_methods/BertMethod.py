@@ -7,6 +7,8 @@ import pandas as pd
 from transformers import TrainingArguments, AutoTokenizer
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
+from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.adapters.extractors.bert_method_scripts.get_batch_size import get_batch_size
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 
@@ -111,31 +113,30 @@ class BertMethod(MultiLabelMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        labels_number = len(self.options)
-        predict_path = self.create_dataset(multi_option_data, "predict")
-        model_arguments = ModelArguments(self.get_model_path(), ignore_mismatched_sizes=True)
-        data_training_arguments = MultiLabelDataTrainingArguments(
-            train_file=predict_path,
-            validation_file=predict_path,
-            test_file=predict_path,
-            max_seq_length=256,
-            labels_number=labels_number,
-        )
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        texts = [sample.pdf_data.get_text() for sample in prediction_samples_data.prediction_samples]
+        texts = [text.replace("\n", " ") for text in texts]
 
-        batch_size = get_batch_size(len(multi_option_data.samples))
-        t5_training_arguments = TrainingArguments(
-            report_to=[],
-            output_dir=self.get_model_path(),
-            overwrite_output_dir=False,
-            per_device_train_batch_size=batch_size,
-            per_device_eval_batch_size=batch_size,
-            gradient_accumulation_steps=batch_size,
-            eval_accumulation_steps=batch_size,
-            do_train=False,
-            do_eval=False,
-            do_predict=True,
-        )
+        model = self.load_model()
+        predictions = model.predict(texts)
 
-        logits = multi_label_run(model_arguments, data_training_arguments, t5_training_arguments)
-        return self.predictions_to_options_list([self.logit_to_probabilities(logit) for logit in logits])
+        if prediction_samples_data.multi_value:
+            predictions_proba = model.predict_proba(texts)
+            threshold = 0.5
+            predictions = (predictions_proba > threshold).astype(int)
+
+        predictions_values = list()
+        for prediction in predictions:
+            if prediction_samples_data.multi_value:
+                prediction_indices = [i for i, value in enumerate(prediction) if value == 1]
+            else:
+                prediction_indices = [prediction] if isinstance(prediction, int) else prediction.tolist()
+
+            sample_predictions = list()
+            for prediction_index in prediction_indices:
+                if 0 <= prediction_index < len(prediction_samples_data.options):
+                    sample_predictions.append(Value.from_option(prediction_samples_data.options[prediction_index]))
+
+            predictions_values.append(sample_predictions)
+
+        return predictions_values

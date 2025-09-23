@@ -12,12 +12,13 @@ from transformers import (
     DataCollatorWithPadding,
     AutoModelForSequenceClassification,
 )
+from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Value import Value
+from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.bert_method_scripts.AvoidAllEvaluation import AvoidAllEvaluation
 from trainable_entity_extractor.adapters.extractors.bert_method_scripts.get_batch_size import get_max_steps, get_batch_size
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
-from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.bert_method_scripts.EarlyStoppingAfterInitialTraining import (
     EarlyStoppingAfterInitialTraining,
 )
@@ -144,15 +145,30 @@ class SingleLabelBert(MultiLabelMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        id2class = {index: label for index, label in enumerate([x.label for x in self.options])}
-        class2id = {label: index for index, label in enumerate([x.label for x in self.options])}
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        id2class = {index: label for index, label in enumerate([x.label for x in prediction_samples_data.options])}
+        class2id = {label: index for index, label in enumerate([x.label for x in prediction_samples_data.options])}
 
-        self.create_dataset(multi_option_data, "predict")
+        # Create temporary extraction data for dataset creation (reusing existing method)
+        from trainable_entity_extractor.domain.LabeledData import LabeledData
+
+        temp_samples = []
+        for sample in prediction_samples_data.prediction_samples:
+            labeled_data = LabeledData(values=[], xml_file_name=sample.entity_name, id="temp")
+            temp_sample = TrainingSample(pdf_data=sample.pdf_data, labeled_data=labeled_data)
+            temp_samples.append(temp_sample)
+
+        temp_extraction_data = ExtractionData(
+            samples=temp_samples,
+            extraction_identifier=self.extraction_identifier,
+            options=prediction_samples_data.options,
+            multi_value=prediction_samples_data.multi_value,
+        )
+        self.create_dataset(temp_extraction_data, "predict")
 
         model = AutoModelForSequenceClassification.from_pretrained(
             self.get_model_path(),
-            num_labels=len(self.options),
+            num_labels=len(prediction_samples_data.options),
             id2label=id2class,
             label2id=class2id,
             problem_type="multi_label_classification",
@@ -161,7 +177,7 @@ class SingleLabelBert(MultiLabelMethod):
         model.eval()
 
         inputs = tokenizer(
-            [x.pdf_data.get_text() for x in multi_option_data.samples],
+            [x.pdf_data.get_text() for x in prediction_samples_data.prediction_samples],
             return_tensors="pt",
             padding="max_length",
             truncation="only_first",

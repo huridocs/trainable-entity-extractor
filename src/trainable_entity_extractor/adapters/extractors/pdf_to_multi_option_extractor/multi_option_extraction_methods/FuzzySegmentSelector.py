@@ -8,16 +8,18 @@ from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
 )
+
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.Appearance import (
     Appearance,
 )
 from trainable_entity_extractor.adapters.extractors.segment_selector.SegmentSelector import SegmentSelector
 
-threshold = 85
+threshold = 75
 
 
 class FuzzySegmentSelector(PdfMultiOptionMethod):
@@ -39,17 +41,18 @@ class FuzzySegmentSelector(PdfMultiOptionMethod):
 
         return appearances
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        self.options = multi_option_data.options
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
         segment_selector = SegmentSelector(self.extraction_identifier)
-        segment_selector.set_extraction_segments([sample.pdf_data for sample in multi_option_data.samples])
+        segment_selector.set_extraction_segments([sample.pdf_data for sample in prediction_samples_data.prediction_samples])
 
         predictions = list()
-        clean_options = self.get_cleaned_options(multi_option_data.options)
-        for multi_option_sample in multi_option_data.samples:
-            pdf_segments: list[PdfDataSegment] = [x for x in multi_option_sample.pdf_data.pdf_data_segments if x.ml_label]
+        clean_options = self.get_cleaned_options(prediction_samples_data.options)
+        for prediction_sample in prediction_samples_data.prediction_samples:
+            pdf_segments: list[PdfDataSegment] = [x for x in prediction_sample.pdf_data.pdf_data_segments if x.ml_label]
             appearances: list[Appearance] = self.get_appearances(pdf_segments, clean_options)
-            predictions.append([x.to_value(clean_options, self.options) for x in appearances])
+            predictions.append([x.to_value(clean_options, prediction_samples_data.options) for x in appearances])
 
         return predictions
 

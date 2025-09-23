@@ -10,6 +10,8 @@ from rapidfuzz import fuzz
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.FilterSegmentsMethod import (
@@ -60,16 +62,17 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
             marked_segments.extend(self.get_marked_segments(sample))
         FastSegmentSelector(self.extraction_identifier, self.get_name()).create_model(marked_segments)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        self.set_parameters(multi_option_data)
-        self.extraction_data = self.get_prediction_data(multi_option_data)
-        predictions = FuzzyAll95().predict(self.extraction_data)
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
+        self.prediction_samples_data = self.get_prediction_data(prediction_samples_data)
+        predictions = FuzzyAll95().predict(self.prediction_samples_data)
         return predictions
 
-    def get_prediction_data(self, extraction_data: ExtractionData) -> ExtractionData:
+    def get_prediction_data(self, prediction_samples_data: PredictionSamplesData) -> PredictionSamplesData:
         fast_segment_selector = FastSegmentSelector(self.extraction_identifier, self.get_name())
         predict_samples = list()
-        for sample in extraction_data.samples:
+        for sample in prediction_samples_data.prediction_samples:
             selected_segments = fast_segment_selector.predict(self.fix_two_pages_segments(sample))
 
             self.mark_segments_for_context(selected_segments)
@@ -77,14 +80,13 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
             pdf_data = PdfData(file_name=sample.pdf_data.file_name)
             pdf_data.pdf_data_segments = selected_segments
 
-            training_sample = TrainingSample(pdf_data=pdf_data, labeled_data=sample.labeled_data)
-            predict_samples.append(training_sample)
+            prediction_sample = PredictionSample(pdf_data=pdf_data, entity_name=sample.entity_name)
+            predict_samples.append(prediction_sample)
 
-        return ExtractionData(
-            samples=predict_samples,
+        return PredictionSamplesData(
+            prediction_samples=predict_samples,
             options=self.extraction_data.options,
             multi_value=self.extraction_data.multi_value,
-            extraction_identifier=self.extraction_identifier,
         )
 
     def remove_accents(self, text: str) -> str:
@@ -128,8 +130,8 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
 
         return fixed_segments
 
-    def fix_two_pages_segments(self, training_sample: TrainingSample) -> list[PdfDataSegment]:
-        pdf_data_segments = training_sample.pdf_data.pdf_data_segments
+    def fix_two_pages_segments(self, sample: TrainingSample | PredictionSample) -> list[PdfDataSegment]:
+        pdf_data_segments = sample.pdf_data.pdf_data_segments
         text_type_segments = [s for s in pdf_data_segments if s.segment_type in self.text_types]
         text_type_segments_set = set(text_type_segments)
 

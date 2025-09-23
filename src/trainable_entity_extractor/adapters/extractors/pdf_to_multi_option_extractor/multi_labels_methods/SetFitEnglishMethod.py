@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 from datasets import load_dataset
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from setfit import SetFitModel, TrainingArguments, Trainer
 
 from trainable_entity_extractor.domain.Value import Value
@@ -105,16 +106,33 @@ class SetFitEnglishMethod(MultiLabelMethod):
         gc.collect()
         torch.cuda.empty_cache()
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        model = SetFitModel.from_pretrained(self.get_model_path(), trust_remote_code=True)
-        predict_texts = [sample.pdf_data.get_text() for sample in multi_option_data.samples]
-        predictions = model.predict(predict_texts)
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        texts = [sample.pdf_data.get_text() for sample in prediction_samples_data.prediction_samples]
+        texts = [text.replace("\n", " ") for text in texts]
 
-        del model
-        gc.collect()
-        torch.cuda.empty_cache()
+        model = SetFitModel.from_pretrained(self.get_model_path())
+        predictions = model.predict(texts)
 
-        return self.predictions_to_options_list(predictions.tolist())
+        if prediction_samples_data.multi_value:
+            predictions_proba = model.predict_proba(texts)
+            threshold = 0.5
+            predictions = (predictions_proba > threshold).astype(int)
+
+        predictions_values = list()
+        for prediction in predictions:
+            if prediction_samples_data.multi_value:
+                prediction_indices = [i for i, value in enumerate(prediction) if value == 1]
+            else:
+                prediction_indices = [prediction] if isinstance(prediction, int) else prediction.tolist()
+
+            sample_predictions = list()
+            for prediction_index in prediction_indices:
+                if 0 <= prediction_index < len(prediction_samples_data.options):
+                    sample_predictions.append(Value.from_option(prediction_samples_data.options[prediction_index]))
+
+            predictions_values.append(sample_predictions)
+
+        return predictions_values
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if not torch.cuda.is_available():

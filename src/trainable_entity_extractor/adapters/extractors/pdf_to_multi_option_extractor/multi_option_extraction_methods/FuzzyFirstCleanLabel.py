@@ -8,6 +8,7 @@ from rapidfuzz import fuzz
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.Value import Value
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
 )
@@ -33,17 +34,18 @@ class FuzzyFirstCleanLabel(PdfMultiOptionMethod):
 
         return None
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        self.options = multi_option_data.options
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
         predictions: list[list[Value]] = list()
-        clean_options = self.get_cleaned_options(multi_option_data.options)
+        clean_options = self.get_cleaned_options(prediction_samples_data.options)
         clean_options_sorted = list(sorted(clean_options, key=lambda x: len(x), reverse=True))
 
-        for multi_option_sample in multi_option_data.samples:
-            pdf_segments: list[PdfDataSegment] = [x for x in multi_option_sample.pdf_data.pdf_data_segments]
+        for prediction_sample in prediction_samples_data.prediction_samples:
+            pdf_segments: list[PdfDataSegment] = [x for x in prediction_sample.pdf_data.pdf_data_segments]
             appearance = self.get_appearance(pdf_segments, clean_options_sorted)
             if appearance:
-                predictions.append([appearance.to_value(clean_options, self.options)])
+                predictions.append([appearance.to_value(clean_options, prediction_samples_data.options)])
             else:
                 predictions.append([])
 

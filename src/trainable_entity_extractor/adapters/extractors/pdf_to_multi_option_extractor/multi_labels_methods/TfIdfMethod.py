@@ -12,6 +12,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 
 nltk.download("wordnet")
 nltk.download("stopwords")
@@ -56,17 +57,30 @@ class TfIdfMethod(MultiLabelMethod):
         one_vs_rest_classifier = one_vs_rest_classifier.fit(tfidf_train_vectors, labels)
         dump(one_vs_rest_classifier, self.get_model_path())
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        train_texts = load(self.get_data_path())
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        texts = [sample.pdf_data.get_text() for sample in prediction_samples_data.prediction_samples]
+        texts = [text.replace("\n", " ") for text in texts]
 
-        vectorized = TfidfVectorizer()
-        vectorized.fit_transform(train_texts)
+        model = self.load_model()
+        predictions = model.predict(texts)
 
-        predict_texts = [sample.pdf_data.get_text() for sample in multi_option_data.samples]
+        if prediction_samples_data.multi_value:
+            predictions_proba = model.predict_proba(texts)
+            threshold = 0.5
+            predictions = (predictions_proba > threshold).astype(int)
 
-        tfidf_predict_vectors = vectorized.transform(predict_texts)
+        predictions_values = list()
+        for prediction in predictions:
+            if prediction_samples_data.multi_value:
+                prediction_indices = [i for i, value in enumerate(prediction) if value == 1]
+            else:
+                prediction_indices = [prediction] if isinstance(prediction, int) else prediction.tolist()
 
-        classifier = load(self.get_model_path())
-        predictions_text = classifier.predict(tfidf_predict_vectors)
-        predictions = [prediction for prediction in predictions_text.tolist()]
-        return self.predictions_to_options_list(predictions)
+            sample_predictions = list()
+            for prediction_index in prediction_indices:
+                if 0 <= prediction_index < len(prediction_samples_data.options):
+                    sample_predictions.append(Value.from_option(prediction_samples_data.options[prediction_index]))
+
+            predictions_values.append(sample_predictions)
+
+        return predictions_values

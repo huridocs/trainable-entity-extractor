@@ -8,9 +8,10 @@ import torch.cuda
 from datasets import load_dataset
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
+from trainable_entity_extractor.domain.Value import Value
 from setfit import SetFitModel, TrainingArguments, Trainer
 
-from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.adapters.extractors.bert_method_scripts.AvoidAllEvaluation import AvoidAllEvaluation
 from trainable_entity_extractor.adapters.extractors.bert_method_scripts.EarlyStoppingAfterInitialTraining import (
@@ -121,9 +122,9 @@ class SingleLabelSetFitEnglishMethod(MultiLabelMethod):
         gc.collect()
         torch.cuda.empty_cache()
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
         model = SetFitModel.from_pretrained(self.get_model_path(), trust_remote_code=True)
-        predict_texts = [sample.pdf_data.get_text() for sample in multi_option_data.samples]
+        predict_texts = [sample.pdf_data.get_text() for sample in prediction_samples_data.prediction_samples]
         predictions = model.predict(predict_texts)
 
         del model
@@ -131,6 +132,6 @@ class SingleLabelSetFitEnglishMethod(MultiLabelMethod):
         torch.cuda.empty_cache()
 
         return [
-            [Value.from_option(option) for option in self.options if option.label == prediction]
+            [Value.from_option(option) for option in prediction_samples_data.options if option.label == prediction]
             for prediction in predictions
         ]
