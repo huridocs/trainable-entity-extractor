@@ -3,7 +3,7 @@ from statistics import mode
 from flair.nn import Classifier
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from flair.data import Sentence
 
@@ -28,20 +28,26 @@ class NerFirstAppearanceMethod(ToTextExtractorMethod):
 
         self.save_json(TAG_TYPE_JSON, mode(types) if types else "")
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
-        tag_type: str = self.load_json(TAG_TYPE_JSON)
+    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
+        tag_type = self.load_json(TAG_TYPE_JSON)
         if not tag_type:
-            return [""] * len(predictions_samples)
+            return [""] * len(prediction_samples.prediction_samples)
 
-        texts = [self.clean_text(sample.get_input_text()) for sample in predictions_samples]
-        predictions = [""] * len(texts)
-        for i, text in enumerate(texts):
+        predictions = list()
+        for prediction_sample in prediction_samples.prediction_samples:
+            text = self.clean_text(prediction_sample.get_input_text())
             sentence = Sentence(text)
             tagger.predict(sentence)
-            prediction_texts = [span.text for span in sentence.get_spans() if span.tag == tag_type]
-            predictions[i] = self.get_appearance(prediction_texts)
+
+            for span in sentence.get_spans():
+                if span.tag == tag_type:
+                    predictions.append(span.text)
+                    break
+            else:
+                predictions.append("")
 
         return predictions
 
-    def get_appearance(self, prediction_texts):
-        return prediction_texts[0] if prediction_texts else ""
+    @staticmethod
+    def clean_text(text: str) -> str:
+        return text.replace("\n", " ").replace("\t", " ").strip()

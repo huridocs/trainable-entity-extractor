@@ -1,5 +1,5 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from trainable_entity_extractor.adapters.extractors.GlinerDateExtractor import GlinerDateExtractor
 
@@ -39,12 +39,13 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
 
         self.save_json(self.IS_VALID_EXECUTION_FILE_NAME, "true")
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
         if self.load_json(self.IS_VALID_EXECUTION_FILE_NAME) == "false":
-            return [""] * len(predictions_samples)
+            return [""] * len(prediction_samples.prediction_samples)
 
         predictions_dates = [
-            self.get_date(prediction_sample.get_input_text_by_lines()) for prediction_sample in predictions_samples
+            self.get_date(prediction_sample.get_input_text_by_lines())
+            for prediction_sample in prediction_samples.prediction_samples
         ]
         predictions = [date.strftime("%Y-%m-%d") if date else "" for date in predictions_dates]
         return predictions

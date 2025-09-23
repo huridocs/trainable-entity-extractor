@@ -7,6 +7,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
@@ -99,18 +100,18 @@ class TextToMultiOptionExtractor(ExtractorBase):
         self.multi_value = extraction_data.multi_value
         return self.get_train_test_sets(extraction_data)
 
-    def get_suggestions(self, method_name: str, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
-        if not predictions_samples:
+    def get_suggestions(self, method_name: str, prediction_samples: PredictionSamples) -> list[Suggestion]:
+        if not prediction_samples.prediction_samples:
             return []
 
-        self.fix_empty_prediction_data(predictions_samples)
-        predictions = self.get_predictions_method().predict(predictions_samples)
+        self.fix_empty_prediction_data(prediction_samples.prediction_samples)
+        predictions = self.get_predictions_method(method_name).predict_multi_option(prediction_samples)
 
-        if not self.multi_value:
+        if not prediction_samples.multi_value:
             predictions = [x[:1] for x in predictions]
 
         suggestions = list()
-        for prediction_sample, prediction in zip(predictions_samples, predictions):
+        for prediction_sample, prediction in zip(prediction_samples.prediction_samples, predictions):
             segment_text = prediction_sample.source_text if prediction_sample.source_text else ""
             values = [Value(id=x.id, label=x.label, segment_text=segment_text) for x in prediction]
             suggestion = Suggestion.from_prediction_multi_option(

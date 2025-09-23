@@ -1,5 +1,6 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.adapters.extractors.ToTextExtractor import ToTextExtractor
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
@@ -72,11 +73,11 @@ class TextToTextExtractor(ToTextExtractor):
         return super().create_model(extraction_data)
 
     @staticmethod
-    def set_segment_selector_texts(predictions_samples):
+    def set_segment_selector_texts(predictions_samples: list[PredictionSample]) -> None:
         for sample in predictions_samples:
             if not sample.segment_selector_texts and sample.source_text:
                 sample.segment_selector_texts = [sample.source_text]
 
-    def get_suggestions(self, method_name: str, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
-        self.set_segment_selector_texts(predictions_samples)
+    def get_suggestions(self, method_name: str, predictions_samples: PredictionSamples) -> list[Suggestion]:
+        self.set_segment_selector_texts(predictions_samples.prediction_samples)
         return super().get_suggestions(method_name, predictions_samples)

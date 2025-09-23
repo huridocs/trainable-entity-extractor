@@ -4,7 +4,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
@@ -29,7 +29,7 @@ class ExtractorBase:
 
     @abstractmethod
     def get_suggestions(
-        self, extractor_job: TrainableEntityExtractorJob, predictions_samples: list[PredictionSample]
+        self, method_name: str, prediction_samples: PredictionSamples
     ) -> list[Suggestion]:
         pass
 

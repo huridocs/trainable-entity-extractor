@@ -15,12 +15,6 @@ from trainable_entity_extractor.ports.MethodBase import MethodBase
 
 
 class ToTextExtractorMethod(MethodBase):
-
-    def __init__(self, extraction_identifier: ExtractionIdentifier, from_class_name: str = ""):
-        super().__init__(extraction_identifier)
-        self.from_class_name = from_class_name
-        os.makedirs(self.extraction_identifier.get_path(), exist_ok=True)
-
     def get_path(self):
         if self.from_class_name:
             path = join(self.extraction_identifier.get_path(), self.from_class_name, self.get_name())
@@ -65,14 +59,15 @@ class ToTextExtractorMethod(MethodBase):
 
         self.train(train_set)
         samples = test_set.samples
-        predictions = self.predict(
-            [
+        prediction_samples = PredictionSamples(
+            samples=[
                 PredictionSample(
                     pdf_data=x.pdf_data.model_copy() if x.pdf_data else None, segment_selector_texts=x.segment_selector_texts
                 )
                 for x in samples
-            ]
-        )
+            ])
+
+        predictions = self.predict(prediction_samples)
 
         correct = [
             sample

@@ -1,7 +1,7 @@
 import re
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 
 from tdda import *
 
@@ -17,11 +17,11 @@ class RegexMethod(ToTextExtractorMethod):
         regex_list = [regex[1:-1] for regex in regex_list]
         self.save_json("regex_list.json", regex_list)
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
-        predictions = [""] * len(predictions_samples)
+    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
+        predictions = [""] * len(prediction_samples.prediction_samples)
         regex_list = self.load_json("regex_list.json")
         for regex in regex_list:
-            for index, prediction_sample in enumerate(predictions_samples):
+            for index, prediction_sample in enumerate(prediction_samples.prediction_samples):
                 if predictions[index]:
                     break
 

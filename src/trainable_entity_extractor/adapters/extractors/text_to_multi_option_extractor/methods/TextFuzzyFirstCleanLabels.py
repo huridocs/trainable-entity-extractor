@@ -6,7 +6,7 @@ from rapidfuzz import fuzz
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -33,16 +33,12 @@ class TextFuzzyFirstCleanLabels(TextToMultiOptionMethod):
 
         return []
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
+    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
         predictions: list[list[Option]] = list()
-        option_labels = self.get_cleaned_labels(self.options)
-        for sample in predictions_samples:
+        option_labels = self.get_cleaned_labels(prediction_samples.options)
+        for sample in prediction_samples.prediction_samples:
             values = self.get_appearance(sample.get_input_text(), option_labels)
-
-            if values:
-                predictions.append([self.options[option_labels.index(values[0])]])
-            else:
-                predictions.append([])
+            predictions.append([option for option in prediction_samples.options if self.remove_accents(option.label).lower() in values])
 
         return predictions
 

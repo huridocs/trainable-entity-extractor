@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from tdda import *
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -19,16 +19,16 @@ class FirstWordRegex(TextToMultiOptionMethod):
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         return True
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
+    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
         predictions: list[list[Option]] = list()
-        options_regex: list[OptionRegex] = [self.load_option_regex(option) for option in self.options]
+        options_regex: list[OptionRegex] = [self.load_option_regex(option) for option in prediction_samples.options]
         options_regex.sort(key=lambda x: len(x.regex_list))
-        for sample in predictions_samples:
+        for sample in prediction_samples.prediction_samples:
             options_ids = self.predict_one(sample.get_input_text(), options_regex)
             if options_ids:
-                predictions.append([option for option in self.options if option.id in options_ids])
+                predictions.append([option for option in prediction_samples.options if option.id in options_ids])
             else:
-                predictions.append([option for option in self.options if option.id == options_regex[-1].option_id])
+                predictions.append([option for option in prediction_samples.options if option.id == options_regex[-1].option_id])
 
         return predictions
 

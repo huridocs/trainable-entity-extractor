@@ -8,7 +8,7 @@ class TrainableEntityExtractorJob(BaseModel):
     extraction_name: str
     extractor_name: str
     method_name: str
-    multi_label: bool = False
+    multi_value: bool = False
     options: list[Option] = []
     gpu_needed: bool
     timeout: int

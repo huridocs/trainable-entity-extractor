@@ -1,7 +1,7 @@
 import re
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from dateparser.search import search_dates
 
@@ -52,14 +52,14 @@ class DateParserMethod(ToTextExtractorMethod):
         self.save_json(self.IS_VALID_EXECUTION_FILE_NAME, "true")
         self.save_json("languages.json", list(set(languages)))
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
         if self.load_json(self.IS_VALID_EXECUTION_FILE_NAME) == "false":
-            return [""] * len(predictions_samples)
+            return [""] * len(prediction_samples.prediction_samples)
 
         languages = self.load_json("languages.json")
         predictions_dates = [
             self.get_date(prediction_sample.get_input_text_by_lines(), languages)
-            for prediction_sample in predictions_samples
+            for prediction_sample in prediction_samples.prediction_samples
         ]
-        predictions = [date.strftime("%Y-%m-%d") if date else "" for date in predictions_dates]
-        return predictions
+
+        return [str(prediction_date) if prediction_date else "" for prediction_date in predictions_dates]

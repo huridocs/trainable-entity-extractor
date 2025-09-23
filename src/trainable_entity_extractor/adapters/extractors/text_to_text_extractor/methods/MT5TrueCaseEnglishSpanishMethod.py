@@ -15,7 +15,7 @@ from transformers import AutoTokenizer, MT5ForConditionalGeneration
 
 from trainable_entity_extractor.config import DATA_PATH, config_logger
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 
@@ -157,13 +157,13 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
     def exists_model(self):
         return exists(self.get_model_path())
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
-        texts = [" ".join(x.get_input_text_by_lines()) for x in predictions_samples]
+    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
+        texts = [" ".join(x.get_input_text_by_lines()) for x in prediction_samples.prediction_samples]
 
         if not self.exists_model():
             return texts
 
-        samples = [TrainingSample(segment_selector_texts=sample.get_input_text_by_lines()) for sample in predictions_samples]
+        samples = [TrainingSample(segment_selector_texts=sample.get_input_text_by_lines()) for sample in prediction_samples.prediction_samples]
         predict_data_path = self.prepare_dataset(ExtractionData(samples=samples))
 
         if not predict_data_path:
@@ -182,9 +182,21 @@ class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
                 predictions.append("")
                 continue
 
-            input_ids = tokenizer(input_text, return_tensors="pt").to(device).input_ids
-            outputs = model.generate(input_ids, max_length=max_length_predictions)
-            predictions.append(tokenizer.decode(outputs[0])[6:-4])
+            try:
+                input_ids = tokenizer(input_text, return_tensors="pt").input_ids.to(device)
+
+                outputs = model.generate(
+                    input_ids,
+                    do_sample=False,
+                    max_length=max_length_predictions,
+                    early_stopping=True,
+                )
+
+                prediction_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                predictions.append(prediction_text)
+            except Exception as e:
+                config_logger.error(f"Error in prediction: {e}")
+                predictions.append("")
 
         return predictions
 

@@ -7,7 +7,7 @@ import fasttext
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionMethod import (
     TextToMultiOptionMethod,
 )
@@ -67,24 +67,25 @@ class TextFastTextMethod(TextToMultiOptionMethod):
         model = fasttext.train_supervised(**fasttext_params)
         model.save_model(self.get_model_path())
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
-        texts = [sample.get_input_text() for sample in predictions_samples]
+    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
+        texts = [sample.get_input_text() for sample in prediction_samples.prediction_samples]
         texts = [text.replace("\n", " ") for text in texts]
 
         model = fasttext.load_model(self.get_model_path())
-        labels = self.clean_labels(self.options)
+        labels = self.clean_labels(prediction_samples.options)
 
-        if self.multi_value:
+        if prediction_samples.multi_value:
             prediction_labels_scores = model.predict(texts, k=len(labels))
         else:
             prediction_labels_scores = model.predict(texts, k=1)
 
-        predictions: list[list[Option]] = list()
-        for prediction_labels, scores in zip(prediction_labels_scores[0], prediction_labels_scores[1]):
-            predictions.append(list())
-            for prediction_label, score in zip(prediction_labels, scores):
-                if score > 0.5 and prediction_label[9:] in labels:
-                    label_index = labels.index(prediction_label[9:])
-                    predictions[-1].append(self.options[label_index])
+        predictions = list()
+        for prediction_labels, prediction_scores in zip(prediction_labels_scores[0], prediction_labels_scores[1]):
+            prediction_options = list()
+            for prediction_label, prediction_score in zip(prediction_labels, prediction_scores):
+                if prediction_score > 0.5:
+                    prediction_options.append([option for option in prediction_samples.options if self.clean_labels([option])[0] == prediction_label][0])
+
+            predictions.append(prediction_options)
 
         return predictions

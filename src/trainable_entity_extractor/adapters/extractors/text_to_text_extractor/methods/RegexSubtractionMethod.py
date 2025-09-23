@@ -1,7 +1,7 @@
 import re
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 
 from tdda import *
 
@@ -30,10 +30,10 @@ class RegexSubtractionMethod(ToTextExtractorMethod):
 
         self.save_json("regex_subtraction_list.json", front_regex_list + back_regex_list)
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[str]:
+    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
         regex_list = self.load_json("regex_subtraction_list.json")
 
-        predictions = [" ".join(x.get_input_text_by_lines()) for x in predictions_samples]
+        predictions = [" ".join(x.get_input_text_by_lines()) for x in prediction_samples.prediction_samples]
         for i, prediction in enumerate(predictions):
             for regex in regex_list:
                 matches = re.search(regex, prediction)

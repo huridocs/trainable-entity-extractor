@@ -7,22 +7,20 @@ from pathlib import Path
 
 from numpy import argmax
 from sklearn.metrics import f1_score
+
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.ports.MethodBase import MethodBase
 
 
 class TextToMultiOptionMethod(MethodBase):
-    def __init__(self, extraction_identifier: ExtractionIdentifier, options=None, multi_value: bool = False, method_name=""):
-        super().__init__(extraction_identifier)
-        if options is None:
-            options = []
-        self.options = options
-        self.multi_value = multi_value
-        self.method_name = method_name
-        os.makedirs(self.extraction_identifier.get_path(), exist_ok=True)
+    def __init__(self, extraction_identifier: ExtractionIdentifier, from_class_name: str = ""):
+        super().__init__(extraction_identifier, from_class_name)
+        self.options: list[Option] = []
+        self.multi_value: bool = False
 
     def get_name(self):
         return self.__class__.__name__
@@ -49,8 +47,7 @@ class TextToMultiOptionMethod(MethodBase):
     def remove_method_data(self) -> None:
         self.remove_model()
 
-    @abstractmethod
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
+    def predict(self, prediction_samples: PredictionSamples) -> list[str]:
         pass
 
     def get_performance(self, train_set: ExtractionData, test_set: ExtractionData) -> float:
@@ -60,8 +57,13 @@ class TextToMultiOptionMethod(MethodBase):
 
         self.train(train_set)
 
-        prediction_samples = [PredictionSample(source_text=x.labeled_data.source_text) for x in test_set.samples]
-        predictions = self.predict(prediction_samples)
+        prediction_samples_list = [PredictionSample(source_text=x.labeled_data.source_text) for x in test_set.samples]
+        prediction_samples = PredictionSamples(
+            prediction_samples=prediction_samples_list,
+            options=self.options,
+            multi_value=self.multi_value
+        )
+        predictions = self.predict_multi_option(prediction_samples)
 
         self.remove_model()
 

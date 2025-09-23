@@ -1,7 +1,7 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
@@ -27,17 +27,17 @@ class ToTextExtractor(ExtractorBase):
     def get_name(self):
         return self.__class__.__name__
 
-    def get_suggestions(self, method_name: str, predictions_samples: list[PredictionSample]) -> list[Suggestion]:
+    def get_suggestions(self, method_name: str, prediction_samples: PredictionSamples) -> list[Suggestion]:
         method_instance = self.get_predictions_method(method_name)
         self.logger.log(
             self.extraction_identifier,
-            f"And also using {method_instance.get_name()} to calculate {len(predictions_samples)} suggestions",
+            f"And also using {method_instance.get_name()} to calculate {len(prediction_samples.prediction_samples)} suggestions",
         )
-        prediction = method_instance.predict(predictions_samples)
+        prediction = method_instance.predict(prediction_samples)
         suggestions = list()
-        for prediction, prediction_sample in zip(prediction, predictions_samples):
+        for prediction_text, prediction_sample in zip(prediction, prediction_samples.prediction_samples):
             entity_name = prediction_sample.entity_name
-            suggestions.append(Suggestion.from_prediction_text(self.extraction_identifier, entity_name, prediction))
+            suggestions.append(Suggestion.from_prediction_text(self.extraction_identifier, entity_name, prediction_text))
 
         return suggestions
 

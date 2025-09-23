@@ -158,7 +158,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         self, extractor_job: TrainableEntityExtractorJob, predictions_samples: list[PredictionSample]
     ) -> (list[TrainingSample], list[list[Value]]):
         self.options = extractor_job.options
-        self.multi_value = extractor_job.multi_label
+        self.multi_value = extractor_job.multi_value
         training_samples = [TrainingSample(pdf_data=sample.pdf_data) for sample in predictions_samples]
         extraction_data = ExtractionData(
             multi_value=self.multi_value,

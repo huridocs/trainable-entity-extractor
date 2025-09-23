@@ -8,7 +8,7 @@ from transformers import TrainingArguments, AutoTokenizer
 
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamples import PredictionSamples
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.adapters.extractors.bert_method_scripts.get_batch_size import get_batch_size
 
@@ -122,11 +122,11 @@ class TextBertMultilingual(TextToMultiOptionMethod):
         odds = [1 / (1 + exp(-logit)) for logit in logits]
         return odds
 
-    def predict(self, predictions_samples: list[PredictionSample]) -> list[list[Option]]:
-        labels_number = len(self.options)
+    def predict_multi_option(self, prediction_samples: PredictionSamples) -> list[list[Option]]:
+        labels_number = len(prediction_samples.options)
 
-        texts = [self.get_text(sample.get_input_text()) for sample in predictions_samples]
-        labels = [[0] * len(self.options) for _ in predictions_samples]
+        texts = [self.get_text(sample.get_input_text()) for sample in prediction_samples.prediction_samples]
+        labels = [[0] * len(prediction_samples.options) for _ in prediction_samples.prediction_samples]
 
         predict_path = self.save_dataset(texts, labels, "predict")
         model_arguments = ModelArguments(self.get_model_path(), ignore_mismatched_sizes=True)
@@ -138,7 +138,7 @@ class TextBertMultilingual(TextToMultiOptionMethod):
             labels_number=labels_number,
         )
 
-        batch_size = get_batch_size(len(predictions_samples))
+        batch_size = get_batch_size(len(prediction_samples.prediction_samples))
         t5_training_arguments = TrainingArguments(
             report_to=[],
             output_dir=self.get_model_path(),
