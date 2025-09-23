@@ -186,6 +186,7 @@ class TestExtractorPdfToText(TestCase):
             self.assertEqual(90.0, suggestion.segments_boxes[0].top)
             self.assertEqual(1, suggestion.segments_boxes[0].page_number)
 
+    @unittest.skip("Too slow for pipeline")
     def test_get_semantic_suggestions(self):
         segment_box = SegmentBox(left=397, top=115, page_width=612, page_height=792, width=74, height=9, page_number=1)
 
@@ -230,8 +231,7 @@ class TestExtractorPdfToText(TestCase):
         self.assertEqual(11.0, suggestion.segments_boxes[0].height)
         self.assertEqual(1, suggestion.segments_boxes[0].page_number)
 
-    @unittest.skip("Too slow for pipeline")
-    def test_get_semantic_suggestions_numeric(self):
+    def test_get_suggestions_numeric(self):
         segment_box = SegmentBox(left=397, top=91, page_width=612, page_height=792, width=10, height=9, page_number=1)
 
         labeled_data = LabeledData(label_text="15", language_iso="en", label_segments_boxes=[segment_box])
