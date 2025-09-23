@@ -54,7 +54,7 @@ class JobExecutor(ABC):
 
     def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
         try:
-            upload_success = self.model_storage.upload_model(extraction_identifier, extractor_job.method_name, extractor_job)
+            upload_success = self.model_storage.upload_model(extraction_identifier, extractor_job)
             if upload_success:
                 signal_success = self.model_storage.create_model_completion_signal(extraction_identifier)
                 if signal_success:

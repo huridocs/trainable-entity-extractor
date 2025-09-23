@@ -21,9 +21,8 @@ from trainable_entity_extractor.adapters.LocalJobExecutor import LocalJobExecuto
 from trainable_entity_extractor.adapters.LocalModelStorage import LocalModelStorage
 from trainable_entity_extractor.adapters.LocalExtractionDataRetriever import LocalExtractionDataRetriever
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
-from trainable_entity_extractor.use_cases.PredictionOrchestratorUseCase import PredictionOrchestratorUseCase
+from trainable_entity_extractor.use_cases.OrchestratorUseCase import OrchestratorUseCase
 from trainable_entity_extractor.use_cases.TrainUseCase import TrainUseCase
-from trainable_entity_extractor.use_cases.TrainingOrchestratorUseCase import TrainingOrchestratorUseCase
 
 
 class TrainableEntityExtractor:
@@ -97,7 +96,7 @@ class TrainableEntityExtractor:
 
     def _execute_training_workflow(self, jobs: list) -> tuple[bool, str]:
         distributed_jobs = self._create_distributed_training_jobs(jobs)
-        training_orchestrator = TrainingOrchestratorUseCase(distributed_jobs, self.job_executor, self.logger)
+        training_orchestrator = OrchestratorUseCase(self.job_executor, self.logger, distributed_jobs)
 
         self.logger.log(self.extraction_identifier, f"Training with {len(jobs)} available methods")
 
@@ -109,7 +108,7 @@ class TrainableEntityExtractor:
 
     @staticmethod
     def _process_training_jobs(
-        training_orchestrator: TrainingOrchestratorUseCase, distributed_jobs: list
+        training_orchestrator: OrchestratorUseCase, distributed_jobs: list
     ) -> tuple[bool, str]:
         success = False
         message = "Unknown error during training"
@@ -148,7 +147,7 @@ class TrainableEntityExtractor:
 
     def _execute_prediction(self, extractor_job) -> None:
         distributed_jobs = self._create_distributed_prediction_jobs(extractor_job)
-        prediction_orchestrator = PredictionOrchestratorUseCase(self.job_executor, self.logger)
+        prediction_orchestrator = OrchestratorUseCase(self.job_executor, self.logger)
         prediction_orchestrator.distributed_jobs = distributed_jobs
 
         self.logger.log(self.extraction_identifier, f"Predicting using method {extractor_job.method_name}")
@@ -168,7 +167,7 @@ class TrainableEntityExtractor:
         ]
 
     def _process_prediction_jobs(
-        self, prediction_orchestrator: PredictionOrchestratorUseCase, distributed_jobs: list
+        self, prediction_orchestrator: OrchestratorUseCase, distributed_jobs: list
     ) -> None:
         while prediction_orchestrator.exists_jobs_to_be_done():
             success, message = prediction_orchestrator.process_job(distributed_jobs[0])

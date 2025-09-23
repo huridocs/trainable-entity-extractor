@@ -38,12 +38,29 @@ class LocalJobExecutor(JobExecutor):
                 distributed_sub_job.status = JobStatus.FAILURE
                 return None
 
-            train_use_case = TrainUseCase(extractors=self.EXTRACTORS)
-            performance = train_use_case.get_performance(distributed_sub_job.extractor_job, extraction_data)
-            if performance:
-                distributed_sub_job.result = performance
-                distributed_sub_job.status = JobStatus.SUCCESS
-                return performance
+            # Quick validation - if no samples, fail fast
+            if not extraction_data.samples or len(extraction_data.samples) == 0:
+                distributed_sub_job.status = JobStatus.FAILURE
+                return None
+
+            train_use_case = TrainUseCase(extractors=self.EXTRACTORS, logger=self.logger)
+
+            # Try to get performance, but handle any issues gracefully
+            try:
+                performance = train_use_case.get_performance(distributed_sub_job.extractor_job, extraction_data)
+                if performance:
+                    distributed_sub_job.result = performance
+                    distributed_sub_job.status = JobStatus.SUCCESS
+                    return performance
+                else:
+                    distributed_sub_job.status = JobStatus.FAILURE
+                    return None
+            except Exception as perf_exception:
+                # Performance evaluation failed - this is acceptable for testing
+                self.logger.log(extraction_identifier, f"Performance evaluation failed: {str(perf_exception)}", severity="warning")
+                distributed_sub_job.status = JobStatus.FAILURE
+                return None
+
         except Exception as e:
             distributed_sub_job.status = JobStatus.FAILURE
             return None
@@ -60,7 +77,7 @@ class LocalJobExecutor(JobExecutor):
                 distributed_sub_job.status = JobStatus.FAILURE
                 return False, "No extraction data available for training"
 
-            train_use_case = TrainUseCase(extractors=self.EXTRACTORS)
+            train_use_case = TrainUseCase(extractors=self.EXTRACTORS, logger=self.logger)
             success, message = train_use_case.train_one_method(distributed_sub_job.extractor_job, extraction_data)
             if success:
                 distributed_sub_job.status = JobStatus.SUCCESS
@@ -80,7 +97,7 @@ class LocalJobExecutor(JobExecutor):
                 distributed_sub_job.result = False
                 return
 
-            predict_use_case = PredictUseCase(extractors=self.EXTRACTORS)
+            predict_use_case = PredictUseCase(extractors=self.EXTRACTORS, logger=self.logger)
             suggestions = predict_use_case.predict(distributed_sub_job.extractor_job, prediction_data)
             success = self.data_retriever.save_suggestions(extraction_identifier, suggestions)
             if success:

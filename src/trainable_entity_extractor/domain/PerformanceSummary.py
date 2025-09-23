@@ -25,6 +25,17 @@ class PerformanceSummary(BaseModel):
         self.previous_timestamp = current_time
         self.performances.append(performance)
 
+    def add_performance_from_sub_job(self, sub_job):
+        """Add performance data from a DistributedSubJob"""
+        if sub_job.result and hasattr(sub_job.result, 'performance_score'):
+            performance_score = sub_job.result.performance_score
+        elif sub_job.result and hasattr(sub_job.result, 'performance'):
+            performance_score = sub_job.result.performance
+        else:
+            performance_score = 0.0
+
+        self.add_performance(sub_job.extractor_job.method_name, performance_score)
+
     def to_log(self) -> str:
         total_time = sum(performance.execution_seconds for performance in self.performances)
 
@@ -71,4 +82,18 @@ class PerformanceSummary(BaseModel):
             training_samples_count=training_samples_count,
             testing_samples_count=testing_samples_count,
             empty_pdf_count=empty_pdf_count,
+        )
+
+    @staticmethod
+    def from_distributed_job(distributed_job) -> "PerformanceSummary":
+        """Create a PerformanceSummary from a DistributedJob for orchestrator use case"""
+        return PerformanceSummary(
+            extraction_identifier=distributed_job.extraction_identifier,
+            extractor_name="Performance Evaluation",
+            samples_count=0,  # We don't have access to extraction data here
+            options_count=0,
+            languages=[],
+            training_samples_count=0,
+            testing_samples_count=0,
+            empty_pdf_count=0,
         )

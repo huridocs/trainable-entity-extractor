@@ -2,6 +2,7 @@ from typing import Optional
 
 from trainable_entity_extractor.domain.DistributedJob import DistributedJob
 from trainable_entity_extractor.domain.DistributedSubJob import DistributedSubJob
+from trainable_entity_extractor.domain.JobStatus import JobStatus
 
 
 class JobSelectorUseCase:
