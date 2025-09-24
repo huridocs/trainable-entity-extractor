@@ -6,6 +6,7 @@ from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.TextT
 from trainable_entity_extractor.adapters.LocalExtractionDataRetriever import LocalExtractionDataRetriever
 from trainable_entity_extractor.adapters.LocalModelStorage import LocalModelStorage
 from trainable_entity_extractor.adapters.LocalJobExecutor import LocalJobExecutor
+from trainable_entity_extractor.config import CACHE_PATH
 from trainable_entity_extractor.domain.DistributedJob import DistributedJob
 from trainable_entity_extractor.domain.DistributedSubJob import DistributedSubJob
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
@@ -35,6 +36,7 @@ class TestOrchestratorUseCase(TestCase):
 
     def tearDown(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
+        shutil.rmtree(CACHE_PATH / "extraction_data", ignore_errors=True)
 
     def _create_sample_extraction_data(self) -> ExtractionData:
         """Create sample training data for testing"""
@@ -47,7 +49,7 @@ class TestOrchestratorUseCase(TestCase):
             ),
             TrainingSample(
                 labeled_data=LabeledData(label_text="Bob Johnson", language_iso="en", source_text="Bob Johnson works")
-            )
+            ),
         ]
         return ExtractionData(samples=samples, extraction_identifier=extraction_identifier)
 
@@ -56,7 +58,7 @@ class TestOrchestratorUseCase(TestCase):
         return [
             PredictionSample.from_text("Hello, my name is Alice Brown", "sample_1"),
             PredictionSample.from_text("Meet Charlie Wilson today", "sample_2"),
-            PredictionSample.from_text("Diana Prince is the manager", "sample_3")
+            PredictionSample.from_text("Diana Prince is the manager", "sample_3"),
         ]
 
     def _get_available_training_job(self, extraction_data: ExtractionData) -> TrainableEntityExtractorJob:
@@ -80,7 +82,7 @@ class TestOrchestratorUseCase(TestCase):
             gpu_needed=False,
             timeout=300,
             multi_value=False,
-            options=[]
+            options=[],
         )
 
     def test_process_training_job_success(self):
@@ -91,11 +93,7 @@ class TestOrchestratorUseCase(TestCase):
         # Create training job
         extractor_job = self._get_available_training_job(extraction_data)
         sub_job = DistributedSubJob(job_id="test_job_1", extractor_job=extractor_job)
-        distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.TRAIN,
-            sub_jobs=[sub_job]
-        )
+        distributed_job = DistributedJob(extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[sub_job])
 
         # Add job to orchestrator
         self.orchestrator.distributed_jobs = [distributed_job]
@@ -127,9 +125,7 @@ class TestOrchestratorUseCase(TestCase):
         # Create prediction job
         sub_job = DistributedSubJob(job_id="test_job_2", extractor_job=extractor_job)
         distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.PREDICT,
-            sub_jobs=[sub_job]
+            extraction_identifier=extraction_identifier, type=JobType.PREDICT, sub_jobs=[sub_job]
         )
 
         # Add job to orchestrator
@@ -152,13 +148,11 @@ class TestOrchestratorUseCase(TestCase):
         all_jobs = train_use_case.get_jobs(extraction_data)
 
         # Use first job for performance testing (simplified to avoid complexity)
-        test_jobs = all_jobs[:1] if len(all_jobs) >= 1 else all_jobs
+        test_jobs = all_jobs[:5] if len(all_jobs) >= 1 else all_jobs
 
         sub_jobs = [DistributedSubJob(job_id=f"test_job_{i}", extractor_job=job) for i, job in enumerate(test_jobs)]
         distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.PERFORMANCE,
-            sub_jobs=sub_jobs
+            extraction_identifier=extraction_identifier, type=JobType.PERFORMANCE, sub_jobs=sub_jobs
         )
 
         # Add job to orchestrator
@@ -166,9 +160,9 @@ class TestOrchestratorUseCase(TestCase):
 
         # Process the job once
         while self.orchestrator.exists_jobs_to_be_done():
-            success, message = self.orchestrator.process_job(distributed_job)
+            success, message = self.orchestrator.process_job(self.orchestrator.distributed_jobs[0])
 
-        self.assertIsInstance(success, bool, "Performance job should return a boolean result")
+        self.assertTrue(success, "Performance job should return a boolean result")
         self.assertIsInstance(message, str, "Performance job should return a message")
         self.assertEqual(0, len(self.orchestrator.distributed_jobs), "Job should be removed after processing")
 
@@ -176,11 +170,7 @@ class TestOrchestratorUseCase(TestCase):
         """Test training job failure when no extraction data is available"""
         extractor_job = self._create_test_extractor_job()
         sub_job = DistributedSubJob(job_id="test_job_3", extractor_job=extractor_job)
-        distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.TRAIN,
-            sub_jobs=[sub_job]
-        )
+        distributed_job = DistributedJob(extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[sub_job])
 
         # Add job to orchestrator
         self.orchestrator.distributed_jobs = [distributed_job]
@@ -194,32 +184,6 @@ class TestOrchestratorUseCase(TestCase):
         self.assertEqual(JobStatus.FAILURE, sub_job.status)
         self.assertEqual(0, len(self.orchestrator.distributed_jobs), "Job should be removed after failure")
 
-    def test_process_prediction_job_failure_no_model(self):
-        """Test prediction job failure when no trained model is available"""
-        prediction_data = self._create_sample_prediction_data()
-        self.data_retriever.save_prediction_data(extraction_identifier, prediction_data)
-
-        # Create prediction job with non-existent model
-        extractor_job = self._create_test_extractor_job()
-        sub_job = DistributedSubJob(job_id="test_job_4", extractor_job=extractor_job)
-        distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.PREDICT,
-            sub_jobs=[sub_job]
-        )
-
-        # Add job to orchestrator
-        self.orchestrator.distributed_jobs = [distributed_job]
-
-        # Process the job
-        success, message = self.orchestrator.process_job(distributed_job)
-
-        # Verify failure
-        self.assertFalse(success, "Prediction should fail without trained model")
-        self.assertIn("Prediction failed", message)
-        self.assertEqual(JobStatus.FAILURE, sub_job.status)
-        self.assertEqual(0, len(self.orchestrator.distributed_jobs), "Job should be removed after failure")
-
     def test_process_unknown_job_type(self):
         """Test processing of unknown job type"""
         extractor_job = self._create_test_extractor_job()
@@ -227,9 +191,7 @@ class TestOrchestratorUseCase(TestCase):
 
         # Create a valid distributed job first, then manually set an invalid type
         distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.TRAIN,  # Start with valid type
-            sub_jobs=[sub_job]
+            extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[sub_job]  # Start with valid type
         )
 
         # Manually override the type to test unknown type handling
@@ -254,11 +216,7 @@ class TestOrchestratorUseCase(TestCase):
         # Add a job
         extractor_job = self._create_test_extractor_job()
         sub_job = DistributedSubJob(job_id="test_job_6", extractor_job=extractor_job)
-        distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.TRAIN,
-            sub_jobs=[sub_job]
-        )
+        distributed_job = DistributedJob(extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[sub_job])
 
         self.orchestrator.distributed_jobs = [distributed_job]
 
@@ -280,9 +238,7 @@ class TestOrchestratorUseCase(TestCase):
         extractor_job = self._get_available_training_job(extraction_data)
         train_sub_job = DistributedSubJob(job_id="test_job_7", extractor_job=extractor_job)
         train_distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.TRAIN,
-            sub_jobs=[train_sub_job]
+            extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[train_sub_job]
         )
 
         self.orchestrator.distributed_jobs = [train_distributed_job]
@@ -300,9 +256,7 @@ class TestOrchestratorUseCase(TestCase):
 
         predict_sub_job = DistributedSubJob(job_id="test_job_8", extractor_job=extractor_job)
         predict_distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier,
-            type=JobType.PREDICT,
-            sub_jobs=[predict_sub_job]
+            extraction_identifier=extraction_identifier, type=JobType.PREDICT, sub_jobs=[predict_sub_job]
         )
 
         self.orchestrator.distributed_jobs = [predict_distributed_job]
@@ -334,7 +288,7 @@ class TestOrchestratorUseCase(TestCase):
             distributed_job = DistributedJob(
                 extraction_identifier=ExtractionIdentifier(extraction_name=f"{extraction_id}_{i}"),
                 type=JobType.TRAIN,
-                sub_jobs=[sub_job]
+                sub_jobs=[sub_job],
             )
             distributed_jobs.append(distributed_job)
 

@@ -153,7 +153,7 @@ class ExtractorBase:
             )
 
         except Exception as e:
-            extractor_job.should_be_retrained_with_more_data = True
+            extractor_job.should_be_retrained_with_more_data = False
             self.logger.log(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             execution_time = int(time.time() - start_time)
 

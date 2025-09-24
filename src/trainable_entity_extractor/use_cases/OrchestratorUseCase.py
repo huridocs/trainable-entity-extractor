@@ -87,14 +87,15 @@ class OrchestratorUseCase:
                 self.job_executor.start_performance_evaluation(distributed_job.extraction_identifier, sub_job)
 
             # Check if result exists and has is_perfect attribute before accessing it
-            if sub_job.result and hasattr(sub_job.result, 'is_perfect') and sub_job.result.is_perfect:
+            if sub_job.result and hasattr(sub_job.result, "is_perfect") and sub_job.result.is_perfect:
                 break
 
     def _has_perfect_score_job(self, distributed_job: DistributedJob) -> bool:
         """Check if any sub-job has achieved a perfect score"""
         perfect_score_jobs = [
-            job for job in distributed_job.sub_jobs
-            if job.result and hasattr(job.result, 'is_perfect') and job.result.is_perfect
+            job
+            for job in distributed_job.sub_jobs
+            if job.result and hasattr(job.result, "is_perfect") and job.result.is_perfect
         ]
         return len(perfect_score_jobs) > 0
 
@@ -148,17 +149,21 @@ class OrchestratorUseCase:
         training_job = DistributedJob(
             extraction_identifier=distributed_job.extraction_identifier,
             type=JobType.TRAIN,
-            sub_jobs=[DistributedSubJob(job_id=f"retrain_{best_job.extractor_job.method_name}", extractor_job=best_job.extractor_job)],
+            sub_jobs=[
+                DistributedSubJob(
+                    job_id=f"retrain_{best_job.extractor_job.method_name}", extractor_job=best_job.extractor_job
+                )
+            ],
         )
         self.distributed_jobs.append(training_job)
         return False, "Retraining model"
 
     def _extract_performance_score(self, best_job: DistributedSubJob) -> str:
         """Extract performance score from job result with fallback"""
-        if best_job.result and hasattr(best_job.result, 'performance_score'):
+        if best_job.result and hasattr(best_job.result, "performance_score"):
             return str(best_job.result.performance_score)
         else:
-            return 'unknown'
+            return "unknown"
 
     def exists_jobs_to_be_done(self) -> bool:
         return len(self.distributed_jobs) > 0

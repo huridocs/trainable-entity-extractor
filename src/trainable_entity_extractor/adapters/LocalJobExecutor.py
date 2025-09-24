@@ -50,14 +50,16 @@ class LocalJobExecutor(JobExecutor):
                 performance = train_use_case.get_performance(distributed_sub_job.extractor_job, extraction_data)
                 if performance:
                     distributed_sub_job.result = performance
-                    distributed_sub_job.status = JobStatus.SUCCESS
+                    distributed_sub_job.status = JobStatus.SUCCESS if not performance.failed else JobStatus.FAILURE
                     return performance
                 else:
                     distributed_sub_job.status = JobStatus.FAILURE
                     return None
             except Exception as perf_exception:
                 # Performance evaluation failed - this is acceptable for testing
-                self.logger.log(extraction_identifier, f"Performance evaluation failed: {str(perf_exception)}", severity="warning")
+                self.logger.log(
+                    extraction_identifier, f"Performance evaluation failed: {str(perf_exception)}", severity="warning"
+                )
                 distributed_sub_job.status = JobStatus.FAILURE
                 return None
 

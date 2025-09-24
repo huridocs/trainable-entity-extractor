@@ -27,9 +27,9 @@ class PerformanceSummary(BaseModel):
 
     def add_performance_from_sub_job(self, sub_job):
         """Add performance data from a DistributedSubJob"""
-        if sub_job.result and hasattr(sub_job.result, 'performance_score'):
+        if sub_job.result and hasattr(sub_job.result, "performance_score"):
             performance_score = sub_job.result.performance_score
-        elif sub_job.result and hasattr(sub_job.result, 'performance'):
+        elif sub_job.result and hasattr(sub_job.result, "performance"):
             performance_score = sub_job.result.performance
         else:
             performance_score = 0.0

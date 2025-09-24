@@ -76,8 +76,8 @@ class ToTextExtractorMethod(MethodBase):
                 )
                 for x in samples
             ],
-            options=train_set.options,
-            multi_value=train_set.multi_value,
+            options=train_set.options if train_set.options else [],
+            multi_value=train_set.multi_value if train_set.multi_value else False,
         )
 
         predictions = self.predict(prediction_samples_data)

@@ -107,9 +107,7 @@ class TrainableEntityExtractor:
             return self._handle_training_exception(e)
 
     @staticmethod
-    def _process_training_jobs(
-        training_orchestrator: OrchestratorUseCase, distributed_jobs: list
-    ) -> tuple[bool, str]:
+    def _process_training_jobs(training_orchestrator: OrchestratorUseCase, distributed_jobs: list) -> tuple[bool, str]:
         success = False
         message = "Unknown error during training"
 
@@ -166,9 +164,7 @@ class TrainableEntityExtractor:
             )
         ]
 
-    def _process_prediction_jobs(
-        self, prediction_orchestrator: OrchestratorUseCase, distributed_jobs: list
-    ) -> None:
+    def _process_prediction_jobs(self, prediction_orchestrator: OrchestratorUseCase, distributed_jobs: list) -> None:
         while prediction_orchestrator.exists_jobs_to_be_done():
             success, message = prediction_orchestrator.process_job(distributed_jobs[0])
 
