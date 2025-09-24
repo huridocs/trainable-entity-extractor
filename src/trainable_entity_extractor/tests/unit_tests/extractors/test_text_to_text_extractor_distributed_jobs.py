@@ -15,7 +15,13 @@ extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
 
 
 class TestLogger(Logger):
-    def log(self, extraction_identifier: ExtractionIdentifier, message: str, severity: LogSeverity = LogSeverity.info, exception: Exception = None):
+    def log(
+        self,
+        extraction_identifier: ExtractionIdentifier,
+        message: str,
+        severity: LogSeverity = LogSeverity.info,
+        exception: Exception = None,
+    ):
         pass
 
 

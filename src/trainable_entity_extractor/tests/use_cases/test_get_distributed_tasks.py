@@ -1,6 +1,7 @@
 import shutil
 from unittest import TestCase
 
+from trainable_entity_extractor.adapters.ExtractorLogger import ExtractorLogger
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -11,21 +12,18 @@ from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.ports.Logger import Logger
 from trainable_entity_extractor.use_cases.TrainUseCase import TrainUseCase
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.TextToTextExtractor import TextToTextExtractor
-from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionExtractor import TextToMultiOptionExtractor
+from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionExtractor import (
+    TextToMultiOptionExtractor,
+)
 
 extraction_id = "test_get_distributed_jobs"
 extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
 
 
-class TestLogger(Logger):
-    def log(self, extraction_identifier: ExtractionIdentifier, message: str, severity: LogSeverity = LogSeverity.info, exception: Exception = None):
-        pass
-
-
 class TestGetDistributedJobs(TestCase):
     def setUp(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
-        self.logger = TestLogger()
+        self.logger = ExtractorLogger()
         self.train_use_case = None
 
     def tearDown(self):
@@ -134,7 +132,7 @@ class TestGetDistributedJobs(TestCase):
             samples=[],
             options=[Option(id="opt_1", label="Option 1")],
             multi_value=False,
-            extraction_identifier=extraction_identifier
+            extraction_identifier=extraction_identifier,
         )
         self.train_use_case = TrainUseCase(extractors=[TextToTextExtractor], logger=self.logger)
 

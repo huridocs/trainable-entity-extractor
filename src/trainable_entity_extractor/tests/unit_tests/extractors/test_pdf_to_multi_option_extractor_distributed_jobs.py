@@ -18,7 +18,13 @@ extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
 
 
 class TestLogger(Logger):
-    def log(self, extraction_identifier: ExtractionIdentifier, message: str, severity: LogSeverity = LogSeverity.info, exception: Exception = None):
+    def log(
+        self,
+        extraction_identifier: ExtractionIdentifier,
+        message: str,
+        severity: LogSeverity = LogSeverity.info,
+        exception: Exception = None,
+    ):
         pass
 
 
@@ -173,7 +179,9 @@ class TestPdfToMultiOptionExtractorDistributedJobs(TestCase):
 
         if len(setfit_jobs) > 0:
             for task in setfit_jobs:
-                self.assertTrue(task.gpu_needed, f"Method {task.method_name} contains 'SetFit' and should have gpu_needed=True")
+                self.assertTrue(
+                    task.gpu_needed, f"Method {task.method_name} contains 'SetFit' and should have gpu_needed=True"
+                )
 
     def test_get_distributed_jobs_all_methods_have_valid_properties(self):
         extraction_data = self.create_sample_extraction_data()

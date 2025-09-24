@@ -40,7 +40,7 @@ class TestExtractorPdfToMultiOption(TestCase):
 
     def tearDown(self):
         # shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
-        shutil.rmtree(CACHE_PATH , ignore_errors=True)
+        shutil.rmtree(CACHE_PATH, ignore_errors=True)
 
     def _create_and_train_model(self, method_name: str, extraction_data: ExtractionData) -> TrainableEntityExtractorJob:
         # Save extraction data
@@ -95,7 +95,5 @@ class TestExtractorPdfToMultiOption(TestCase):
         self.assertEqual(1, len(suggestions))
         self.assertEqual(extraction_id, suggestions[0].id)
         self.assertEqual("test.xml", suggestions[0].xml_file_name)
-        segment_text = (
-            '<p class="ix_matching_paragraph"><span class="ix_match">15 February 2021</span></p>'
-        )
+        segment_text = '<p class="ix_matching_paragraph"><span class="ix_match">15 February 2021</span></p>'
         self.assertEqual([Value(id="id15", label="15 February 2021", segment_text=segment_text)], suggestions[0].values)

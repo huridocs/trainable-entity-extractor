@@ -158,7 +158,7 @@ class ExtractorBase:
                 execution_seconds=execution_time,
                 is_perfect=is_perfect,
                 failed=False,
-                testing_samples_count=len(test_set.samples)
+                testing_samples_count=len(test_set.samples),
             )
 
         except Exception as e:
@@ -166,7 +166,9 @@ class ExtractorBase:
             self.logger.log(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             execution_time = int(time.time() - start_time)
 
-            return Performance(performance=0.0, execution_seconds=execution_time, is_perfect=False, failed=True, testing_samples_count=0)
+            return Performance(
+                performance=0.0, execution_seconds=execution_time, is_perfect=False, failed=True, testing_samples_count=0
+            )
 
     def train_one_method(
         self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData
