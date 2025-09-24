@@ -28,7 +28,7 @@ class ToTextExtractor(ExtractorBase):
         return self.__class__.__name__
 
     def get_suggestions(self, method_name: str, prediction_samples: PredictionSamplesData) -> list[Suggestion]:
-        method_instance = self.get_predictions_method(method_name)
+        method_instance = self.get_method_instance_by_name(method_name)
         self.logger.log(
             self.extraction_identifier,
             f"And also using {method_instance.get_name()} to calculate {len(prediction_samples.prediction_samples)} suggestions",

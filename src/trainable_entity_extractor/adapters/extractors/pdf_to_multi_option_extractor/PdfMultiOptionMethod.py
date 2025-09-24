@@ -26,8 +26,6 @@ class PdfMultiOptionMethod(MethodBase):
         filter_segments_method: Type[FilterSegmentsMethod] = None,
         multi_label_method: Type[MultiLabelMethod] = None,
     ):
-        # Initialize with a default extraction_identifier - will be updated via set_parameters
-        super().__init__(ExtractionIdentifier(run_name="not set", extraction_name="not set"))
         self.filter_segments_method = filter_segments_method
         self.multi_label_method = multi_label_method
         self.options: list[Option] = list()

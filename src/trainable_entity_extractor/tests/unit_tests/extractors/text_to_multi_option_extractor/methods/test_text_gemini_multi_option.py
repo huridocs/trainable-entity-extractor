@@ -6,6 +6,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.methods.gemini_multi_option.TextGeminiMultiOption import (
     TextGeminiMultiOption,
@@ -13,7 +14,7 @@ from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extract
 
 
 class TestTextGeminiMultiOption(TestCase):
-    @unittest.SkipTest
+    @unittest.skip("Requires real Gemini API key")
     def test_text_gemini_multi_option(self):
         extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_multi_option_countries")
 
@@ -38,19 +39,24 @@ class TestTextGeminiMultiOption(TestCase):
         labeled_data = LabeledData(source_text=text, values=[options[4]])
         samples += [TrainingSample(labeled_data=labeled_data)]
 
-        text_to_multioption = TextGeminiMultiOption(extraction_identifier, options, True, __name__)
-        text_to_multioption.train(ExtractionData(samples=samples * 10, options=options))
+        text_to_multioption = TextGeminiMultiOption(extraction_identifier, self.__class__.__name__)
+        extraction_data = ExtractionData(samples=samples * 10, options=options)
+        text_to_multioption.options = options
+        text_to_multioption.multi_value = extraction_data.multi_value
+        text_to_multioption.train(extraction_data)
 
         text = "foo var Democratic Republic of the Congo Democratic People's Republic of Korea"
         expected_options = [[options[0], options[1]]]
 
-        prediction_sample = PredictionSample(source_text=text)
-        predictions = text_to_multioption.predict([prediction_sample])
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text=text)], options=options, multi_value=False
+        )
+        predictions = text_to_multioption.predict(prediction_samples_data)
 
         self.assertEqual(1, len(predictions))
         self.assertEqual(set(expected_options[0]), set(predictions[0]))
 
-    @unittest.SkipTest
+    @unittest.skip("Requires real Gemini API key")
     def test_text_gemini_multi_option_second(self):
         extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_multi_option_fruits")
 
@@ -69,13 +75,19 @@ class TestTextGeminiMultiOption(TestCase):
         text3 = "orange"
         samples.append(TrainingSample(labeled_data=LabeledData(source_text=text3, values=[options[3]])))
 
-        text_to_multioption = TextGeminiMultiOption(extraction_identifier, options, True, __name__)
-        text_to_multioption.train(ExtractionData(samples=samples * 10, options=options))
+        text_to_multioption = TextGeminiMultiOption(extraction_identifier, self.__class__.__name__)
+        extraction_data = ExtractionData(samples=samples * 10, options=options)
+        text_to_multioption.options = options
+        text_to_multioption.multi_value = extraction_data.multi_value
+        text_to_multioption.train(extraction_data)
 
         test_text = "I ate apple, cherry, and orange"
         expected = [[options[0], options[2], options[3]]]
-        prediction_sample = PredictionSample(source_text=test_text)
-        predictions = text_to_multioption.predict([prediction_sample])
+
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text=test_text)], options=options, multi_value=False
+        )
+        predictions = text_to_multioption.predict(prediction_samples_data)
 
         self.assertEqual(1, len(predictions))
         self.assertEqual(set(expected[0]), set(predictions[0]))

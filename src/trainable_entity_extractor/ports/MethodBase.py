@@ -1,4 +1,3 @@
-import os
 from abc import ABC, abstractmethod
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -8,10 +7,16 @@ from trainable_entity_extractor.domain.Value import Value
 
 
 class MethodBase(ABC):
-    def __init__(self, extraction_identifier: ExtractionIdentifier, from_class_name: str = ""):
-        self.extraction_identifier = extraction_identifier
-        self.from_class_name = from_class_name
-        os.makedirs(self.extraction_identifier.get_path(), exist_ok=True)
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
+        self.extraction_identifier = extraction_identifier.set_extra_model_folder(self.get_model_folder_name())
+
+    def set_extraction_identifier(self, extraction_identifier: ExtractionIdentifier):
+        self.extraction_identifier = extraction_identifier.set_extra_model_folder(self.get_model_folder_name())
+        return self
+
+    @staticmethod
+    def get_model_folder_name():
+        return ""
 
     @abstractmethod
     def get_name(self) -> str:

@@ -24,19 +24,16 @@ class ExtractorBase:
         return self.__class__.__name__
 
     @abstractmethod
-    def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        pass
-
-    @abstractmethod
     def get_suggestions(self, method_name: str, prediction_samples: PredictionSamplesData) -> list[Suggestion]:
         pass
 
-    def get_predictions_method(self, method_name: str) -> MethodBase:
+    def get_method_instance_by_name(self, method_name: str) -> MethodBase:
         for method in self.METHODS:
             if isinstance(method, type):
                 method_instance = method(self.extraction_identifier)
             else:
-                method_instance = method
+                method_instance = method.set_extraction_identifier(self.extraction_identifier)
+
             if method_instance.get_name() == method_name:
                 return method_instance
 
@@ -128,7 +125,7 @@ class ExtractorBase:
         method_name = extractor_job.method_name
         start_time = time.time()
 
-        method_instance = self._get_method_instance_by_name(method_name)
+        method_instance = self.get_method_instance_by_name(method_name)
         if not method_instance:
             self.logger.log(extraction_data.extraction_identifier, f"Method {method_name} not found")
             return Performance(failed=True)
@@ -174,7 +171,7 @@ class ExtractorBase:
         self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData
     ) -> tuple[bool, str]:
         method_name = extractor_job.method_name
-        method_instance = self._get_method_instance_by_name(method_name)
+        method_instance = self.get_method_instance_by_name(method_name)
         if not method_instance:
             return False, f"Method {method_name} not found"
 
@@ -192,15 +189,3 @@ class ExtractorBase:
             self.logger.log(extraction_data.extraction_identifier, error_msg, LogSeverity.error)
             self.logger.log(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             return False, error_msg
-
-    def _get_method_instance_by_name(self, method_name: str):
-        for method in self.METHODS:
-            if isinstance(method, type):
-                method_instance = method(self.extraction_identifier)
-            else:
-                method_instance = method
-
-            if method_instance.get_name() == method_name:
-                return method_instance
-
-        return None

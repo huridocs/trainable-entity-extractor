@@ -26,11 +26,7 @@ class ToTextExtractorMethod(MethodBase):
         pass
 
     def get_path(self):
-        if self.from_class_name:
-            path = join(self.extraction_identifier.get_path(), self.from_class_name, self.get_name())
-        else:
-            path = join(self.extraction_identifier.get_path(), self.get_name())
-
+        path = join(self.extraction_identifier.get_path(), self.get_name())
         os.makedirs(path, exist_ok=True)
         return path
 

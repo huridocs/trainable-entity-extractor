@@ -103,7 +103,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
             return []
 
         self.fix_empty_prediction_data(prediction_samples_data.prediction_samples)
-        predictions: list[list[Value]] = self.get_predictions_method(method_name).predict(prediction_samples_data)
+        predictions: list[list[Value]] = self.get_method_instance_by_name(method_name).predict(prediction_samples_data)
 
         if not prediction_samples_data.multi_value:
             predictions = [x[:1] for x in predictions]

@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from collections import Counter
 from os.path import join
 from typing import Optional
@@ -125,9 +124,6 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         self.options: list[Option] = list()
         self.multi_value = False
 
-    def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        pass
-
     def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         self.options = extraction_data.options
         self.multi_value = extraction_data.multi_value
@@ -142,7 +138,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
             return []
 
         prediction_samples, predictions = self.get_predictions(method_name, prediction_samples_data)
-        prediction_method = self.get_predictions_method(method_name)
+        prediction_method = self.get_method_instance_by_name(method_name)
 
         use_context_from_the_end = "End" in prediction_method.get_name()
         suggestions = list()
@@ -160,7 +156,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         self.options = prediction_samples_data.options
         self.multi_value = prediction_samples_data.multi_value
 
-        method = self.get_predictions_method(method_name)
+        method = self.get_method_instance_by_name(method_name)
         self.logger.log(self.extraction_identifier, f"Using method {method.get_name()} for suggestions")
 
         prediction = method.predict(prediction_samples_data=prediction_samples_data)

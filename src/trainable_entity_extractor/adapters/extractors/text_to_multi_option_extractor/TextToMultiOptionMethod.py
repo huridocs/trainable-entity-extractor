@@ -17,8 +17,8 @@ from trainable_entity_extractor.ports.MethodBase import MethodBase
 
 
 class TextToMultiOptionMethod(MethodBase):
-    def __init__(self, extraction_identifier: ExtractionIdentifier, from_class_name: str = ""):
-        super().__init__(extraction_identifier, from_class_name)
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
+        super().__init__(extraction_identifier)
         self.options: list[Option] = []
         self.multi_value: bool = False
 

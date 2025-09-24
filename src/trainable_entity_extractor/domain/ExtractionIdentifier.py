@@ -23,9 +23,19 @@ class ExtractionIdentifier(BaseModel):
     output_path: str | Path = DATA_PATH
     extraction_name: str
     metadata: dict[str, str] = dict()
+    extra_model_folder: str = ""
+
+    @staticmethod
+    def set_extra_model_folder(self, folder: str):
+        extraction_identifier = self.copy()
+        extraction_identifier.extra_model_folder = folder
+        return extraction_identifier
 
     def get_path(self):
-        return join(self.output_path, self.run_name, self.extraction_name)
+        if self.extra_model_folder == "":
+            return join(self.output_path, self.run_name, self.extraction_name)
+
+        return join(self.output_path, self.run_name, self.extraction_name, self.extra_model_folder)
 
     def get_file_content(self, file_name: str, default: Any = None) -> Any:
         path = Path(self.get_path(), file_name)

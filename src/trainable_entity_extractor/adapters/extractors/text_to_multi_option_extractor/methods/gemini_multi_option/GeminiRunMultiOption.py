@@ -90,9 +90,7 @@ class GeminiRunMultiOption(GeminiRun):
     ) -> "GeminiRunMultiOption":
         path = Path(extraction_identifier.get_path()) / method_name / CODE_FILE_NAME
         code = path.read_text(encoding="utf-8") if path.exists() else ""
-        return GeminiRunMultiOption(
-            code=code, options=[option.label for option in options], multi_value=multi_value, from_class_name=method_name
-        )
+        return GeminiRunMultiOption(code=code, options=[option.label for option in options], multi_value=multi_value)
 
     @staticmethod
     def _get_empty_results(samples: list) -> list[list[str]]:

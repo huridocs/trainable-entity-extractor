@@ -43,7 +43,12 @@ def pdf_to_text_method_builder(
 ):
     name = pdf_to_text_method.__name__ + text_to_text_method.__name__
     new_pdf_to_text_method = type(name, (pdf_to_text_method,), {})
+
+    def get_model_folder_name():
+        return f"{pdf_to_text_method.__name__}_{text_to_text_method.__name__}"
+
     setattr(new_pdf_to_text_method, "SEMANTIC_METHOD", text_to_text_method)
+    setattr(new_pdf_to_text_method, "get_model_folder_name", get_model_folder_name)
 
     def gpu_needed(self):
         return True

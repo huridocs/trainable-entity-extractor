@@ -4,6 +4,7 @@ from unittest import TestCase
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.Gemini.GeminiTextMethod import (
     GeminiTextMethod,
@@ -12,7 +13,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 
 
 class TestGeminiTextMethodWithRealAPI(TestCase):
-    @unittest.SkipTest
+    @unittest.skip("Requires real Gemini API key")
     def test_gemini(self):
         extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_test")
         gemini_text_method = GeminiTextMethod(extraction_identifier, self.__class__.__name__)
@@ -30,12 +31,16 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
         )
 
         gemini_text_method.train(extraction_data)
-        predictions = gemini_text_method.predict([PredictionSample(source_text="This is other input")])
+
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text="This is other input")], options=[], multi_value=False
+        )
+        predictions = gemini_text_method.predict(prediction_samples_data)
 
         self.assertEqual(len(predictions), 1)
         self.assertEqual(predictions[0], "This is other output")
 
-    @unittest.SkipTest
+    @unittest.skip("Requires real Gemini API key")
     def test_gemini_with_other_data(self):
         extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_other_data")
         gemini_text_method = GeminiTextMethod(extraction_identifier, self.__class__.__name__)
@@ -55,7 +60,11 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
         )
 
         gemini_text_method.train(extraction_data)
-        predictions = gemini_text_method.predict([PredictionSample(source_text="Input B")])
+
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text="Input B")], options=[], multi_value=False
+        )
+        predictions = gemini_text_method.predict(prediction_samples_data)
 
         self.assertEqual(len(predictions), 1)
         self.assertEqual(predictions[0], "Output B")

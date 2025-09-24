@@ -12,6 +12,9 @@ from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.metho
 
 
 class TextGeminiMultiOption(TextToMultiOptionMethod):
+    def get_model_folder_name(self):
+        return "TextGeminiMultiOption"
+
     def can_be_used(self, extraction_data):
         if GEMINI_API_KEY:
             return True
@@ -25,19 +28,11 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
         options_labels = [option.label for option in self.options]
         gemini_samples = [GeminiSample.from_training_sample(sample, True) for sample in extraction_data.samples]
         gemini_runs = [
-            GeminiRunMultiOption(
-                mistakes_samples=gemini_samples,
-                options=options_labels,
-                multi_value=self.multi_value,
-                from_class_name=self.method_name,
-            )
+            GeminiRunMultiOption(mistakes_samples=gemini_samples, options=options_labels, multi_value=self.multi_value)
         ]
         sizes = [number_of_options, min(2 * number_of_options, 15), min(4 * number_of_options, 45)]
         gemini_runs += [
-            GeminiRunMultiOption(
-                max_training_size=n, options=options_labels, multi_value=self.multi_value, from_class_name=self.method_name
-            )
-            for n in sizes
+            GeminiRunMultiOption(max_training_size=n, options=options_labels, multi_value=self.multi_value) for n in sizes
         ]
 
         for previous_gemini_run, gemini_run in zip(gemini_runs, gemini_runs[1:]):
@@ -55,7 +50,7 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
 
     def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
         gemini_run = GeminiRunMultiOption.from_extractor_identifier_multioption(
-            self.extraction_identifier, prediction_samples.options, prediction_samples.multi_value, self.method_name
+            self.extraction_identifier, prediction_samples.options, prediction_samples.multi_value
         )
         gemini_samples = [
             GeminiSample.from_prediction_sample(sample, True) for sample in prediction_samples.prediction_samples
