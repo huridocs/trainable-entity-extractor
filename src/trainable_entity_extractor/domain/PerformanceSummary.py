@@ -87,6 +87,13 @@ class PerformanceSummary(BaseModel):
     @staticmethod
     def from_distributed_job(distributed_job) -> "PerformanceSummary":
         """Create a PerformanceSummary from a DistributedJob for orchestrator use case"""
+        # Try to get testing_samples_count from the first successful sub-job result
+        testing_samples_count = 0
+        for sub_job in distributed_job.sub_jobs:
+            if sub_job.result and hasattr(sub_job.result, "testing_samples_count"):
+                testing_samples_count = sub_job.result.testing_samples_count
+                break
+
         return PerformanceSummary(
             extraction_identifier=distributed_job.extraction_identifier,
             extractor_name="Performance Evaluation",
@@ -94,6 +101,6 @@ class PerformanceSummary(BaseModel):
             options_count=0,
             languages=[],
             training_samples_count=0,
-            testing_samples_count=0,
+            testing_samples_count=testing_samples_count,
             empty_pdf_count=0,
         )

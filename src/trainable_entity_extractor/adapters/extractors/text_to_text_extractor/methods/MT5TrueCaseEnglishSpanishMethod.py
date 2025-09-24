@@ -36,8 +36,10 @@ logging_hf.set_verbosity(40)
 
 
 class MT5TrueCaseEnglishSpanishMethod(ToTextExtractorMethod):
-    gpu_needed = True
     SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
+
+    def gpu_needed(self) -> bool:
+        return True
 
     def get_model_path(self):
         return str(join(self.get_path(), "model"))

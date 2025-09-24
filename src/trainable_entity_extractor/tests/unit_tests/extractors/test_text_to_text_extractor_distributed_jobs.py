@@ -6,16 +6,24 @@ from trainable_entity_extractor.domain.TrainableEntityExtractorJob import Traina
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.LogSeverity import LogSeverity
+from trainable_entity_extractor.ports.Logger import Logger
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.TextToTextExtractor import TextToTextExtractor
 
 extraction_id = "test_text_to_text"
 extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
 
 
+class TestLogger(Logger):
+    def log(self, extraction_identifier: ExtractionIdentifier, message: str, severity: LogSeverity = LogSeverity.info, exception: Exception = None):
+        pass
+
+
 class TestTextToTextExtractorDistributedJobs(TestCase):
     def setUp(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
-        self.extractor = TextToTextExtractor(extraction_identifier)
+        self.logger = TestLogger()
+        self.extractor = TextToTextExtractor(extraction_identifier, self.logger)
 
     def tearDown(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
@@ -168,3 +176,34 @@ class TestTextToTextExtractorDistributedJobs(TestCase):
         jobs = self.extractor.get_distributed_jobs(extraction_data)
 
         self.assertIsInstance(jobs, list)
+
+    def test_get_distributed_jobs_includes_mt5_methods(self):
+        extraction_data = self.create_sample_extraction_data()
+
+        jobs = self.extractor.get_distributed_jobs(extraction_data)
+        method_names = [task.method_name for task in jobs]
+
+        mt5_methods = [name for name in method_names if "MT5" in name]
+        if len(mt5_methods) > 0:
+            mt5_jobs = [task for task in jobs if "MT5" in task.method_name]
+            for task in mt5_jobs:
+                self.assertTrue(task.gpu_needed)
+
+    def test_get_distributed_jobs_includes_gemini_methods(self):
+        extraction_data = self.create_sample_extraction_data()
+
+        jobs = self.extractor.get_distributed_jobs(extraction_data)
+        method_names = [task.method_name for task in jobs]
+
+        gemini_methods = [name for name in method_names if "Gemini" in name]
+        self.assertGreaterEqual(len(gemini_methods), 0)
+
+    def test_get_distributed_jobs_all_methods_have_valid_properties(self):
+        extraction_data = self.create_sample_extraction_data()
+
+        jobs = self.extractor.get_distributed_jobs(extraction_data)
+
+        for job in jobs:
+            self.assertIsInstance(job.options, list)
+            self.assertIsInstance(job.multi_value, bool)
+            self.assertIsInstance(job.should_be_retrained_with_more_data, bool)

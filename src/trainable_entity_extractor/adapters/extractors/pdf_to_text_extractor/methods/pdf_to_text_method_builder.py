@@ -45,7 +45,10 @@ def pdf_to_text_method_builder(
     new_pdf_to_text_method = type(name, (pdf_to_text_method,), {})
     setattr(new_pdf_to_text_method, "SEMANTIC_METHOD", text_to_text_method)
 
+    def gpu_needed(self):
+        return True
+
     if "T5" in text_to_text_method.__name__:
-        setattr(new_pdf_to_text_method, "gpu_needed", True)
+        setattr(new_pdf_to_text_method, "gpu_needed", gpu_needed)
 
     return new_pdf_to_text_method

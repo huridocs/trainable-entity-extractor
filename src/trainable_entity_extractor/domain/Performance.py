@@ -6,3 +6,4 @@ class Performance(BaseModel):
     execution_seconds: int = 0
     is_perfect: bool = False
     failed: bool = False
+    testing_samples_count: int = 0

@@ -127,5 +127,10 @@ class PdfMultiOptionMethod(MethodBase):
             return self.multi_label_method.should_be_retrained_with_more_data()
         return True
 
+    def gpu_needed(self) -> bool:
+        if self.multi_label_method:
+            return self.multi_label_method(self.extraction_identifier).gpu_needed()
+        return False
+
     def remove_method_data(self) -> None:
         shutil.rmtree(join(self.extraction_identifier.get_path(), self.get_name()), ignore_errors=True)

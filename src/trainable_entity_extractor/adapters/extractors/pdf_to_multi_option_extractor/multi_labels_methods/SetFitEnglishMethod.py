@@ -20,8 +20,10 @@ import gc
 
 
 class SetFitEnglishMethod(MultiLabelMethod):
-    gpu_needed = True
     model_name = "sentence-transformers/multi-qa-mpnet-base-dot-v1"
+
+    def gpu_needed(self) -> bool:
+        return True
 
     def get_data_path(self):
         model_folder_path = self.get_path()

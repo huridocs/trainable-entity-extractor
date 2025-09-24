@@ -25,7 +25,8 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 
 class BertMethod(MultiLabelMethod):
-    gpu_needed = True
+    def gpu_needed(self) -> bool:
+        return True
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         return extraction_data.multi_value

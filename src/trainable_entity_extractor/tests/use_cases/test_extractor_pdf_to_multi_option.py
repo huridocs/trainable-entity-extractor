@@ -10,7 +10,7 @@ from trainable_entity_extractor.adapters.LocalExtractionDataRetriever import Loc
 from trainable_entity_extractor.adapters.LocalModelStorage import LocalModelStorage
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
-from trainable_entity_extractor.config import APP_PATH
+from trainable_entity_extractor.config import APP_PATH, CACHE_PATH
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
@@ -39,7 +39,8 @@ class TestExtractorPdfToMultiOption(TestCase):
         self.predict_use_case = PredictUseCase(extractors=self.extractors, logger=logger)
 
     def tearDown(self):
-        shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
+        # shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
+        shutil.rmtree(CACHE_PATH , ignore_errors=True)
 
     def _create_and_train_model(self, method_name: str, extraction_data: ExtractionData) -> TrainableEntityExtractorJob:
         # Save extraction data
@@ -68,7 +69,7 @@ class TestExtractorPdfToMultiOption(TestCase):
         return extractor_job
 
     def test_get_pdf_multi_option_suggestions(self):
-        options = [Option(id=f"id{n}", label=str(n)) for n in range(16)]
+        options = [Option(id=f"id{n}", label=str(n) + " February 2021") for n in range(16)]
 
         segmentation_data = SegmentationData(page_width=612, page_height=792, xml_segments_boxes=[], label_segments_boxes=[])
 
@@ -81,7 +82,7 @@ class TestExtractorPdfToMultiOption(TestCase):
             samples=samples, extraction_identifier=extraction_identifier, multi_value=True, options=options
         )
 
-        method_name = "PreviousWordsSentenceSelectorFuzzyCommas"
+        method_name = "FuzzyFirst"
         extractor_job = self._create_and_train_model(method_name, extraction_data)
 
         # Create prediction samples
@@ -95,8 +96,6 @@ class TestExtractorPdfToMultiOption(TestCase):
         self.assertEqual(extraction_id, suggestions[0].id)
         self.assertEqual("test.xml", suggestions[0].xml_file_name)
         segment_text = (
-            '<p class="ix_adjacent_paragraph">Distr.: General</p>'
-            '<p class="ix_matching_paragraph"><span class="ix_match">15</span> February 2021</p>'
-            '<p class="ix_adjacent_paragraph">Original: English</p>'
+            '<p class="ix_matching_paragraph"><span class="ix_match">15 February 2021</span></p>'
         )
-        self.assertEqual([Value(id="id15", label="15", segment_text=segment_text)], suggestions[0].values)
+        self.assertEqual([Value(id="id15", label="15 February 2021", segment_text=segment_text)], suggestions[0].values)

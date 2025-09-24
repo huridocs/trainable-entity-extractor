@@ -104,12 +104,17 @@ class ExtractorBase:
             else:
                 should_be_retrained_with_more_data = True
 
+            if hasattr(method_instance, "gpu_needed"):
+                gpu_needed = method_instance.gpu_needed()
+            else:
+                gpu_needed = True
+
             job = TrainableEntityExtractorJob(
                 run_name=extraction_data.extraction_identifier.run_name,
                 extraction_name=extraction_data.extraction_identifier.extraction_name,
                 extractor_name=self.get_name(),
                 method_name=method_instance.get_name(),
-                gpu_needed=getattr(method_instance, "gpu_needed", False),
+                gpu_needed=gpu_needed,
                 timeout=getattr(method_instance, "timeout", 3600),
                 should_be_retrained_with_more_data=should_be_retrained_with_more_data,
                 options=extraction_data.options if extraction_data.options else [],
@@ -149,7 +154,11 @@ class ExtractorBase:
             is_perfect = performance_score >= 99.99
 
             return Performance(
-                performance=performance_score, execution_seconds=execution_time, is_perfect=is_perfect, failed=False
+                performance=performance_score,
+                execution_seconds=execution_time,
+                is_perfect=is_perfect,
+                failed=False,
+                testing_samples_count=len(test_set.samples)
             )
 
         except Exception as e:
@@ -157,7 +166,7 @@ class ExtractorBase:
             self.logger.log(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             execution_time = int(time.time() - start_time)
 
-            return Performance(performance=0.0, execution_seconds=execution_time, is_perfect=False, failed=True)
+            return Performance(performance=0.0, execution_seconds=execution_time, is_perfect=False, failed=True, testing_samples_count=0)
 
     def train_one_method(
         self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData

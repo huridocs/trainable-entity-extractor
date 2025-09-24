@@ -36,7 +36,7 @@ class TestOrchestratorUseCase(TestCase):
 
     def tearDown(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
-        shutil.rmtree(CACHE_PATH / "extraction_data", ignore_errors=True)
+        shutil.rmtree(CACHE_PATH, ignore_errors=True)
 
     def _create_sample_extraction_data(self) -> ExtractionData:
         """Create sample training data for testing"""

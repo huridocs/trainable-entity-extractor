@@ -131,9 +131,6 @@ class PdfToMultiOptionExtractor(ExtractorBase):
     def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         self.options = extraction_data.options
         self.multi_value = extraction_data.multi_value
-
-        self.extraction_identifier.save_options(extraction_data.options)
-
         SegmentSelector(self.extraction_identifier).prepare_model_folder()
         FastSegmentSelector(self.extraction_identifier).prepare_model_folder()
         FastAndPositionsSegmentSelector(self.extraction_identifier).prepare_model_folder()

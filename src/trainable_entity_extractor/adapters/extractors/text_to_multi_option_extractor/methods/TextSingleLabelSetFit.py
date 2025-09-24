@@ -19,8 +19,10 @@ from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extract
 
 
 class TextSingleLabelSetFit(TextToMultiOptionMethod):
-    gpu_needed = True
     model_name = "sentence-transformers/paraphrase-mpnet-base-v2"
+
+    def gpu_needed(self) -> bool:
+        return True
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if extraction_data.multi_value:

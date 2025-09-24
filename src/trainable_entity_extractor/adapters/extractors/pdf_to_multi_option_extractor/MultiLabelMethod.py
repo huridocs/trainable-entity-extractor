@@ -20,6 +20,9 @@ class MultiLabelMethod(ABC):
         self.extraction_identifier = extraction_identifier
         self.method_name = method_name
 
+    def gpu_needed(self) -> bool:
+        return False
+
     def get_name(self):
         return self.__class__.__name__
 

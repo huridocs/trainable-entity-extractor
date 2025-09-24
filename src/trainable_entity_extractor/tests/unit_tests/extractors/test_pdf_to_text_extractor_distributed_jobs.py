@@ -5,17 +5,25 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
+from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.ports.Logger import Logger
 from trainable_entity_extractor.adapters.extractors.pdf_to_text_extractor.PdfToTextExtractor import PdfToTextExtractor
 
 extraction_id = "test_pdf_to_text"
 extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
 
 
+class TestLogger(Logger):
+    def log(self, extraction_identifier: ExtractionIdentifier, message: str, severity: LogSeverity = LogSeverity.info, exception: Exception = None):
+        pass
+
+
 class TestPdfToTextExtractorDistributedJobs(TestCase):
     def setUp(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
-        self.extractor = PdfToTextExtractor(extraction_identifier)
+        self.logger = TestLogger()
+        self.extractor = PdfToTextExtractor(extraction_identifier, self.logger)
 
     def tearDown(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
@@ -171,3 +179,13 @@ class TestPdfToTextExtractorDistributedJobs(TestCase):
             self.assertEqual(task.extractor_name, "PdfToTextExtractor")
             self.assertEqual(task.run_name, "default")
             self.assertEqual(task.extraction_name, extraction_id)
+
+    def test_get_distributed_jobs_all_methods_have_valid_properties(self):
+        extraction_data = self.create_sample_extraction_data()
+
+        jobs = self.extractor.get_distributed_jobs(extraction_data)
+
+        for job in jobs:
+            self.assertIsInstance(job.options, list)
+            self.assertIsInstance(job.multi_value, bool)
+            self.assertIsInstance(job.should_be_retrained_with_more_data, bool)

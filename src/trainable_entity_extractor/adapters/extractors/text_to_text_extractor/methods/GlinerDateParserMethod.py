@@ -5,8 +5,10 @@ from trainable_entity_extractor.adapters.extractors.GlinerDateExtractor import G
 
 
 class GlinerDateParserMethod(ToTextExtractorMethod):
-    gpu_needed = True
     IS_VALID_EXECUTION_FILE_NAME = "gliner_date_is_valid.json"
+
+    def gpu_needed(self) -> bool:
+        return True
 
     @staticmethod
     def get_alphanumeric_text_with_spaces(text):

@@ -9,7 +9,6 @@ from typing import Any
 from pydantic import BaseModel
 
 from trainable_entity_extractor.config import DATA_PATH, IS_TRAINING_CANCELED_FILE_NAME
-from trainable_entity_extractor.domain.ExtractionStatus import ExtractionStatus
 from trainable_entity_extractor.domain.Option import Option
 
 OPTIONS_FILE_NAME = "options.json"
@@ -51,71 +50,9 @@ class ExtractionIdentifier(BaseModel):
     def get_options_path(self):
         return Path(self.get_path(), OPTIONS_FILE_NAME)
 
-    def get_options(self) -> list[Option]:
-        options_dict = self.get_file_content(OPTIONS_FILE_NAME, [])
-        return [Option(**x) for x in options_dict]
-
-    def save_options(self, options: list[Option]):
-        self.save_content(OPTIONS_FILE_NAME, options)
-
-    def get_multi_value(self) -> bool:
-        return self.get_file_content(MULTI_VALUE_FILE_NAME, False)
-
-    def save_multi_value(self, multi_value: bool):
-        self.save_content(MULTI_VALUE_FILE_NAME, multi_value)
-
     def is_old(self):
         path = self.get_path()
         return exists(path) and os.path.isdir(path) and os.path.getmtime(path) < (time() - (2 * 24 * 3600))
-
-    def get_status(self) -> ExtractionStatus:
-        method_used = self.get_method_used()
-        if not method_used:
-            return ExtractionStatus.NO_MODEL
-
-        if self.get_file_content(PROCESSING_FINISHED_FILE_NAME, False):
-            return ExtractionStatus.READY
-
-        return ExtractionStatus.PROCESSING
-
-    def set_extractor_to_processing(self):
-        Path(self.get_path(), PROCESSING_FINISHED_FILE_NAME).unlink(missing_ok=True)
-
-    def save_processing_finished(self, success: bool):
-        self.save_content(PROCESSING_FINISHED_FILE_NAME, success)
-
-    def is_training_canceled(self):
-        is_cancel_file_path = Path(self.get_path()) / IS_TRAINING_CANCELED_FILE_NAME
-        if is_cancel_file_path.exists():
-            os.remove(is_cancel_file_path)
-            return True
-
-        return False
-
-    def cancel_training(self):
-        is_cancel_file_path = Path(self.get_path()) / IS_TRAINING_CANCELED_FILE_NAME
-        is_cancel_file_path.parent.mkdir(parents=True, exist_ok=True)
-        is_cancel_file_path.write_text("true")
-
-    def clean_extractor_folder(self):
-        if not os.path.exists(self.get_path()):
-            return
-
-        method_used = self.get_method_used()
-
-        for name in os.listdir(self.get_path()):
-            if name.strip().lower() == method_used.strip().lower():
-                continue
-
-            path = Path(self.get_path(), name)
-
-            if path.is_file():
-                continue
-
-            for key_word_to_delete in ["setfit", "t5", "bert"]:
-                if key_word_to_delete in name.lower():
-                    shutil.rmtree(path, ignore_errors=True)
-                    break
 
     @staticmethod
     def get_default():

@@ -80,7 +80,7 @@ class LocalExtractionDataRetriever(ExtractionDataRetriever):
 
     def _get_cache_path(self, extraction_identifier: ExtractionIdentifier) -> Path:
         return (
-            self.cache_base_path / "extraction_data" / extraction_identifier.run_name / extraction_identifier.extraction_name
+            self.cache_base_path / extraction_identifier.run_name / extraction_identifier.extraction_name
         )
 
     def get_suggestions(self, extraction_identifier: ExtractionIdentifier) -> list[Suggestion]:

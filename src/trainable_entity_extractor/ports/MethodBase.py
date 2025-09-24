@@ -38,5 +38,8 @@ class MethodBase(ABC):
     def should_be_retrained_with_more_data(self) -> bool:
         return True
 
+    def gpu_needed(self) -> bool:
+        return False
+
     def remove_method_data(self) -> None:
         pass

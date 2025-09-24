@@ -5,8 +5,10 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
+from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.ports.Logger import Logger
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
     PdfToMultiOptionExtractor,
 )
@@ -15,10 +17,16 @@ extraction_id = "test_pdf_to_multi_option"
 extraction_identifier = ExtractionIdentifier(extraction_name=extraction_id)
 
 
+class TestLogger(Logger):
+    def log(self, extraction_identifier: ExtractionIdentifier, message: str, severity: LogSeverity = LogSeverity.info, exception: Exception = None):
+        pass
+
+
 class TestPdfToMultiOptionExtractorDistributedJobs(TestCase):
     def setUp(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
-        self.extractor = PdfToMultiOptionExtractor(extraction_identifier)
+        self.logger = TestLogger()
+        self.extractor = PdfToMultiOptionExtractor(extraction_identifier, self.logger)
 
     def tearDown(self):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
@@ -155,3 +163,24 @@ class TestPdfToMultiOptionExtractorDistributedJobs(TestCase):
         self.assertIsInstance(jobs, list)
         for task in jobs:
             self.assertEqual(task.extractor_name, "PdfToMultiOptionExtractor")
+
+    def test_get_distributed_jobs_setfit_methods_require_gpu(self):
+        extraction_data = self.create_sample_extraction_data()
+
+        jobs = self.extractor.get_distributed_jobs(extraction_data)
+
+        setfit_jobs = [task for task in jobs if "SetFit" in task.method_name]
+
+        if len(setfit_jobs) > 0:
+            for task in setfit_jobs:
+                self.assertTrue(task.gpu_needed, f"Method {task.method_name} contains 'SetFit' and should have gpu_needed=True")
+
+    def test_get_distributed_jobs_all_methods_have_valid_properties(self):
+        extraction_data = self.create_sample_extraction_data()
+
+        jobs = self.extractor.get_distributed_jobs(extraction_data)
+
+        for job in jobs:
+            self.assertIsInstance(job.options, list)
+            self.assertIsInstance(job.multi_value, bool)
+            self.assertIsInstance(job.should_be_retrained_with_more_data, bool)
