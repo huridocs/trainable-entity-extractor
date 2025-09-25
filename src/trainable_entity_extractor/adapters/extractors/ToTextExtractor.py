@@ -35,6 +35,8 @@ class ToTextExtractor(ExtractorBase):
         suggestions = list()
         for prediction_text, prediction_sample in zip(prediction, prediction_samples.prediction_samples):
             entity_name = prediction_sample.entity_name
-            suggestions.append(Suggestion.from_prediction_text(self.extraction_identifier, entity_name, prediction_text))
+            suggestion = Suggestion.from_prediction_text(self.extraction_identifier, entity_name, prediction_text)
+            suggestion.set_segment_text_from_sample(prediction_sample)
+            suggestions.append(suggestion)
 
         return suggestions

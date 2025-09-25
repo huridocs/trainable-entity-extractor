@@ -6,7 +6,6 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.PdfData import PdfData
-from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.domain.FormatSegmentText import FormatSegmentText
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.filter_segments_methods.Beginning750 import (
@@ -112,3 +111,13 @@ class Suggestion(BaseModel):
         if values:
             suggestion.segment_text = values[0].segment_text
         return suggestion
+
+    def set_segment_text_from_sample(self, prediction_sample: PredictionSample):
+        if prediction_sample.source_text:
+            self.segment_text = prediction_sample.source_text
+            self._raw_context = [prediction_sample.source_text]
+        elif prediction_sample.segment_selector_texts:
+            self.segment_text = " ".join(prediction_sample.segment_selector_texts)
+            self._raw_context = prediction_sample.segment_selector_texts
+
+        self.segment_text = FormatSegmentText(self._raw_context, self.text).get_text()

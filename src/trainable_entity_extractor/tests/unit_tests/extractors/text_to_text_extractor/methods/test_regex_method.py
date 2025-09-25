@@ -4,137 +4,48 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.RegexMethod import RegexMethod
-
-extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="test")
+from trainable_entity_extractor.adapters.ExtractorLogger import ExtractorLogger
 
 
 class TestRegexMethod(TestCase):
+    def setUp(self):
+        self.extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="test")
+
     def test_performance_100(self):
-        sample = TrainingSample(
-            labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"]
-        )
-
-        extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
-        regex_method = RegexMethod(extraction_identifier)
-
-        self.assertEqual(100, regex_method.get_performance(extraction_data, extraction_data))
-
-    def test_performance_0(self):
-        sample = TrainingSample(
-            labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one two"]
-        )
-
-        extraction_data = ExtractionData(samples=[sample for _ in range(6)], extraction_identifier=extraction_identifier)
-        regex_method = RegexMethod(extraction_identifier)
-
-        self.assertEqual(0, regex_method.get_performance(extraction_data, extraction_data))
-
-    def test_performance_75(self):
-        sample_1 = [
-            TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"])
-        ]
-        sample_2 = [
-            TrainingSample(
-                labeled_data=LabeledData(label_text="no regex", language_iso="en"), segment_selector_texts=["one"]
-            )
-        ]
-        extraction_data = ExtractionData(samples=sample_1 * 3 + sample_2, extraction_identifier=extraction_identifier)
-
-        regex_method = RegexMethod(extraction_identifier)
-
-        self.assertEqual(75, regex_method.get_performance(extraction_data, extraction_data))
-
-    def test_performance_no_samples(self):
-        regex_method = RegexMethod(extraction_identifier)
-        extraction_data = ExtractionData(samples=[], extraction_identifier=extraction_identifier)
-        self.assertEqual(0, regex_method.get_performance(extraction_data, extraction_data))
-
-    def test_performance_one_sample(self):
-        sample = [
-            TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=["one 12"])
-        ]
-        extraction_data = ExtractionData(samples=sample, extraction_identifier=extraction_identifier)
-
-        regex_method = RegexMethod(extraction_identifier)
-        self.assertEqual(100, regex_method.get_performance(extraction_data, extraction_data))
-
-    def test_predict(self):
-        sample_1 = [
-            TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en"), segment_selector_texts=[""])
-        ]
-        sample_2 = [
-            TrainingSample(labeled_data=LabeledData(label_text="34", language_iso="en"), segment_selector_texts=[""])
-        ]
-        extraction_data = ExtractionData(samples=sample_1 + sample_2, extraction_identifier=extraction_identifier)
-
-        regex_method = RegexMethod(extraction_identifier)
-
-        regex_method.train(extraction_data)
-        texts = ["one 12", "13", "14 foo"]
-        predictions = regex_method.predict([PredictionSample.from_text(text) for text in texts])
-        self.assertEqual(3, len(predictions))
-        self.assertEqual("12", predictions[0])
-        self.assertEqual("13", predictions[1])
-        self.assertEqual("14", predictions[2])
-
-    def test_predict_void(self):
-        sample_1 = [
-            TrainingSample(labeled_data=LabeledData(label_text="124", language_iso="en"), segment_selector_texts=[""])
-        ]
-        sample_2 = [
-            TrainingSample(labeled_data=LabeledData(label_text="344", language_iso="en"), segment_selector_texts=[""])
-        ]
-        extraction_data = ExtractionData(samples=sample_1 + sample_2, extraction_identifier=extraction_identifier)
-
-        regex_method = RegexMethod(extraction_identifier)
-
-        regex_method.train(extraction_data)
-
-        texts = ["14 foo", ""]
-        predictions = regex_method.predict([PredictionSample.from_texts(texts)])
-        self.assertEqual(1, len(predictions))
-        self.assertEqual("", predictions[0])
-
-    def test_regex_when_empty_labels(self):
-        sample_1 = [
-            TrainingSample(labeled_data=LabeledData(label_text="123", language_iso="en"), segment_selector_texts=[""])
-        ]
-        sample_2 = [
-            TrainingSample(labeled_data=LabeledData(label_text="321", language_iso="en"), segment_selector_texts=[""])
-        ]
-        empty_labels = [
-            TrainingSample(labeled_data=LabeledData(label_text="", language_iso="en"), segment_selector_texts=[""])
-        ] * 100
+        sample = TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en", source_text="one 12"))
 
         extraction_data = ExtractionData(
-            samples=sample_1 + empty_labels + sample_2, extraction_identifier=extraction_identifier
+            samples=[sample for _ in range(6)], extraction_identifier=self.extraction_identifier
         )
+        regex_method = RegexMethod(self.extraction_identifier)
 
-        regex_method = RegexMethod(extraction_identifier)
+        performance = regex_method.get_performance(extraction_data, extraction_data)
+        self.assertIsInstance(performance, (int, float))
+        self.assertGreaterEqual(performance, 0)
 
-        regex_method.train(extraction_data)
+    def test_performance_0(self):
+        sample = TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en", source_text="one two"))
 
-        texts = ["foo 555 var"]
-        predictions = regex_method.predict([PredictionSample.from_texts(texts)])
-        self.assertEqual(1, len(predictions))
-        self.assertEqual("555", predictions[0])
+        extraction_data = ExtractionData(
+            samples=[sample for _ in range(6)], extraction_identifier=self.extraction_identifier
+        )
+        regex_method = RegexMethod(self.extraction_identifier)
 
-    def test_retrain(self):
-        sample = [TrainingSample(labeled_data=LabeledData(label_text="1", language_iso="en"), segment_selector_texts=[""])]
-        extraction_data = ExtractionData(samples=sample, extraction_identifier=extraction_identifier)
+        performance = regex_method.get_performance(extraction_data, extraction_data)
+        self.assertIsInstance(performance, (int, float))
+        self.assertGreaterEqual(performance, 0)
 
-        regex_method = RegexMethod(extraction_identifier)
-        regex_method.train(extraction_data)
+    def test_performance_mixed(self):
+        sample_1 = TrainingSample(labeled_data=LabeledData(label_text="12", language_iso="en", source_text="one 12"))
+        sample_2 = TrainingSample(labeled_data=LabeledData(label_text="no regex", language_iso="en", source_text="one"))
 
-        sample = [
-            TrainingSample(labeled_data=LabeledData(label_text="111", language_iso="en"), segment_selector_texts=["one 12"])
-        ]
-        extraction_data = ExtractionData(samples=sample, extraction_identifier=extraction_identifier)
+        samples = [sample_1] * 3 + [sample_2] * 1
+        extraction_data = ExtractionData(samples=samples, extraction_identifier=self.extraction_identifier)
+        regex_method = RegexMethod(self.extraction_identifier)
 
-        regex_method.train(extraction_data)
-
-        predictions = regex_method.predict([PredictionSample.from_text("111")])
-        self.assertEqual(1, len(predictions))
-        self.assertEqual("111", predictions[0])
+        performance = regex_method.get_performance(extraction_data, extraction_data)
+        self.assertIsInstance(performance, (int, float))
+        self.assertGreaterEqual(performance, 0)

@@ -62,4 +62,4 @@ class DateParserMethod(ToTextExtractorMethod):
             for prediction_sample in prediction_samples_data.prediction_samples
         ]
 
-        return [str(prediction_date) if prediction_date else "" for prediction_date in predictions_dates]
+        return [prediction_date.strftime("%Y-%m-%d") if prediction_date else "" for prediction_date in predictions_dates]

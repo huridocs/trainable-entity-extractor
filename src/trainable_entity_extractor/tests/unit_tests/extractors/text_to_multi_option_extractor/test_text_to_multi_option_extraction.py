@@ -1,11 +1,15 @@
 from unittest import TestCase
+
+from trainable_entity_extractor.adapters.ExtractorLogger import ExtractorLogger
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
+from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.TextToMultiOptionExtractor import (
     TextToMultiOptionExtractor,
 )
@@ -15,6 +19,9 @@ class TestTextToMultiOptionExtraction(TestCase):
     TENANT = "unit_test"
     extraction_id = "multi_option_extraction_test"
 
+    def setUp(self):
+        self.logger = ExtractorLogger()
+
     def test_can_be_used(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name="other")
         options = [Option(id="1", label="1"), Option(id="2", label="2"), Option(id="3", label="3")]
@@ -22,7 +29,7 @@ class TestTextToMultiOptionExtraction(TestCase):
         samples_text = [TrainingSample(labeled_data=LabeledData(source_text="1"))]
         samples_no_text = [TrainingSample(labeled_data=LabeledData(source_text=""))]
 
-        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
+        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier, self.logger)
         no_options = ExtractionData(extraction_identifier=extraction_identifier, samples=samples_text)
         no_text = ExtractionData(extraction_identifier=extraction_identifier, options=options, samples=samples_no_text)
         valid_extraction_data = ExtractionData(
@@ -47,12 +54,26 @@ class TestTextToMultiOptionExtraction(TestCase):
             multi_value=False, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
 
-        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
-        multi_option_extraction.create_model(multi_option_data)
+        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier, self.logger)
+
+        method = "TextFuzzyFirst"
+        job = TrainableEntityExtractorJob(
+            run_name=self.TENANT,
+            extraction_name=self.extraction_id,
+            extractor_name="TextToMultiOptionExtractor",
+            method_name=method,
+            gpu_needed=False,
+            timeout=60,
+        )
+        success, error_msg = multi_option_extraction.train_one_method(job, multi_option_data)
+        self.assertTrue(success, f"Training failed: {error_msg}")
 
         prediction_sample_1 = PredictionSample(source_text="point 1", entity_name="entity_name_1")
         prediction_sample_3 = PredictionSample(source_text="point 3 point 2", entity_name="entity_name_3")
-        suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_3])
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[prediction_sample_1, prediction_sample_3], options=options, multi_value=False
+        )
+        suggestions = multi_option_extraction.get_suggestions(method, prediction_samples_data)
 
         self.assertEqual(2, len(suggestions))
         self.assertEqual([Value(id="1", label="1", segment_text="point 1")], suggestions[0].values)
@@ -151,8 +172,19 @@ Universal periodic review""",
             multi_value=False, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
 
-        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
-        multi_option_extraction.create_model(multi_option_data)
+        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier, self.logger)
+
+        method = "FirstWordRegex"
+        job = TrainableEntityExtractorJob(
+            run_name=self.TENANT,
+            extraction_name="first_word_regex",
+            extractor_name="TextToMultiOptionExtractor",
+            method_name=method,
+            gpu_needed=False,
+            timeout=60,
+        )
+        success, error_msg = multi_option_extraction.train_one_method(job, multi_option_data)
+        self.assertTrue(success, f"Training failed: {error_msg}")
 
         source_text_1 = """139.16
 Continue working with all stakeholders, including the International
@@ -167,7 +199,10 @@ report (Australia);"""
             source_text=source_text_2,
             entity_name="entity_name_2",
         )
-        suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_2])
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[prediction_sample_1, prediction_sample_2], options=options, multi_value=False
+        )
+        suggestions = multi_option_extraction.get_suggestions(method, prediction_samples_data)
 
         self.assertEqual(2, len(suggestions))
         self.assertEqual(
@@ -193,12 +228,26 @@ report (Australia);"""
             multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
 
-        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
-        multi_option_extraction.create_model(multi_option_data)
+        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier, self.logger)
+
+        method = "TextFuzzyAll100"
+        job = TrainableEntityExtractorJob(
+            run_name=self.TENANT,
+            extraction_name=self.extraction_id,
+            extractor_name="TextToMultiOptionExtractor",
+            method_name=method,
+            gpu_needed=False,
+            timeout=60,
+        )
+        success, error_msg = multi_option_extraction.train_one_method(job, multi_option_data)
+        self.assertTrue(success, f"Training failed: {error_msg}")
 
         prediction_sample_1 = PredictionSample(source_text="point 0 point 1", entity_name="entity_name_1")
         prediction_sample_3 = PredictionSample(source_text="point 2 point 0", entity_name="entity_name_3")
-        suggestions = multi_option_extraction.get_suggestions([prediction_sample_1, prediction_sample_3])
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[prediction_sample_1, prediction_sample_3], options=options, multi_value=True
+        )
+        suggestions = multi_option_extraction.get_suggestions(method, prediction_samples_data)
 
         self.assertEqual(2, len(suggestions))
         self.assertTrue(Value(id="0", label="0", segment_text="point 0 point 1") in suggestions[0].values)
@@ -221,10 +270,22 @@ report (Australia);"""
             multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
 
-        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier)
-        multi_option_extraction.create_model(multi_option_data)
+        multi_option_extraction = TextToMultiOptionExtractor(extraction_identifier, self.logger)
 
-        suggestions = multi_option_extraction.get_suggestions([])
+        method = "NaiveTextToMultiOptionMethod"
+        job = TrainableEntityExtractorJob(
+            run_name=self.TENANT,
+            extraction_name=self.extraction_id,
+            extractor_name="TextToMultiOptionExtractor",
+            method_name=method,
+            gpu_needed=False,
+            timeout=60,
+        )
+        success, error_msg = multi_option_extraction.train_one_method(job, multi_option_data)
+        self.assertTrue(success, f"Training failed: {error_msg}")
+
+        prediction_samples_data = PredictionSamplesData(prediction_samples=[], options=options, multi_value=True)
+        suggestions = multi_option_extraction.get_suggestions(method, prediction_samples_data)
 
         self.assertEqual(0, len(suggestions))
 

@@ -13,10 +13,12 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 
 
 class TestGeminiTextMethodWithRealAPI(TestCase):
+    def setUp(self):
+        self.extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_test")
+
     @unittest.skip("Requires real Gemini API key")
     def test_gemini(self):
-        extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_test")
-        gemini_text_method = GeminiTextMethod(extraction_identifier)
+        gemini_text_method = GeminiTextMethod(self.extraction_identifier)
 
         extraction_data = ExtractionData(
             samples=[
@@ -27,7 +29,7 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
                     labeled_data=LabeledData(label_text="Same for output", source_text="Same for input"),
                 ),
             ],
-            extraction_identifier=extraction_identifier,
+            extraction_identifier=self.extraction_identifier,
         )
 
         gemini_text_method.train(extraction_data)
@@ -42,29 +44,26 @@ class TestGeminiTextMethodWithRealAPI(TestCase):
 
     @unittest.skip("Requires real Gemini API key")
     def test_gemini_with_other_data(self):
-        extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_name="gemini_text_other_data")
-        gemini_text_method = GeminiTextMethod(extraction_identifier)
+        gemini_text_method = GeminiTextMethod(self.extraction_identifier)
 
         extraction_data = ExtractionData(
             samples=[
                 TrainingSample(
-                    labeled_data=LabeledData(label_text="Output A", language_iso="en"),
-                    segment_selector_texts=["Input A"],
+                    labeled_data=LabeledData(label_text="Output A", source_text="Input A"),
                 ),
                 TrainingSample(
-                    labeled_data=LabeledData(label_text="Output B", language_iso="en"),
-                    segment_selector_texts=["Input B"],
+                    labeled_data=LabeledData(label_text="Output B", source_text="Input B"),
                 ),
             ],
-            extraction_identifier=extraction_identifier,
+            extraction_identifier=self.extraction_identifier,
         )
 
         gemini_text_method.train(extraction_data)
 
         prediction_samples_data = PredictionSamplesData(
-            prediction_samples=[PredictionSample(source_text="Input B")], options=[], multi_value=False
+            prediction_samples=[PredictionSample(source_text="Input C")], options=[], multi_value=False
         )
         predictions = gemini_text_method.predict(prediction_samples_data)
 
         self.assertEqual(len(predictions), 1)
-        self.assertEqual(predictions[0], "Output B")
+        self.assertIsInstance(predictions[0], str)

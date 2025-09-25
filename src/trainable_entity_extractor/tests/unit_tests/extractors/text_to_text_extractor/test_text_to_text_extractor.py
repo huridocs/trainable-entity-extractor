@@ -10,6 +10,7 @@ from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.TextToTextExtractor import TextToTextExtractor
 
 tenant = "unit_test"
@@ -32,13 +33,14 @@ class TestTextToTextExtractor(TestCase):
         ]
         extraction_data = ExtractionData(samples=sample, extraction_identifier=extraction_identifier)
 
-        text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier)
+        text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier, logger=ExtractorLogger())
         text_to_text_extractor.can_be_used(extraction_data)
         texts = ["test 0", "test 1", "test 2"]
         predictions_samples = PredictionSamplesData(
             prediction_samples=[PredictionSample.from_text(text, str(i)) for i, text in enumerate(texts)]
         )
-        suggestions = text_to_text_extractor.get_suggestions(predictions_samples)
+        # Use SameInputOutputMethod which just returns the input text
+        suggestions = text_to_text_extractor.get_suggestions("SameInputOutputMethod", predictions_samples)
 
         self.assertEqual(3, len(suggestions))
         self.assertEqual(tenant, suggestions[0].tenant)
@@ -56,18 +58,32 @@ class TestTextToTextExtractor(TestCase):
         extraction_data = ExtractionData(samples=sample_1 + sample_2, extraction_identifier=extraction_identifier)
 
         text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier, logger=ExtractorLogger())
-        text_to_text_extractor.create_model(extraction_data)
+
+        method = "RegexSubtractionMethod"
+        job = TrainableEntityExtractorJob(
+            run_name=tenant,
+            extraction_name=extraction_id,
+            extractor_name="TextToTextExtractor",
+            method_name=method,
+            gpu_needed=False,
+            timeout=60,
+        )
+        success, error_msg = text_to_text_extractor.train_one_method(job, extraction_data)
+        self.assertTrue(success, f"Training failed: {error_msg}")
+
         predictions_samples = PredictionSamplesData(
             prediction_samples=[PredictionSample(source_text="one two", entity_name="entity_name")]
         )
-        suggestions = text_to_text_extractor.get_suggestions(predictions_samples)
+        suggestions = text_to_text_extractor.get_suggestions(method, predictions_samples)
 
         self.assertEqual(1, len(suggestions))
         self.assertEqual(tenant, suggestions[0].tenant)
         self.assertEqual(extraction_id, suggestions[0].id)
         self.assertEqual("entity_name", suggestions[0].entity_name)
         self.assertEqual("one", suggestions[0].text)
-        self.assertEqual("one two", suggestions[0].segment_text)
+        self.assertEqual(
+            '<p class="ix_matching_paragraph"><span class="ix_match">one</span> two</p>', suggestions[0].segment_text
+        )
 
     def test_predictions_input_without_spaces(self):
         sample = [
@@ -78,12 +94,24 @@ class TestTextToTextExtractor(TestCase):
         ]
         extraction_data = ExtractionData(samples=sample * 3, extraction_identifier=extraction_identifier)
 
-        text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier)
-        text_to_text_extractor.create_model(extraction_data)
+        text_to_text_extractor = TextToTextExtractor(extraction_identifier=extraction_identifier, logger=ExtractorLogger())
 
-        suggestions = text_to_text_extractor.get_suggestions(
-            [PredictionSample.from_text("one two three four", "entity_name")]
+        # Train using InputWithoutSpaces method which removes spaces from input
+        job = TrainableEntityExtractorJob(
+            run_name=tenant,
+            extraction_name=extraction_id,
+            extractor_name="TextToTextExtractor",
+            method_name="InputWithoutSpaces",
+            gpu_needed=False,
+            timeout=60,
         )
+        success, error_msg = text_to_text_extractor.train_one_method(job, extraction_data)
+        self.assertTrue(success, f"Training failed: {error_msg}")
+
+        predictions_samples = PredictionSamplesData(
+            prediction_samples=[PredictionSample.from_text("one two three four", "entity_name")]
+        )
+        suggestions = text_to_text_extractor.get_suggestions("InputWithoutSpaces", predictions_samples)
 
         self.assertEqual(1, len(suggestions))
         self.assertEqual(tenant, suggestions[0].tenant)
