@@ -61,6 +61,8 @@ class TextTfIdf(TextToMultiOptionMethod):
         dump(one_vs_rest_classifier, self.get_model_path())
 
     def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples.options
+        self.multi_value = prediction_samples.multi_value
         train_texts = load(self.get_data_path())
 
         vectorized = TfidfVectorizer()

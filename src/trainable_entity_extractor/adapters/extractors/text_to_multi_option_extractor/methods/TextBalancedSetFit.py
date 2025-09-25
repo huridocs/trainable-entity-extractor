@@ -153,6 +153,8 @@ class TextBalancedSetFit(TextToMultiOptionMethod):
         trainer.model.save_pretrained(self.get_model_path())
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
         model = SetFitModel.from_pretrained(self.get_model_path())
         texts = [self.get_text(sample.get_input_text()) for sample in prediction_samples_data.prediction_samples]
         predictions = model.predict(texts)

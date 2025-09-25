@@ -20,6 +20,8 @@ class FirstWordRegex(TextToMultiOptionMethod):
         return True
 
     def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples.options
+        self.multi_value = prediction_samples.multi_value
         predictions: list[list[Option]] = list()
         options_regex: list[OptionRegex] = [self.load_option_regex(option) for option in prediction_samples.options]
         options_regex.sort(key=lambda x: len(x.regex_list))

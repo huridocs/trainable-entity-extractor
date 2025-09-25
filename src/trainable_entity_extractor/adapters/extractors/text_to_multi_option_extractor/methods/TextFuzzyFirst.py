@@ -32,6 +32,8 @@ class TextFuzzyFirst(TextToMultiOptionMethod):
         return []
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples.options
+        self.multi_value = prediction_samples.multi_value
         predictions: list[list[Option]] = list()
         option_labels = [option.label.lower() for option in prediction_samples_data.options]
         for sample in prediction_samples_data.prediction_samples:

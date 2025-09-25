@@ -12,6 +12,8 @@ class NaiveTextToMultiOptionMethod(TextToMultiOptionMethod):
         return True
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
         predictions: list[list[Option]] = list()
         for _ in prediction_samples_data.prediction_samples:
             predictions.append(prediction_samples_data.options[:1])

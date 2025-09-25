@@ -81,6 +81,8 @@ class TextSetFit(TextToMultiOptionMethod):
         return dataset
 
     def train(self, extraction_data: ExtractionData):
+        self.options = extraction_data.options
+        self.multi_value = extraction_data.multi_value
         shutil.rmtree(self.get_model_path(), ignore_errors=True)
 
         train_dataset = self.get_dataset_from_data(extraction_data)
@@ -116,9 +118,10 @@ class TextSetFit(TextToMultiOptionMethod):
 
         trainer.model.save_pretrained(self.get_model_path())
 
-    def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
         model = SetFitModel.from_pretrained(self.get_model_path())
-        texts = [self.get_text(sample.get_input_text()) for sample in prediction_samples.prediction_samples]
+        texts = [self.get_text(sample.get_input_text()) for sample in prediction_samples_data.prediction_samples]
         predictions = model.predict(texts)
-
         return self.predictions_to_options_list(predictions.tolist())

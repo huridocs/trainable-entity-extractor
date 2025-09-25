@@ -6,6 +6,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.methods.TextSetFitMultilingual import (
     TextSetFitMultilingual,
@@ -15,7 +16,8 @@ extraction_identifier = ExtractionIdentifier(run_name="unit_test", extraction_na
 
 
 class TestTextSetFitMultilingual(TestCase):
-    @unittest.SkipTest
+
+    @unittest.skip("Skipping as SetFitMultilingual model is not available in the environment")
     def test_predict_multi_value(self):
         text = "foo var Democratic Republic of the Congo Democratic People's Republic of Korea"
         options = [
@@ -38,11 +40,15 @@ class TestTextSetFitMultilingual(TestCase):
         labeled_data = LabeledData(source_text=text, values=[options[4]])
         samples += [TrainingSample(labeled_data=labeled_data)]
 
-        text_to_multioption = TextSetFitMultilingual(extraction_identifier, options, True)
+        text_to_multioption = TextSetFitMultilingual(extraction_identifier)
         text_to_multioption.train(ExtractionData(samples=samples * 10, options=options))
 
         text = "foo var Democratic Republic of the Congo Democratic People's Republic of Korea"
         expected_options = [[options[0], options[1]]]
 
         prediction_sample = PredictionSample(source_text=text)
-        self.assertEqual(expected_options, text_to_multioption.predict([prediction_sample]))
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[prediction_sample], options=options, multi_value=True
+        )
+        predict = text_to_multioption.predict(prediction_samples_data)
+        self.assertEqual(expected_options, predict)

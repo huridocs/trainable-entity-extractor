@@ -30,6 +30,8 @@ class TextFuzzyAll100(TextToMultiOptionMethod):
         return list(set(appearances))
 
     def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples.options
+        self.multi_value = prediction_samples.multi_value
         predictions: list[list[Option]] = list()
         option_labels = [option.label.lower() for option in prediction_samples.options]
         for sample in prediction_samples.prediction_samples:

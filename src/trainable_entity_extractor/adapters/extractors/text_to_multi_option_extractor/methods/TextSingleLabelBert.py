@@ -160,6 +160,8 @@ class TextSingleLabelBert(TextToMultiOptionMethod):
         return odds
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples.options
+        self.multi_value = prediction_samples.multi_value
         labels_number = len(prediction_samples_data.options)
 
         texts = [self.get_text(sample.get_input_text()) for sample in prediction_samples_data.prediction_samples]

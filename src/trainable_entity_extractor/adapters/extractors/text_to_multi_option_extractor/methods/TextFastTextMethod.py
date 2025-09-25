@@ -68,6 +68,8 @@ class TextFastTextMethod(TextToMultiOptionMethod):
         model.save_model(self.get_model_path())
 
     def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples.options
+        self.multi_value = prediction_samples.multi_value
         texts = [sample.get_input_text() for sample in prediction_samples.prediction_samples]
         texts = [text.replace("\n", " ") for text in texts]
 

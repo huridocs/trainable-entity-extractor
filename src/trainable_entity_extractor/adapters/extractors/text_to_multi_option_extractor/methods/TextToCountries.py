@@ -42,6 +42,8 @@ class TextToCountries(TextToMultiOptionMethod):
         return percentage_matched > 0.5
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples_data.options
+        self.multi_value = prediction_samples_data.multi_value
         predictions = []
         option_keywords = self._load_option_keywords()
 
@@ -76,6 +78,8 @@ class TextToCountries(TextToMultiOptionMethod):
             return []
 
     def train(self, multi_option_data: ExtractionData):
+        self.options = multi_option_data.options
+        self.multi_value = multi_option_data.multi_value
         options_keywords: list[OptionKeyword] = list()
         for option in self.options:
             label = option.label

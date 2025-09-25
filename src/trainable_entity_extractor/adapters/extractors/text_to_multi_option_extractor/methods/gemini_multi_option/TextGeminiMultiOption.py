@@ -24,15 +24,18 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
         return False
 
     def train(self, extraction_data: ExtractionData):
-        number_of_options = len(self.options)
-        options_labels = [option.label for option in self.options]
+        number_of_options = len(extraction_data.options)
+        options_labels = [option.label for option in extraction_data.options]
         gemini_samples = [GeminiSample.from_training_sample(sample, True) for sample in extraction_data.samples]
         gemini_runs = [
-            GeminiRunMultiOption(mistakes_samples=gemini_samples, options=options_labels, multi_value=self.multi_value)
+            GeminiRunMultiOption(
+                mistakes_samples=gemini_samples, options=options_labels, multi_value=extraction_data.multi_value
+            )
         ]
         sizes = [number_of_options, min(2 * number_of_options, 15), min(4 * number_of_options, 45)]
         gemini_runs += [
-            GeminiRunMultiOption(max_training_size=n, options=options_labels, multi_value=self.multi_value) for n in sizes
+            GeminiRunMultiOption(max_training_size=n, options=options_labels, multi_value=extraction_data.multi_value)
+            for n in sizes
         ]
 
         for previous_gemini_run, gemini_run in zip(gemini_runs, gemini_runs[1:]):
@@ -49,6 +52,8 @@ class TextGeminiMultiOption(TextToMultiOptionMethod):
         gemini_with_code[0].save_code(self.extraction_identifier)
 
     def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples.options
+        self.multi_value = prediction_samples.multi_value
         gemini_run = GeminiRunMultiOption.from_extractor_identifier_multioption(
             self.extraction_identifier, prediction_samples.options, prediction_samples.multi_value
         )

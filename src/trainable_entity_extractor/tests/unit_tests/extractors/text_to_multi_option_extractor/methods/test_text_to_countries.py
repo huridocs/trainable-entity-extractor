@@ -40,9 +40,11 @@ class TestTextToCountries(TestCase):
             Option(id="5", label="Korea"),
         ]
         text_to_countries = TextToCountries(extraction_identifier)
-        text_to_countries.train(ExtractionData(samples=[TrainingSample()], options=options))
+        text_to_countries.train(ExtractionData(samples=[TrainingSample()], options=options, multi_value=True))
         expected_options = [[options[0], options[1]]]
-        prediction = text_to_countries.predict(PredictionSamplesData(prediction_samples=[sample]))
+        prediction = text_to_countries.predict(
+            PredictionSamplesData(prediction_samples=[sample], options=options, multi_value=True)
+        )
         self.assertEqual(expected_options, prediction)
 
     def test_predict_non_country_name(self):
@@ -50,6 +52,8 @@ class TestTextToCountries(TestCase):
         sample = PredictionSample(source_text=text)
         options = [Option(id="1", label="Spain"), Option(id="2", label="Chile"), Option(id="3", label="Côte d'Ivoire")]
         text_to_countries = TextToCountries(extraction_identifier)
-        text_to_countries.train(ExtractionData(samples=[TrainingSample()], options=options))
-        prediction = text_to_countries.predict(PredictionSamplesData(prediction_samples=[sample]))
+        text_to_countries.train(ExtractionData(samples=[TrainingSample()], options=options, multi_value=True))
+        prediction = text_to_countries.predict(
+            PredictionSamplesData(prediction_samples=[sample], options=options, multi_value=True)
+        )
         self.assertEqual([[Option(id="3", label="Côte d'Ivoire")]], prediction)

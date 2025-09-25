@@ -34,6 +34,8 @@ class TextFuzzyFirstCleanLabels(TextToMultiOptionMethod):
         return []
 
     def predict(self, prediction_samples: PredictionSamplesData) -> list[list[Option]]:
+        self.options = prediction_samples.options
+        self.multi_value = prediction_samples.multi_value
         predictions: list[list[Option]] = list()
         option_labels = self.get_cleaned_labels(prediction_samples.options)
         for sample in prediction_samples.prediction_samples:
