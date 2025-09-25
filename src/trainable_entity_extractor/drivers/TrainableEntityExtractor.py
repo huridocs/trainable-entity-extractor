@@ -122,7 +122,6 @@ class TrainableEntityExtractor:
         else:
             self.logger.log(self.extraction_identifier, f"Training failed: {message}", LogSeverity.error)
 
-        self.extraction_identifier.clean_extractor_folder()
         return success, message
 
     def _handle_training_exception(self, exception: Exception) -> tuple[bool, str]:

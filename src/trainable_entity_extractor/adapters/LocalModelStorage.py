@@ -1,6 +1,5 @@
 import os
 import json
-import shutil
 from typing import Optional
 
 from trainable_entity_extractor.config import EXTRACTOR_JOB_PATH, CACHE_PATH
@@ -15,8 +14,6 @@ class LocalModelStorage(ModelStorage):
 
     def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
         try:
-            extraction_identifier.clean_extractor_folder(extractor_job.method_name)
-            shutil.rmtree(CACHE_PATH / extraction_identifier.run_name, ignore_errors=True)
             model_path = extraction_identifier.get_path()
             if not os.path.exists(model_path):
                 os.makedirs(model_path, exist_ok=True)

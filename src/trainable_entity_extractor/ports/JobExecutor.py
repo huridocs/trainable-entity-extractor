@@ -1,7 +1,7 @@
 import shutil
 from abc import ABC, abstractmethod
-from typing import Tuple
 
+from trainable_entity_extractor.config import CACHE_PATH
 from trainable_entity_extractor.domain.DistributedJob import DistributedJob
 from trainable_entity_extractor.domain.DistributedSubJob import DistributedSubJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
@@ -60,6 +60,8 @@ class JobExecutor(ABC):
 
     def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
         try:
+            extraction_identifier.clean_extractor_folder(extractor_job.method_name)
+            shutil.rmtree(CACHE_PATH / extraction_identifier.run_name, ignore_errors=True)
             upload_success = self.model_storage.upload_model(extraction_identifier, extractor_job)
             if upload_success:
                 signal_success = self.model_storage.create_model_completion_signal(extraction_identifier)

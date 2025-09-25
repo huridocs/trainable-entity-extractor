@@ -79,6 +79,10 @@ class ExtractionIdentifier(BaseModel):
             if path.is_file():
                 continue
 
+            if len(os.listdir(path)) == 0:
+                shutil.rmtree(path, ignore_errors=True)
+                continue
+
             for key_word_to_delete in ["setfit", "t5", "bert"]:
                 if key_word_to_delete in name.lower():
                     shutil.rmtree(path, ignore_errors=True)
