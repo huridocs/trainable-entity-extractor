@@ -7,6 +7,7 @@ from pathlib import Path
 import rapidfuzz
 from rapidfuzz import fuzz
 
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
@@ -24,8 +25,8 @@ from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSa
 class FuzzyCommas(PdfMultiOptionMethod):
     threshold = 92
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, extraction_identifier: ExtractionIdentifier = None):
+        super().__init__(extraction_identifier)
         self.options_cleaned: list[str] = list()
         self.options_cleaned_by_length: list[str] = list()
         self.options_cleaned_words_sorted: list[str] = list()

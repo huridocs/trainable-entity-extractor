@@ -7,6 +7,7 @@ from typing import Type
 from pdf_token_type_labels.TokenType import TokenType
 from rapidfuzz import fuzz
 
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
@@ -33,7 +34,7 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
 
     text_types = [TokenType.TEXT, TokenType.LIST_ITEM, TokenType.TITLE, TokenType.SECTION_HEADER, TokenType.CAPTION]
 
-    def __init__(self, extraction_identifier: ExtractionData = None):
+    def __init__(self, extraction_identifier: ExtractionIdentifier = None):
         super().__init__(extraction_identifier)
         self._remove_accents_cache = {}
 
@@ -83,8 +84,8 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
 
         return PredictionSamplesData(
             prediction_samples=predict_samples,
-            options=self.extraction_data.options,
-            multi_value=self.extraction_data.multi_value,
+            options=prediction_samples_data.options,
+            multi_value=prediction_samples_data.multi_value,
         )
 
     def remove_accents(self, text: str) -> str:

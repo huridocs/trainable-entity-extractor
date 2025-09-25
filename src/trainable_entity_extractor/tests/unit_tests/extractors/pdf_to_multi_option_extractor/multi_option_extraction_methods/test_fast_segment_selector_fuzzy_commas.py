@@ -4,6 +4,8 @@ from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FastSegmentSelectorFuzzyCommas import (
@@ -39,7 +41,7 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
             multi_value=True, options=options, samples=samples, extraction_identifier=self.extraction_identifier
         )
 
-        fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas()
+        fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas(self.extraction_identifier)
         performance = fast_segment_selector_fuzzy_commas.get_performance(multi_option_data, multi_option_data)
 
         self.assertEqual(100, performance)
@@ -63,7 +65,9 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
             multi_value=True, options=options, samples=samples, extraction_identifier=self.extraction_identifier
         )
 
-        fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas()
+        fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas().set_extraction_identifier(
+            self.extraction_identifier
+        )
         performance = fast_segment_selector_fuzzy_commas.get_performance(multi_option_data, multi_option_data)
 
         self.assertAlmostEqual(72.72727272727273, performance)
@@ -93,15 +97,14 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
             multi_value=True, options=options, samples=samples, extraction_identifier=self.extraction_identifier
         )
 
-        fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas()
+        fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas().set_extraction_identifier(
+            self.extraction_identifier
+        )
         fast_segment_selector_fuzzy_commas.train(multi_option_data)
 
-        prediction_samples = [
-            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[])),
-            TrainingSample(pdf_data=pdf_data_5, labeled_data=LabeledData(values=[])),
-        ]
-        prediction_multi_option_data = ExtractionData(
-            multi_value=True, options=options, samples=prediction_samples, extraction_identifier=self.extraction_identifier
+        prediction_samples = [PredictionSample(pdf_data=pdf_data_1), PredictionSample(pdf_data=pdf_data_5)]
+        prediction_multi_option_data = PredictionSamplesData(
+            multi_value=True, options=options, prediction_samples=prediction_samples
         )
         predictions = fast_segment_selector_fuzzy_commas.predict(prediction_multi_option_data)
 
@@ -132,17 +135,19 @@ class TestFastSegmentSelectorFuzzyCommas(TestCase):
             multi_value=True, options=options, samples=samples, extraction_identifier=self.extraction_identifier
         )
 
-        fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas()
+        fast_segment_selector_fuzzy_commas = FastSegmentSelectorFuzzyCommas().set_extraction_identifier(
+            self.extraction_identifier
+        )
         fast_segment_selector_fuzzy_commas.train(multi_option_data)
 
         prediction_samples = [
-            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[])),
-            TrainingSample(pdf_data=PdfData(), labeled_data=LabeledData(values=[])),
-            TrainingSample(pdf_data=PdfData.from_texts([]), labeled_data=LabeledData(values=[])),
-            TrainingSample(pdf_data=PdfData.from_texts([""]), labeled_data=LabeledData(values=[])),
+            PredictionSample(pdf_data=pdf_data_1),
+            PredictionSample(pdf_data=PdfData()),
+            PredictionSample(pdf_data=PdfData.from_texts([])),
+            PredictionSample(pdf_data=PdfData.from_texts([""])),
         ]
-        prediction_multi_option_data = ExtractionData(
-            multi_value=True, options=options, samples=prediction_samples, extraction_identifier=self.extraction_identifier
+        prediction_multi_option_data = PredictionSamplesData(
+            multi_value=True, options=options, prediction_samples=prediction_samples
         )
         predictions = fast_segment_selector_fuzzy_commas.predict(prediction_multi_option_data)
 

@@ -37,10 +37,8 @@ class PdfMultiOptionMethod(MethodBase):
         return self
 
     def set_parameters(self, multi_option_data: ExtractionData):
-        self.extraction_identifier = multi_option_data.extraction_identifier
         self.options = multi_option_data.options
         self.multi_value = multi_option_data.multi_value
-        self.extraction_data = multi_option_data
 
     def get_name(self):
         if self.filter_segments_method and self.multi_label_method:
@@ -61,7 +59,6 @@ class PdfMultiOptionMethod(MethodBase):
             prediction_samples=[PredictionSample.from_text(x.pdf_data.get_text()) for x in test_set.samples],
             options=self.options,
             multi_value=self.multi_value,
-            extraction_identifier=train_set.extraction_identifier,
         )
         predictions = self.predict(prediction_samples_data)
 
@@ -78,7 +75,9 @@ class PdfMultiOptionMethod(MethodBase):
         return 100 * score
 
     @staticmethod
-    def one_hot_to_options_list(pdfs_options: list[list[Option]], options: list[Option]) -> list[list[int]]:
+    def one_hot_to_options_list(
+        pdfs_options: list[list[Option]] | list[list[Value]], options: list[Option]
+    ) -> list[list[int]]:
         options_one_hot: list[list[int]] = list()
         option_labels = [x.label for x in options]
         for pdf_options in pdfs_options:

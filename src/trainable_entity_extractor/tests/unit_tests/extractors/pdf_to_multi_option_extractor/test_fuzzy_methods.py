@@ -47,7 +47,7 @@ class TestFuzzyMethods(TestCase):
             multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        predictions = FuzzyAll100().predict(prediction_samples_data)
+        predictions = FuzzyAll100().set_extraction_identifier(extraction_identifier).predict(prediction_samples_data)
 
         self.assertEqual(3, len(predictions))
         self.assertEqual([Value(id="1", label="item 1", segment_text="blah. item 1. blah")], predictions[0])
@@ -81,7 +81,7 @@ class TestFuzzyMethods(TestCase):
             multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        method = FuzzyCommas()
+        method = FuzzyCommas().set_extraction_identifier(extraction_identifier)
         method.train(multi_option_data)
         predictions = method.predict(prediction_samples_data)
 
@@ -121,7 +121,7 @@ class TestFuzzyMethods(TestCase):
             multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        method = FuzzyCommas()
+        method = FuzzyCommas().set_extraction_identifier(extraction_identifier)
         method.train(multi_option_data)
         predictions = method.predict(prediction_samples_data)
 
@@ -160,7 +160,7 @@ We are a human rights organisation too, and our ultimate vision is a world where
             multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        fast_segment_selector_fuzzy = FastSegmentSelectorFuzzy95()
+        fast_segment_selector_fuzzy = FastSegmentSelectorFuzzy95().set_extraction_identifier(extraction_identifier)
         fast_segment_selector_fuzzy.set_parameters(multi_option_data)
         fast_segment_selector_fuzzy.train(multi_option_data)
         predictions = fast_segment_selector_fuzzy.predict(prediction_samples_data)
@@ -193,7 +193,7 @@ We are a human rights organisation too, and our ultimate vision is a world where
             multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        predictions = FuzzyAll75().predict(prediction_samples_data)
+        predictions = FuzzyAll75().set_extraction_identifier(extraction_identifier).predict(prediction_samples_data)
 
         self.assertEqual(1, len(predictions))
         self.assertTrue(Value(id="1", label="item 1") in predictions[0])
@@ -218,7 +218,7 @@ We are a human rights organisation too, and our ultimate vision is a world where
             multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        predictions = FuzzyFirst().predict(prediction_samples_data)
+        predictions = FuzzyFirst().set_extraction_identifier(extraction_identifier).predict(prediction_samples_data)
 
         self.assertEqual(3, len(predictions))
         self.assertEqual([Value(id="1", label="item 1", segment_text="blah. item 1. blah")], predictions[0])

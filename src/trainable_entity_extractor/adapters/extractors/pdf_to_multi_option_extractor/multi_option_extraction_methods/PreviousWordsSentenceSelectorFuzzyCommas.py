@@ -23,7 +23,7 @@ class PreviousWordsSentenceSelectorFuzzyCommas(SentenceSelectorFuzzyCommas):
         for sample in extraction_data_by_sentences.samples:
             marked_segments.extend(self.get_marked_segments(sample))
         PreviousWordsSegmentSelector(self.extraction_identifier).create_model(marked_segments)
-        FuzzyCommas().train(extraction_data_by_sentences)
+        FuzzyCommas(self.extraction_identifier).train(extraction_data_by_sentences)
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
         temp_samples = []
@@ -46,7 +46,7 @@ class PreviousWordsSentenceSelectorFuzzyCommas(SentenceSelectorFuzzyCommas):
         self.prediction_samples_data = self.get_prediction_samples_data(
             extraction_data_by_sentences, prediction_samples_data.options, prediction_samples_data.multi_value
         )
-        prediction = FuzzyCommas().predict(self.prediction_samples_data)
+        prediction = FuzzyCommas(self.extraction_identifier).predict(self.prediction_samples_data)
         return prediction
 
     def get_prediction_samples_data(self, extraction_data: ExtractionData, options, multi_value) -> PredictionSamplesData:

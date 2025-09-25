@@ -6,6 +6,8 @@ from pdf_features.Rectangle import Rectangle
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FastSegmentSelectorFuzzyCommas import (
@@ -19,9 +21,23 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
         extraction_data_by_sentences = self.get_extraction_data_by_sentence(multi_option_data)
         super().train(extraction_data_by_sentences)
 
-    def predict(self, multi_option_data: ExtractionData) -> list[list[Value]]:
-        extraction_data_by_sentences = self.get_extraction_data_by_sentence(multi_option_data)
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        extraction_data_by_sentences = self.get_extraction_data_by_sentence_prediction(prediction_samples_data)
         return super().predict(extraction_data_by_sentences)
+
+    def get_extraction_data_by_sentence_prediction(
+        self, prediction_samples_data: PredictionSamplesData
+    ) -> PredictionSamplesData:
+        samples_by_sentence = []
+        for sample in prediction_samples_data.prediction_samples:
+            sentence_segment_list = self.get_sentence_segment_list(sample.pdf_data.pdf_data_segments)
+            samples_by_sentence.append(self.get_sample_prediction(sample, sentence_segment_list))
+
+        return PredictionSamplesData(
+            prediction_samples=samples_by_sentence,
+            options=prediction_samples_data.options,
+            multi_value=prediction_samples_data.multi_value,
+        )
 
     def get_extraction_data_by_sentence(self, multi_option_data: ExtractionData) -> ExtractionData:
         samples_by_sentence = []
@@ -96,3 +112,17 @@ class SentenceSelectorFuzzyCommas(FastSegmentSelectorFuzzyCommas):
         sentence_pdf_data = PdfData(file_name=sample.pdf_data.file_name)
         sentence_pdf_data.pdf_data_segments = sentence_segments
         return TrainingSample(pdf_data=sentence_pdf_data, labeled_data=sample.labeled_data)
+
+    @staticmethod
+    def get_sample_prediction(
+        sample: PredictionSample, sentence_segment_list: list[(str, PdfDataSegment)]
+    ) -> PredictionSample:
+        sentence_segments = list()
+        for sentence, segment in sentence_segment_list:
+            sentence_segment = deepcopy(segment)
+            sentence_segment.text_content = sentence
+            sentence_segments.append(sentence_segment)
+
+        sentence_pdf_data = PdfData(file_name=sample.pdf_data.file_name)
+        sentence_pdf_data.pdf_data_segments = sentence_segments
+        return PredictionSample(pdf_data=sentence_pdf_data)

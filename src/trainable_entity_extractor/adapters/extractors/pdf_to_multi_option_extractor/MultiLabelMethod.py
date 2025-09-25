@@ -16,9 +16,8 @@ from trainable_entity_extractor.domain.Value import Value
 
 
 class MultiLabelMethod(ABC):
-    def __init__(self, extraction_identifier: ExtractionIdentifier, method_name: str = ""):
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
         self.extraction_identifier = extraction_identifier
-        self.method_name = method_name
 
     def gpu_needed(self) -> bool:
         return False
@@ -27,11 +26,7 @@ class MultiLabelMethod(ABC):
         return self.__class__.__name__
 
     def get_path(self):
-        if self.method_name:
-            path = join(self.extraction_identifier.get_path(), self.method_name)
-        else:
-            path = join(self.extraction_identifier.get_path(), self.get_name())
-
+        path = join(self.extraction_identifier.get_path(), self.get_name())
         os.makedirs(path, exist_ok=True)
         return path
 

@@ -98,7 +98,7 @@ class TestSetFitEnglishMethod(TestCase):
     def test_can_be_used_english_single_label(self):
         if not torch.cuda.is_available():
             return
-        setfit_single_english_method = SingleLabelSetFitEnglishMethod(self.extraction_identifier, self.options, False)
+        setfit_single_english_method = SingleLabelSetFitEnglishMethod(self.extraction_identifier)
         self.assertFalse(setfit_single_english_method.can_be_used(self.extraction_data_english_multi))
         self.assertTrue(setfit_single_english_method.can_be_used(self.extraction_data_english_single))
         self.assertFalse(setfit_single_english_method.can_be_used(self.extraction_data_non_english_multi))
@@ -107,7 +107,7 @@ class TestSetFitEnglishMethod(TestCase):
     def test_can_be_used_english_multi_label(self):
         if not torch.cuda.is_available():
             return
-        setfit_english_method = SetFitEnglishMethod(self.extraction_identifier, self.options, True)
+        setfit_english_method = SetFitEnglishMethod(self.extraction_identifier)
         self.assertTrue(setfit_english_method.can_be_used(self.extraction_data_english_multi))
         self.assertFalse(setfit_english_method.can_be_used(self.extraction_data_english_single))
         self.assertFalse(setfit_english_method.can_be_used(self.extraction_data_non_english_multi))
@@ -116,9 +116,7 @@ class TestSetFitEnglishMethod(TestCase):
     def test_can_be_used_non_english_single_label(self):
         if not torch.cuda.is_available():
             return
-        setfit_single_multilingual_method = SingleLabelSetFitMultilingualMethod(
-            self.extraction_identifier, self.options, False
-        )
+        setfit_single_multilingual_method = SingleLabelSetFitMultilingualMethod(self.extraction_identifier)
         self.assertFalse(setfit_single_multilingual_method.can_be_used(self.extraction_data_english_multi))
         self.assertFalse(setfit_single_multilingual_method.can_be_used(self.extraction_data_english_single))
         self.assertFalse(setfit_single_multilingual_method.can_be_used(self.extraction_data_non_english_multi))
@@ -127,7 +125,7 @@ class TestSetFitEnglishMethod(TestCase):
     def test_can_be_used_non_english_multi_label(self):
         if not torch.cuda.is_available():
             return
-        setfit_multilingual_method = SetFitMultilingualMethod(self.extraction_identifier, self.options, True)
+        setfit_multilingual_method = SetFitMultilingualMethod(self.extraction_identifier)
         self.assertFalse(setfit_multilingual_method.can_be_used(self.extraction_data_english_multi))
         self.assertFalse(setfit_multilingual_method.can_be_used(self.extraction_data_english_single))
         self.assertTrue(setfit_multilingual_method.can_be_used(self.extraction_data_non_english_multi))
