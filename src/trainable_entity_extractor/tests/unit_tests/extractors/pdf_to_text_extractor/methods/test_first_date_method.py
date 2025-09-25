@@ -4,6 +4,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.pdf_to_text_extractor.methods.FirstDateMethod import FirstDateMethod
 
@@ -22,5 +23,6 @@ class TestFirstDateMethod(TestCase):
 
         first_date_method.train(extraction_data)
 
-        predictions = first_date_method.predict([PredictionSample.from_text(text)])
+        prediction_samples_data = PredictionSamplesData(prediction_samples=[PredictionSample.from_text(text)])
+        predictions = first_date_method.predict(prediction_samples_data)
         self.assertEqual(["2016-11-30"], predictions)

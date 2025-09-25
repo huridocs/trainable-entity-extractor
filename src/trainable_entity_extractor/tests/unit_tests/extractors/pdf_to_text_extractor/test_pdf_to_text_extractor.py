@@ -7,7 +7,6 @@ from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.adapters.extractors.pdf_to_text_extractor.PdfToTextExtractor import PdfToTextExtractor
-from trainable_entity_extractor.services.EntityExtractionService import EntityExtractionService
 
 
 class TestPdfToTextExtractor(TestCase):
