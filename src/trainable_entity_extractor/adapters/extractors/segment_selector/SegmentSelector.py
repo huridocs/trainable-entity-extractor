@@ -14,8 +14,8 @@ from trainable_entity_extractor.adapters.extractors.segment_selector.methods.lig
 
 
 class SegmentSelector(SegmentSelectorBase):
-    def __init__(self, extraction_identifier: ExtractionIdentifier, method_name: str = ""):
-        super().__init__(extraction_identifier, method_name)
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
+        super().__init__(extraction_identifier)
         self.model_path = join(self.extraction_identifier.get_path(), "segment_predictor_model", "model.model")
         self.model = self.load_model()
 

@@ -1,9 +1,7 @@
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Suggestion import Suggestion
-from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
 from trainable_entity_extractor.ports.Logger import Logger
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
@@ -40,45 +38,3 @@ class ToTextExtractor(ExtractorBase):
             suggestions.append(Suggestion.from_prediction_text(self.extraction_identifier, entity_name, prediction_text))
 
         return suggestions
-
-    def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        samples_info = (
-            f"\n{self.get_name()} received {len(extraction_data.samples)} samples from "
-            f"{extraction_data.extraction_identifier.extraction_name}"
-        )
-        self.logger.log(self.extraction_identifier, samples_info)
-
-        performance_summary = PerformanceSummary()
-
-        perfect_score_method = None
-        try:
-            for method in self.METHODS:
-                method_instance = method(self.extraction_identifier)
-
-                if method_instance.can_be_used(extraction_data):
-                    train_set, test_set = self.prepare_for_training(extraction_data)
-                    performance_score = method_instance.get_performance(train_set, test_set)
-
-                    performance_summary.add_performance(method_instance.get_name(), performance_score, test_set)
-
-                    if performance_score >= 1:
-                        perfect_score_method = method_instance
-                        break
-
-                self.logger.log(self.extraction_identifier, f"Checking {method_instance.get_name()}")
-
-                try:
-                    method_instance.train(extraction_data)
-                except Exception as e:
-                    message = f"{method_instance.get_name()} failed with error {e}"
-                    self.logger.log(self.extraction_identifier, message, LogSeverity.error, e)
-                    continue
-
-                self.logger.log(self.extraction_identifier, performance_summary.to_log())
-
-        except Exception as e:
-            return False, f"ToTextExtractor.create_model error: {e}"
-
-        self.logger.log(self.extraction_identifier, performance_summary.to_log())
-
-        return True, "Model created successfully"

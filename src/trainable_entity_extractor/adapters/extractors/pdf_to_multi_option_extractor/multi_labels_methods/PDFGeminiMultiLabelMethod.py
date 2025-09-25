@@ -10,9 +10,9 @@ from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extract
 
 
 class PDFGeminiMultiLabelMethod(MultiLabelMethod):
-    def __init__(self, extraction_identifier, method_name=""):
-        super().__init__(extraction_identifier, method_name)
-        self._text_gemini = TextGeminiMultiOption(extraction_identifier, method_name)
+    def __init__(self, extraction_identifier):
+        super().__init__(extraction_identifier)
+        self._text_gemini = TextGeminiMultiOption(extraction_identifier)
 
     def can_be_used(self, extraction_data):
         return self._text_gemini.can_be_used(extraction_data)

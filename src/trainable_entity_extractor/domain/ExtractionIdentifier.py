@@ -25,9 +25,8 @@ class ExtractionIdentifier(BaseModel):
     metadata: dict[str, str] = dict()
     extra_model_folder: str = ""
 
-    @staticmethod
     def set_extra_model_folder(self, folder: str):
-        extraction_identifier = self.copy()
+        extraction_identifier = self.model_copy()
         extraction_identifier.extra_model_folder = folder
         return extraction_identifier
 

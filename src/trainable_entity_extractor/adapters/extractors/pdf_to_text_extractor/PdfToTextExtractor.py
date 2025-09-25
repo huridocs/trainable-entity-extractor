@@ -85,7 +85,6 @@ class PdfToTextExtractor(ToTextExtractor):
     METHODS += t5_methods
 
     def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
-        """Prepare the extractor for performance evaluation by setting up segment selectors"""
         SegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
         FastSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()
         FastAndPositionsSegmentSelector(extraction_identifier=self.extraction_identifier).prepare_model_folder()

@@ -39,7 +39,7 @@ class TestTextGeminiMultiOption(TestCase):
         labeled_data = LabeledData(source_text=text, values=[options[4]])
         samples += [TrainingSample(labeled_data=labeled_data)]
 
-        text_to_multioption = TextGeminiMultiOption(extraction_identifier, self.__class__.__name__)
+        text_to_multioption = TextGeminiMultiOption(extraction_identifier)
         extraction_data = ExtractionData(samples=samples * 10, options=options)
         text_to_multioption.options = options
         text_to_multioption.multi_value = extraction_data.multi_value
@@ -75,7 +75,7 @@ class TestTextGeminiMultiOption(TestCase):
         text3 = "orange"
         samples.append(TrainingSample(labeled_data=LabeledData(source_text=text3, values=[options[3]])))
 
-        text_to_multioption = TextGeminiMultiOption(extraction_identifier, self.__class__.__name__)
+        text_to_multioption = TextGeminiMultiOption(extraction_identifier)
         extraction_data = ExtractionData(samples=samples * 10, options=options)
         text_to_multioption.options = options
         text_to_multioption.multi_value = extraction_data.multi_value

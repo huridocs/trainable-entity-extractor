@@ -21,17 +21,20 @@ from trainable_entity_extractor.ports.MethodBase import MethodBase
 class PdfMultiOptionMethod(MethodBase):
     REPORT_ERRORS = True
 
-    def __init__(
-        self,
-        filter_segments_method: Type[FilterSegmentsMethod] = None,
-        multi_label_method: Type[MultiLabelMethod] = None,
+    def __init__(self, extraction_identifier: ExtractionIdentifier = None):
+        super().__init__(extraction_identifier)
+        self.filter_segments_method = None
+        self.multi_label_method = None
+        self.options: list[Option] = list()
+        self.multi_value = False
+        self.prediction_samples_data = None
+
+    def set_methods(
+        self, filter_segments_method: Type[FilterSegmentsMethod] = None, multi_label_method: Type[MultiLabelMethod] = None
     ):
         self.filter_segments_method = filter_segments_method
         self.multi_label_method = multi_label_method
-        self.options: list[Option] = list()
-        self.multi_value = False
-        self.extraction_data = None
-        self.prediction_samples_data = None
+        return self
 
     def set_parameters(self, multi_option_data: ExtractionData):
         self.extraction_identifier = multi_option_data.extraction_identifier
@@ -54,7 +57,13 @@ class PdfMultiOptionMethod(MethodBase):
         truth_one_hot = self.one_hot_to_options_list([x.labeled_data.values for x in test_set.samples], self.options)
 
         self.train(train_set)
-        predictions = self.predict(test_set)
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample.from_text(x.pdf_data.get_text()) for x in test_set.samples],
+            options=self.options,
+            multi_value=self.multi_value,
+            extraction_identifier=train_set.extraction_identifier,
+        )
+        predictions = self.predict(prediction_samples_data)
 
         if not self.multi_value:
             predictions = [x[:1] for x in predictions]

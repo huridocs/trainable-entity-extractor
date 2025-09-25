@@ -158,22 +158,6 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
         return True, "Model created successfully"
 
-    def get_performance(self, method_instance, extraction_data: ExtractionData) -> float:
-        self.logger.log(self.extraction_identifier, f"\nChecking {method_instance.get_name()}")
-
-        try:
-            train_set, test_set = self.prepare_for_training(extraction_data)
-            return method_instance.get_performance(train_set, test_set)
-        except Exception as e:
-            if "Insufficient data to train SetFit model" in str(e):
-                self.logger.log(self.extraction_identifier, "Insufficient data to train SetFit model")
-            else:
-                self.logger.log(self.extraction_identifier, "ERROR", LogSeverity.info, e)
-            return 0.0
-        except:
-            self.logger.log(self.extraction_identifier, "ERROR", LogSeverity.info, e)
-            return 0.0
-
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if not extraction_data.options and not extraction_data.extraction_identifier.get_options_path().exists():
             return False

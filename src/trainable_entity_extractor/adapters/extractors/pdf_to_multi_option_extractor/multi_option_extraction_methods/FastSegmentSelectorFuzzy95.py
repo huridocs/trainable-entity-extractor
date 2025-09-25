@@ -33,10 +33,8 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
 
     text_types = [TokenType.TEXT, TokenType.LIST_ITEM, TokenType.TITLE, TokenType.SECTION_HEADER, TokenType.CAPTION]
 
-    def __init__(
-        self, filter_segments_method: Type[FilterSegmentsMethod] = None, multi_label_method: Type[MultiLabelMethod] = None
-    ):
-        super().__init__(filter_segments_method, multi_label_method)
+    def __init__(self, extraction_identifier: ExtractionData = None):
+        super().__init__(extraction_identifier)
         self._remove_accents_cache = {}
 
     def get_appearances(self, pdf_segment: PdfDataSegment, options: list[str]) -> list[str]:

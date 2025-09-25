@@ -8,6 +8,8 @@ from trainable_entity_extractor.domain.Value import Value
 
 class MethodBase(ABC):
     def __init__(self, extraction_identifier: ExtractionIdentifier):
+        if extraction_identifier is None:
+            return
         self.extraction_identifier = extraction_identifier.set_extra_model_folder(self.get_model_folder_name())
 
     def set_extraction_identifier(self, extraction_identifier: ExtractionIdentifier):

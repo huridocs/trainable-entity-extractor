@@ -108,14 +108,14 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         FastSegmentSelectorFuzzy95(),
         FastSegmentSelectorFuzzyCommas(),
         FuzzySegmentSelector(),
-        PdfMultiOptionMethod(CleanBeginningDotDigits500, FastTextMethod),
-        PdfMultiOptionMethod(CleanEndDotDigits1000, FastTextMethod),
-        PdfMultiOptionMethod(CleanEndDotDigits1000, PDFGeminiMultiLabelMethod),
-        PdfMultiOptionMethod(CleanBeginningDotDigits1000, PDFGeminiMultiLabelMethod),
-        PdfMultiOptionMethod(CleanBeginningDotDigits1000, SetFitEnglishMethod),
-        PdfMultiOptionMethod(CleanBeginningDotDigits1000, SetFitMultilingualMethod),
-        PdfMultiOptionMethod(CleanBeginningDotDigits1000, SingleLabelSetFitEnglishMethod),
-        PdfMultiOptionMethod(CleanBeginningDotDigits1000, SingleLabelSetFitMultilingualMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits500, FastTextMethod),
+        PdfMultiOptionMethod().set_methods(CleanEndDotDigits1000, FastTextMethod),
+        PdfMultiOptionMethod().set_methods(CleanEndDotDigits1000, PDFGeminiMultiLabelMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, PDFGeminiMultiLabelMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SetFitEnglishMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SetFitMultilingualMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SingleLabelSetFitEnglishMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SingleLabelSetFitMultilingualMethod),
     ]
 
     def __init__(self, extraction_identifier: ExtractionIdentifier, logger: Logger):

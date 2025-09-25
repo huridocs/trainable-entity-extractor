@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PdfData import PdfData
-from trainable_entity_extractor.ports.MethodBase import MethodBase
 
 
-class SegmentSelectorBase(MethodBase):
+class SegmentSelectorBase(ABC):
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
+        self.extraction_identifier = extraction_identifier
 
     @abstractmethod
     def prepare_model_folder(self):

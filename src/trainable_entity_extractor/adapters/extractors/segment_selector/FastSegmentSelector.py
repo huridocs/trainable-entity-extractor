@@ -17,16 +17,12 @@ from trainable_entity_extractor.adapters.extractors.segment_selector.SegmentSele
 
 
 class FastSegmentSelector(SegmentSelectorBase):
-    def __init__(self, extraction_identifier: ExtractionIdentifier, method_name: str = ""):
-        super().__init__(extraction_identifier, method_name)
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
+        super().__init__(extraction_identifier)
         self.text_types = [TokenType.TEXT, TokenType.LIST_ITEM, TokenType.TITLE, TokenType.SECTION_HEADER, TokenType.CAPTION]
         self.previous_words, self.next_words, self.text_segments = [], [], []
 
-        if method_name:
-            path = Path(self.extraction_identifier.get_path(), method_name, self.__class__.__name__)
-            self.fast_segment_selector_path = path
-        else:
-            self.fast_segment_selector_path = Path(self.extraction_identifier.get_path(), self.__class__.__name__)
+        self.fast_segment_selector_path = Path(self.extraction_identifier.get_path(), self.__class__.__name__)
 
         if not self.fast_segment_selector_path.exists():
             os.makedirs(self.fast_segment_selector_path, exist_ok=True)

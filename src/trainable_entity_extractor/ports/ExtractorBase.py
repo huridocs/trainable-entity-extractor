@@ -90,7 +90,7 @@ class ExtractorBase:
             if isinstance(method, type):
                 method_instance = method(self.extraction_identifier)
             else:
-                method_instance = method
+                method_instance = method.set_extraction_identifier(self.extraction_identifier)
 
             if hasattr(method_instance, "can_be_used"):
                 if not method_instance.can_be_used(extraction_data):
