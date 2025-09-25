@@ -6,6 +6,8 @@ from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_option_extraction_methods.FastSegmentSelectorFuzzy95 import (
     FastSegmentSelectorFuzzy95,
 )
@@ -35,17 +37,17 @@ class TestFuzzyMethods(TestCase):
         pdf_data_2 = PdfData.from_texts(["blah. item 10. blah"])
         pdf_data_3 = PdfData.from_texts(["blah. item 10, item 1. blah"])
 
-        samples = [
-            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
-            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[2]])),
-            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[0], options[2]])),
+        prediction_samples = [
+            PredictionSample(pdf_data=pdf_data_1, entity_name="test"),
+            PredictionSample(pdf_data=pdf_data_2, entity_name="test"),
+            PredictionSample(pdf_data=pdf_data_3, entity_name="test"),
         ]
 
-        multi_option_data = ExtractionData(
-            multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
+        prediction_samples_data = PredictionSamplesData(
+            multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        predictions = FuzzyAll100().predict(multi_option_data)
+        predictions = FuzzyAll100().predict(prediction_samples_data)
 
         self.assertEqual(3, len(predictions))
         self.assertEqual([Value(id="1", label="item 1", segment_text="blah. item 1. blah")], predictions[0])
@@ -70,8 +72,18 @@ class TestFuzzyMethods(TestCase):
             multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
 
-        FuzzyCommas().train(multi_option_data)
-        predictions = FuzzyCommas().predict(multi_option_data)
+        prediction_samples = [
+            PredictionSample(pdf_data=pdf_data_1, entity_name="test"),
+            PredictionSample(pdf_data=pdf_data_2, entity_name="test"),
+        ]
+
+        prediction_samples_data = PredictionSamplesData(
+            multi_value=True, options=options, prediction_samples=prediction_samples
+        )
+
+        method = FuzzyCommas()
+        method.train(multi_option_data)
+        predictions = method.predict(prediction_samples_data)
 
         self.assertEqual(2, len(predictions))
 
@@ -101,8 +113,17 @@ class TestFuzzyMethods(TestCase):
             multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
 
-        FuzzyCommas().train(multi_option_data)
-        predictions = FuzzyCommas().predict(multi_option_data)
+        prediction_samples = [
+            PredictionSample(pdf_data=pdf_data_1, entity_name="test"),
+        ]
+
+        prediction_samples_data = PredictionSamplesData(
+            multi_value=True, options=options, prediction_samples=prediction_samples
+        )
+
+        method = FuzzyCommas()
+        method.train(multi_option_data)
+        predictions = method.predict(prediction_samples_data)
 
         self.assertEqual(1, len(predictions))
 
@@ -129,10 +150,20 @@ We are a human rights organisation too, and our ultimate vision is a world where
             multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
 
+        prediction_samples = [
+            PredictionSample(pdf_data=pdf_data_1, entity_name="test"),
+            PredictionSample(pdf_data=pdf_data_2, entity_name="test"),
+            PredictionSample(pdf_data=pdf_data_3, entity_name="test"),
+        ] * 5
+
+        prediction_samples_data = PredictionSamplesData(
+            multi_value=True, options=options, prediction_samples=prediction_samples
+        )
+
         fast_segment_selector_fuzzy = FastSegmentSelectorFuzzy95()
         fast_segment_selector_fuzzy.set_parameters(multi_option_data)
         fast_segment_selector_fuzzy.train(multi_option_data)
-        predictions = fast_segment_selector_fuzzy.predict(multi_option_data)
+        predictions = fast_segment_selector_fuzzy.predict(prediction_samples_data)
 
         self.assertEqual(15, len(predictions))
 
@@ -154,15 +185,15 @@ We are a human rights organisation too, and our ultimate vision is a world where
 
         pdf_data_1 = PdfData.from_texts(["blah. item 1. blah"])
 
-        samples = [
-            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
+        prediction_samples = [
+            PredictionSample(pdf_data=pdf_data_1, entity_name="test"),
         ]
 
-        multi_option_data = ExtractionData(
-            multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
+        prediction_samples_data = PredictionSamplesData(
+            multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        predictions = FuzzyAll75().predict(multi_option_data)
+        predictions = FuzzyAll75().predict(prediction_samples_data)
 
         self.assertEqual(1, len(predictions))
         self.assertTrue(Value(id="1", label="item 1") in predictions[0])
@@ -177,17 +208,17 @@ We are a human rights organisation too, and our ultimate vision is a world where
         pdf_data_2 = PdfData.from_texts(["blah. item 10. blah"])
         pdf_data_3 = PdfData.from_texts(["blah. item 10, item 1. blah"])
 
-        samples = [
-            TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
-            TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[2]])),
-            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[0], options[2]])),
+        prediction_samples = [
+            PredictionSample(pdf_data=pdf_data_1, entity_name="test"),
+            PredictionSample(pdf_data=pdf_data_2, entity_name="test"),
+            PredictionSample(pdf_data=pdf_data_3, entity_name="test"),
         ]
 
-        multi_option_data = ExtractionData(
-            multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
+        prediction_samples_data = PredictionSamplesData(
+            multi_value=True, options=options, prediction_samples=prediction_samples
         )
 
-        predictions = FuzzyFirst().predict(multi_option_data)
+        predictions = FuzzyFirst().predict(prediction_samples_data)
 
         self.assertEqual(3, len(predictions))
         self.assertEqual([Value(id="1", label="item 1", segment_text="blah. item 1. blah")], predictions[0])

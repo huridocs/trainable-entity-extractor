@@ -43,7 +43,7 @@ class RegexSubtractionMethod(ToTextExtractorMethod):
                 if matches and matches.end() == len(prediction):
                     prediction = prediction[: matches.start()]
 
-            predictions[i] = prediction
+            predictions[i] = prediction.strip()
 
         return predictions
 
