@@ -2,6 +2,7 @@ from unittest import TestCase
 import os
 
 from trainable_entity_extractor.adapters.ExtractorLogger import ExtractorLogger
+from trainable_entity_extractor.config import APP_PATH
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
@@ -12,6 +13,7 @@ from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.adapters.extractors.pdf_to_text_extractor.PdfToTextExtractor import PdfToTextExtractor
+import shutil
 
 
 class TestPdfToTextExtractor(TestCase):
@@ -21,8 +23,12 @@ class TestPdfToTextExtractor(TestCase):
 
     def setUp(self):
         self.logger = ExtractorLogger()
-        # Path to the test XML file
-        self.xml_file_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "test_files", "test.xml")
+        self.xml_file_path = str(APP_PATH / "trainable_entity_extractor" / "tests" / "test_files" / "test.xml")
+
+    def tearDown(self):
+        extraction_path = self.extraction_identifier.get_path()
+        if os.path.exists(extraction_path):
+            shutil.rmtree(extraction_path, ignore_errors=True)
 
     def test_pdf_to_text_extractor_with_real_data(self):
         """Test PdfToTextExtractor training with real XML data to extract '170221'"""
