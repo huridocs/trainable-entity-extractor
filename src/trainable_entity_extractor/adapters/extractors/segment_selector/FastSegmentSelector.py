@@ -102,7 +102,7 @@ class FastSegmentSelector(SegmentSelectorBase):
         if not segments:
             return
 
-        if not self.method_name and Path(self.model_path).exists():
+        if Path(self.model_path).exists():
             return
 
         self.text_segments = [x for x in segments if x.segment_type in self.text_types]

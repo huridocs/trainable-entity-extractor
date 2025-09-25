@@ -25,7 +25,7 @@ class PdfToTextSegmentSelector(SegmentSelector):
         for sample in extraction_data.samples:
             sample.segment_selector_texts = [x.text_content for x in sample.pdf_data.pdf_data_segments if x.ml_label]
 
-        semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
+        semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier)
         semantic_metadata_extraction.train(extraction_data_with_samples)
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
@@ -39,7 +39,7 @@ class PdfToTextSegmentSelector(SegmentSelector):
         for sample in predictions_samples:
             sample.segment_selector_texts = self.get_predicted_texts(sample.pdf_data)
 
-        semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
+        semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier)
         return semantic_metadata_extraction.predict(prediction_samples_data)
 
     def create_segment_selector_model(self, extraction_data: ExtractionData):

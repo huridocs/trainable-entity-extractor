@@ -119,45 +119,6 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
         return suggestions
 
-    def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        self.logger.log(self.extraction_identifier, self.get_stats(extraction_data))
-
-        performance_summary = PerformanceSummary()
-
-        perfect_score_method = None
-        try:
-            for method in self.METHODS:
-                method_instance = method(self.extraction_identifier)
-
-                if not method_instance.can_be_used(extraction_data):
-                    continue
-
-                train_set, test_set = self.prepare_for_training(extraction_data)
-                performance_score = method_instance.get_performance(train_set, test_set)
-
-                performance_summary.add_performance(method_instance.get_name(), performance_score, test_set)
-
-                if performance_score >= 1:
-                    perfect_score_method = method_instance
-                    break
-
-                try:
-                    method_instance.train(extraction_data)
-                except Exception as e:
-                    if "Insufficient data to train SetFit model" in str(e):
-                        continue
-
-            if perfect_score_method:
-                self.logger.log(self.extraction_identifier, performance_summary.to_log())
-                return True, "Perfect score method found"
-
-        except Exception as e:
-            return False, f"TextToMultiOptionExtractor.create_model error: {e}"
-
-        self.logger.log(self.extraction_identifier, performance_summary.to_log())
-
-        return True, "Model created successfully"
-
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         if not extraction_data.options and not extraction_data.extraction_identifier.get_options_path().exists():
             return False

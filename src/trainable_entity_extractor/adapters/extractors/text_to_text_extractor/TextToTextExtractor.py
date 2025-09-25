@@ -69,9 +69,6 @@ class TextToTextExtractor(ToTextExtractor):
 
         return False
 
-    def create_model(self, extraction_data: ExtractionData) -> tuple[bool, str]:
-        return super().create_model(extraction_data)
-
     @staticmethod
     def set_segment_selector_texts(predictions_samples: list[PredictionSample]) -> None:
         for sample in predictions_samples:

@@ -91,7 +91,7 @@ class PdfToTextExtractor(ToTextExtractor):
         return self.get_train_test_sets(extraction_data)
 
     @staticmethod
-    def get_train_test_sets(extraction_data: ExtractionData) -> (ExtractionData, ExtractionData):
+    def get_train_test_sets(extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:
         samples_with_label_segments_boxes = [x for x in extraction_data.samples if x.labeled_data.label_segments_boxes]
 
         if len(extraction_data.samples) <= 10:

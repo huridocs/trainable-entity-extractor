@@ -36,7 +36,7 @@ class PdfToTextFastSegmentSelector(PdfToTextSegmentSelector):
             self.mark_predicted_segments(selected_segments)
             sample.segment_selector_texts = self.get_predicted_texts(sample.pdf_data)
 
-        semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier, self.get_name())
+        semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier)
         return semantic_metadata_extraction.predict(prediction_samples_data)
 
     @staticmethod

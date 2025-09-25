@@ -31,7 +31,6 @@ class OrchestratorUseCase:
             return False, f"Unknown job type: {distributed_job.type}"
 
     def _cancel_and_remove_job(self, distributed_job: DistributedJob) -> None:
-        """Cancel the job and remove it from the queue"""
         self.job_executor.cancel_jobs(distributed_job)
         self._remove_job_from_queue(distributed_job)
 
@@ -75,6 +74,9 @@ class OrchestratorUseCase:
 
     def _process_performance_job(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
         self.job_executor.update_job_statuses(distributed_job)
+
+        if len(distributed_job.sub_jobs) == [x for x in distributed_job.sub_jobs if x.status == JobStatus.WAITING]:
+            self.job_executor.recreate_model_folder(distributed_job.extraction_identifier)
 
         self._start_pending_performance_evaluations(distributed_job)
 

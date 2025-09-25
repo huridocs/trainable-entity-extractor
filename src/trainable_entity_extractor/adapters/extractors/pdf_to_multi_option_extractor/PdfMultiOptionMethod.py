@@ -99,7 +99,7 @@ class PdfMultiOptionMethod(MethodBase):
         filtered_multi_option_data = self.filter_segments_method().filter(multi_option_data)
 
         print("Creating model")
-        multi_label = self.multi_label_method(self.extraction_identifier, self.get_name())
+        multi_label = self.multi_label_method(self.extraction_identifier)
         multi_label.train(filtered_multi_option_data)
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
@@ -111,7 +111,7 @@ class PdfMultiOptionMethod(MethodBase):
         prediction_samples_data = self.filter_segments_method().filter_prediction_samples(prediction_samples_data)
 
         print("Prediction")
-        multi_label = self.multi_label_method(self.extraction_identifier, self.get_name())
+        multi_label = self.multi_label_method(self.extraction_identifier)
         predictions = multi_label.predict(prediction_samples_data)
 
         return predictions

@@ -58,7 +58,7 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
         marked_segments = list()
         for sample in multi_option_data.samples:
             marked_segments.extend(self.get_marked_segments(sample))
-        FastSegmentSelector(self.extraction_identifier, self.get_name()).create_model(marked_segments)
+        FastSegmentSelector(self.extraction_identifier).create_model(marked_segments)
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
         self.options = prediction_samples_data.options
@@ -68,7 +68,7 @@ class FastSegmentSelectorFuzzy95(PdfMultiOptionMethod):
         return predictions
 
     def get_prediction_data(self, prediction_samples_data: PredictionSamplesData) -> PredictionSamplesData:
-        fast_segment_selector = FastSegmentSelector(self.extraction_identifier, self.get_name())
+        fast_segment_selector = FastSegmentSelector(self.extraction_identifier)
         predict_samples = list()
         for sample in prediction_samples_data.prediction_samples:
             selected_segments = fast_segment_selector.predict(self.fix_two_pages_segments(sample))

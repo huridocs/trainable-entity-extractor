@@ -1,4 +1,6 @@
 from pydantic import BaseModel, Field
+
+from trainable_entity_extractor.domain.DistributedJob import DistributedJob
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PerformanceLog import PerformanceLog
@@ -85,22 +87,25 @@ class PerformanceSummary(BaseModel):
         )
 
     @staticmethod
-    def from_distributed_job(distributed_job) -> "PerformanceSummary":
-        """Create a PerformanceSummary from a DistributedJob for orchestrator use case"""
-        # Try to get testing_samples_count from the first successful sub-job result
+    def from_distributed_job(distributed_job: DistributedJob) -> "PerformanceSummary":
         testing_samples_count = 0
+        training_samples_count = 0
+        options_count = 0
+
         for sub_job in distributed_job.sub_jobs:
-            if sub_job.result and hasattr(sub_job.result, "testing_samples_count"):
-                testing_samples_count = sub_job.result.testing_samples_count
-                break
+            if not sub_job.result:
+                continue
+            testing_samples_count = sub_job.result.testing_samples_count
+            training_samples_count = sub_job.result.training_samples_count
+            options_count = len(sub_job.extractor_job.options) if sub_job.extractor_job.options else 0
 
         return PerformanceSummary(
             extraction_identifier=distributed_job.extraction_identifier,
             extractor_name="Performance Evaluation",
-            samples_count=0,  # We don't have access to extraction data here
-            options_count=0,
+            samples_count=0,
+            options_count=options_count,
             languages=[],
-            training_samples_count=0,
+            training_samples_count=training_samples_count,
             testing_samples_count=testing_samples_count,
             empty_pdf_count=0,
         )

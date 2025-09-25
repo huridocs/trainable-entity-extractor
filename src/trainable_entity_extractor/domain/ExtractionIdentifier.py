@@ -8,8 +8,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from trainable_entity_extractor.config import DATA_PATH, IS_TRAINING_CANCELED_FILE_NAME
-from trainable_entity_extractor.domain.Option import Option
+from trainable_entity_extractor.config import DATA_PATH
 
 OPTIONS_FILE_NAME = "options.json"
 MULTI_VALUE_FILE_NAME = "multi_value.json"
@@ -66,6 +65,24 @@ class ExtractionIdentifier(BaseModel):
     @staticmethod
     def get_default():
         return ExtractionIdentifier(extraction_name="default")
+
+    def clean_extractor_folder(self, method_name: str):
+        if not os.path.exists(self.get_path()):
+            return
+
+        for name in os.listdir(self.get_path()):
+            if name.strip().lower() == method_name.strip().lower():
+                continue
+
+            path = Path(self.get_path(), name)
+
+            if path.is_file():
+                continue
+
+            for key_word_to_delete in ["setfit", "t5", "bert"]:
+                if key_word_to_delete in name.lower():
+                    shutil.rmtree(path, ignore_errors=True)
+                    break
 
     def __str__(self):
         return f"{self.run_name} / {self.extraction_name}"

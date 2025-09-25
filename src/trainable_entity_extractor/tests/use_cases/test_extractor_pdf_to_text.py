@@ -40,7 +40,8 @@ class TestExtractorPdfToText(TestCase):
         self.predict_use_case = PredictUseCase(extractors=self.extractors, logger=logger)
 
     def tearDown(self):
-        shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
+        # shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
+        pass
 
     def _create_and_train_model(self, method_name: str, extraction_data: ExtractionData) -> TrainableEntityExtractorJob:
         # Save extraction data

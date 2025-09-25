@@ -7,3 +7,4 @@ class Performance(BaseModel):
     is_perfect: bool = False
     failed: bool = False
     testing_samples_count: int = 0
+    training_samples_count: int = 0

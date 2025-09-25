@@ -1,3 +1,4 @@
+import shutil
 from abc import ABC, abstractmethod
 from typing import Tuple
 
@@ -51,6 +52,11 @@ class JobExecutor(ABC):
     @staticmethod
     def get_finished_status() -> list[JobStatus]:
         return [JobStatus.SUCCESS, JobStatus.FAILURE, JobStatus.CANCELED]
+
+    @staticmethod
+    def recreate_model_folder(extraction_identifier: ExtractionIdentifier) -> None:
+        shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
+        extraction_identifier.get_path().mkdir(parents=True, exist_ok=True)
 
     def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
         try:
