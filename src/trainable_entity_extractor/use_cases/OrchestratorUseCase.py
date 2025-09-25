@@ -16,6 +16,10 @@ class OrchestratorUseCase:
         self.distributed_jobs: List[DistributedJob] = distributed_jobs or []
 
     def process_job(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
+        if self.job_executor.is_extractor_cancelled(distributed_job.extraction_identifier):
+            self._cancel_and_remove_job(distributed_job)
+            return False, f"Job cancelled for extraction {distributed_job.extraction_identifier}"
+
         if distributed_job.type == JobType.TRAIN:
             return self._process_training_job(distributed_job)
         elif distributed_job.type == JobType.PREDICT:
@@ -25,6 +29,11 @@ class OrchestratorUseCase:
         else:
             self.distributed_jobs.remove(distributed_job)
             return False, f"Unknown job type: {distributed_job.type}"
+
+    def _cancel_and_remove_job(self, distributed_job: DistributedJob) -> None:
+        """Cancel the job and remove it from the queue"""
+        self.job_executor.cancel_jobs(distributed_job)
+        self._remove_job_from_queue(distributed_job)
 
     def _process_training_job(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
         extraction_identifier = distributed_job.extraction_identifier
@@ -81,17 +90,19 @@ class OrchestratorUseCase:
         return self._handle_performance_results(distributed_job)
 
     def _start_pending_performance_evaluations(self, distributed_job: DistributedJob) -> None:
-        """Start performance evaluation for all waiting sub-jobs and break if perfect score is found"""
         for sub_job in distributed_job.sub_jobs:
+            if self.job_executor.is_extractor_cancelled(distributed_job.extraction_identifier):
+                self._cancel_and_remove_job(distributed_job)
+                return
+
             if sub_job.status == JobStatus.WAITING:
                 self.job_executor.start_performance_evaluation(distributed_job.extraction_identifier, sub_job)
 
-            # Check if result exists and has is_perfect attribute before accessing it
             if sub_job.result and hasattr(sub_job.result, "is_perfect") and sub_job.result.is_perfect:
                 break
 
-    def _has_perfect_score_job(self, distributed_job: DistributedJob) -> bool:
-        """Check if any sub-job has achieved a perfect score"""
+    @staticmethod
+    def _has_perfect_score_job(distributed_job: DistributedJob) -> bool:
         perfect_score_jobs = [
             job
             for job in distributed_job.sub_jobs
@@ -100,29 +111,23 @@ class OrchestratorUseCase:
         return len(perfect_score_jobs) > 0
 
     def _are_all_jobs_complete(self, distributed_job: DistributedJob) -> bool:
-        """Check if all sub-jobs have completed (success, failure, or canceled)"""
         return all(sub_job.status in self.job_executor.get_finished_status() for sub_job in distributed_job.sub_jobs)
 
     def _log_performance_summary(self, distributed_job: DistributedJob) -> None:
-        """Create and log a comprehensive performance summary"""
         performance_summary = PerformanceSummary.from_distributed_job(distributed_job)
 
-        # Add performance data from all completed sub-jobs
         for sub_job in distributed_job.sub_jobs:
             if sub_job.status == JobStatus.SUCCESS and sub_job.result:
                 performance_summary.add_performance_from_sub_job(sub_job)
 
-        # Log the performance summary
         summary_log = performance_summary.to_log()
         self.logger.log(distributed_job.extraction_identifier, summary_log)
 
     def _remove_job_from_queue(self, distributed_job: DistributedJob) -> None:
-        """Remove the distributed job from the orchestrator's job queue"""
         if distributed_job in self.distributed_jobs:
             self.distributed_jobs.remove(distributed_job)
 
     def _handle_performance_results(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
-        """Handle the results of performance evaluation and decide next steps"""
         best_job: DistributedSubJob = JobSelectorUseCase.select_best_job(distributed_job)
 
         if not best_job:
@@ -134,7 +139,6 @@ class OrchestratorUseCase:
             return self._schedule_retraining(distributed_job, best_job)
 
     def _finalize_best_model(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> Tuple[bool, str]:
-        """Upload the best model and return success status"""
         if self.job_executor.upload_model(distributed_job.extraction_identifier, best_job.extractor_job):
             performance_score = self._extract_performance_score(best_job)
             return (
@@ -145,7 +149,6 @@ class OrchestratorUseCase:
             return False, "Best model selected but upload failed"
 
     def _schedule_retraining(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> Tuple[bool, str]:
-        """Schedule retraining with more data for the best performing method"""
         training_job = DistributedJob(
             extraction_identifier=distributed_job.extraction_identifier,
             type=JobType.TRAIN,
@@ -158,8 +161,8 @@ class OrchestratorUseCase:
         self.distributed_jobs.append(training_job)
         return False, "Retraining model"
 
-    def _extract_performance_score(self, best_job: DistributedSubJob) -> str:
-        """Extract performance score from job result with fallback"""
+    @staticmethod
+    def _extract_performance_score(best_job: DistributedSubJob) -> str:
         if best_job.result and hasattr(best_job.result, "performance_score"):
             return str(best_job.result.performance_score)
         else:

@@ -10,7 +10,6 @@ from trainable_entity_extractor.ports.ExtractionDataRetriever import ExtractionD
 
 
 class LocalExtractionDataRetriever(ExtractionDataRetriever):
-
     def __init__(self):
         self.cache_base_path = CACHE_PATH
         self.cache_base_path.mkdir(parents=True, exist_ok=True)
@@ -107,3 +106,6 @@ class LocalExtractionDataRetriever(ExtractionDataRetriever):
         except Exception as e:
             print(f"Failed to cache suggestions data: {e}")
             return False
+
+    def is_extractor_cancelled(self, extractor_identifier: ExtractionIdentifier):
+        return False

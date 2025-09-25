@@ -99,3 +99,14 @@ class JobExecutor(ABC):
         except Exception as e:
             self.logger.log(extraction_identifier, f"Error checking model availability: {e}", LogSeverity.error)
             return False
+
+    def is_extractor_cancelled(self, extractor_identifier: ExtractionIdentifier) -> bool:
+        try:
+            return self.data_retriever.is_extractor_cancelled(extractor_identifier)
+        except Exception as e:
+            self.logger.log(
+                extractor_identifier,
+                f"Error checking if extractor is cancelled: {e}",
+                LogSeverity.error,
+            )
+            return False

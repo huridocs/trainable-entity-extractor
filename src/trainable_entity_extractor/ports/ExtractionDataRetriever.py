@@ -32,3 +32,7 @@ class ExtractionDataRetriever(ABC):
     @abstractmethod
     def save_suggestions(self, extraction_identifier: ExtractionIdentifier, suggestions: list[Suggestion]) -> bool:
         pass
+
+    @abstractmethod
+    def is_extractor_cancelled(self, extractor_identifier: ExtractionIdentifier):
+        pass
