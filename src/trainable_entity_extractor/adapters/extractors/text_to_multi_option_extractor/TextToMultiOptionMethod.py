@@ -48,9 +48,11 @@ class TextToMultiOptionMethod(MethodBase):
         self.remove_model()
 
     def get_performance(self, train_set: ExtractionData, test_set: ExtractionData) -> float:
-        """Get performance using standardized train/test sets"""
         if not test_set.samples:
             return 0
+
+        self.options = train_set.options
+        self.multi_value = train_set.multi_value
 
         self.train(train_set)
 

@@ -66,18 +66,15 @@ class TrainableEntityExtractor:
         self._execute_prediction(extractor_job)
         return self.data_retriever.get_suggestions(self.extraction_identifier)
 
-    def _is_training_valid(self, extraction_data: ExtractionData) -> bool:
-        if extraction_data.extraction_identifier.is_training_canceled():
-            self.logger.log(self.extraction_identifier, "Training canceled", LogSeverity.error)
-            return False
-
+    @staticmethod
+    def _is_training_valid(extraction_data: ExtractionData) -> bool:
         if not extraction_data or not extraction_data.samples:
             return False
 
         return True
 
     def _get_training_jobs(self, extraction_data: ExtractionData) -> list:
-        trainer = TrainUseCase(extractors=self.EXTRACTORS)
+        trainer = TrainUseCase(extractors=self.EXTRACTORS, logger=self.logger)
         jobs = trainer.get_jobs(extraction_data)
 
         if not jobs:
@@ -89,7 +86,7 @@ class TrainableEntityExtractor:
         return [
             DistributedJob(
                 extraction_identifier=self.extraction_identifier,
-                type=JobType.TRAIN,
+                type=JobType.PERFORMANCE,
                 sub_jobs=[DistributedSubJob(extractor_job=job) for job in jobs],
             )
         ]
@@ -111,7 +108,7 @@ class TrainableEntityExtractor:
         success = False
         message = "Unknown error during training"
 
-        while training_orchestrator.exists_jobs_to_be_done():
+        for i in range(2):
             success, message = training_orchestrator.process_job(distributed_jobs[0])
 
         return success, message

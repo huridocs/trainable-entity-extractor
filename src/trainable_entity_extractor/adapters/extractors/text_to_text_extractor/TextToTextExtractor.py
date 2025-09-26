@@ -61,7 +61,7 @@ class TextToTextExtractor(ToTextExtractor):
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         for sample in extraction_data.samples:
-            if sample.segment_selector_texts or sample.labeled_data.source_text:
+            if sample.segment_selector_texts or sample.labeled_data.label_text:
                 return True
 
         return False

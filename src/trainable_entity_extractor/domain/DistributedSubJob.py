@@ -6,7 +6,7 @@ from trainable_entity_extractor.domain.TrainableEntityExtractorJob import Traina
 
 
 class DistributedSubJob(BaseModel):
-    job_id: str | None
+    job_id: str | None = None
     extractor_job: TrainableEntityExtractorJob
     retry_count: int = 0
     max_retries: int = 2
