@@ -2,11 +2,10 @@ from enum import StrEnum
 
 
 class JobStatus(StrEnum):
-    """Enumeration for job statuses"""
-
+    WAITING = "WAITING"
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
-    CANCELLED = "CANCELLED"
+    CANCELED = "CANCELED"
     RETRY = "RETRY"

@@ -7,7 +7,7 @@ from multilingual_paragraph_extractor.driver.label_data import get_paths, EXTRAC
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
-from trainable_entity_extractor.use_cases.XmlFile import XmlFile
+from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
 
 SEGMENTATION_DATA_PATH = Path(PARAGRAPH_EXTRACTION_PATH, "segmentation_data")
 DOCLING_JSONS_PATH = Path("/path/to/docling/jsons")
@@ -77,7 +77,7 @@ def get_pdf_data(pdf_name: str):
     pdf_path, xml_path = get_paths(pdf_name)
 
     with open(xml_path, "rb") as file:
-        xml_file = XmlFile(extraction_identifier=EXTRACTION_IDENTIFIER, to_train=True, xml_file_name=xml_path.name)
+        xml_file = XmlFileUseCase(extraction_identifier=EXTRACTION_IDENTIFIER, to_train=True, xml_file_name=xml_path.name)
         xml_file.save(file_content=file.read())
 
     segmentation_data: SegmentationData = get_segmentation_data(pdf_path)

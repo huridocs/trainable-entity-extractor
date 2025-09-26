@@ -8,9 +8,9 @@ from pydantic import BaseModel
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from pdf_features.PdfFeatures import PdfFeatures
 
-from trainable_entity_extractor.use_cases.FilterValidSegmentsPages import FilterValidSegmentsPages
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
-from trainable_entity_extractor.use_cases.XmlFile import XmlFile
+from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
+from trainable_entity_extractor.use_cases.FilterValidSegmentsPagesUseCase import FilterValidSegmentsPagesUseCase
 
 
 class PdfData(BaseModel):
@@ -74,14 +74,16 @@ class PdfData(BaseModel):
         return PdfData()
 
     @staticmethod
-    def from_xml_file(xml_file: XmlFile, segmentation_data: SegmentationData, pages_to_keep: list[int] = None) -> "PdfData":
+    def from_xml_file(
+        xml_file: XmlFileUseCase, segmentation_data: SegmentationData, pages_to_keep: list[int] = None
+    ) -> "PdfData":
         try:
             file_content: str = open(xml_file.xml_file_path, encoding="utf-8").read()
         except FileNotFoundError:
             return PdfData.get_blank()
 
         if pages_to_keep:
-            xml_file_content = FilterValidSegmentsPages.filter_xml_pages(file_content, pages_to_keep)
+            xml_file_content = FilterValidSegmentsPagesUseCase.filter_xml_pages(file_content, pages_to_keep)
         else:
             xml_file_content = file_content
 

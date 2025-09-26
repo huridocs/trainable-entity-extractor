@@ -15,7 +15,7 @@ from multilingual_paragraph_extractor.driver.Labels import Labels
 from multilingual_paragraph_extractor.use_cases.MultilingualParagraphAlignerUseCase import (
     MultilingualParagraphAlignerUseCase,
 )
-from trainable_entity_extractor.use_cases.XmlFile import XmlFile
+from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
 from trainable_entity_extractor.config import ROOT_PATH, APP_PATH
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PdfData import PdfData
@@ -81,7 +81,7 @@ def get_pdf_data(pdf_name: str):
     pdf_path, xml_path = get_paths(pdf_name)
 
     with open(xml_path, "rb") as file:
-        xml_file = XmlFile(extraction_identifier=EXTRACTION_IDENTIFIER, to_train=True, xml_file_name=xml_path.name)
+        xml_file = XmlFileUseCase(extraction_identifier=EXTRACTION_IDENTIFIER, to_train=True, xml_file_name=xml_path.name)
         xml_file.save(file_content=file.read())
 
     segmentation_data = get_segmentation_data(pdf_path)

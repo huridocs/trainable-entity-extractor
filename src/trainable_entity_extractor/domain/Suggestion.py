@@ -2,16 +2,16 @@ from pdf_token_type_labels.TokenType import TokenType
 from pydantic import BaseModel
 
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.PdfData import PdfData
-from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
 from trainable_entity_extractor.domain.FormatSegmentText import FormatSegmentText
-from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.Beginning750 import (
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.filter_segments_methods.Beginning750 import (
     Beginning750,
 )
-from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.filter_segments_methods.End750 import (
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.filter_segments_methods.End750 import (
     End750,
 )
 
@@ -60,9 +60,9 @@ class Suggestion(BaseModel):
         self.add_segments(prediction_pdf_data)
 
     def add_prediction_multi_option(
-        self, training_sample: TrainingSample, values: list[Value], use_context_from_the_end: bool
+        self, prediction_sample: PredictionSample, values: list[Value], use_context_from_the_end: bool
     ):
-        self.add_segments(training_sample.pdf_data, use_context_from_the_end)
+        self.add_segments(prediction_sample.pdf_data, use_context_from_the_end)
         for value in values:
             if value.segment_text:
                 segment_text = FormatSegmentText([value.segment_text], value.label).get_text()
@@ -111,3 +111,13 @@ class Suggestion(BaseModel):
         if values:
             suggestion.segment_text = values[0].segment_text
         return suggestion
+
+    def set_segment_text_from_sample(self, prediction_sample: PredictionSample):
+        if prediction_sample.source_text:
+            self.segment_text = prediction_sample.source_text
+            self._raw_context = [prediction_sample.source_text]
+        elif prediction_sample.segment_selector_texts:
+            self.segment_text = " ".join(prediction_sample.segment_selector_texts)
+            self._raw_context = prediction_sample.segment_selector_texts
+
+        self.segment_text = FormatSegmentText(self._raw_context, self.text).get_text()

@@ -8,6 +8,8 @@ import graypy
 APP_PATH = Path(__file__).parent.parent.absolute()
 ROOT_PATH = Path(__file__).parent.parent.parent.absolute()
 DATA_PATH = Path(ROOT_PATH, "models_data")
+CACHE_PATH = Path(DATA_PATH, "cache", "extraction_data")
+EXTRACTOR_JOB_PATH = Path("extractor_job", "extractor_job.json")
 GRAYLOG_IP = os.environ.get("GRAYLOG_IP")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 HUGGINGFACE_PATH = join(ROOT_PATH, "huggingface")
