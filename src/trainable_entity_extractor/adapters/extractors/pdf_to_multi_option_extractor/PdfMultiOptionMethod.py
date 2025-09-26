@@ -28,6 +28,7 @@ class PdfMultiOptionMethod(MethodBase):
         self.options: list[Option] = list()
         self.multi_value = False
         self.prediction_samples_data = None
+        self.extraction_data = None
 
     def set_methods(
         self, filter_segments_method: Type[FilterSegmentsMethod] = None, multi_label_method: Type[MultiLabelMethod] = None

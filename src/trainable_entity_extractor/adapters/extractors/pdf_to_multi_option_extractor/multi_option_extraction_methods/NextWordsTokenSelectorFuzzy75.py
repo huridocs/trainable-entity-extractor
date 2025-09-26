@@ -29,7 +29,7 @@ class NextWordsTokenSelectorFuzzy75(FastSegmentSelectorFuzzy95):
             sample.pdf_data.pdf_data_segments = segment_selector.predict(sample.pdf_data.pdf_data_segments)
             self.mark_segments_for_context(sample.pdf_data.pdf_data_segments)
 
-        return FuzzyAll75().predict(self.prediction_samples_data)
+        return FuzzyAll75().set_extraction_identifier(self.extraction_identifier).predict(self.prediction_samples_data)
 
     def train(self, multi_option_data: ExtractionData):
         self.set_parameters(multi_option_data)

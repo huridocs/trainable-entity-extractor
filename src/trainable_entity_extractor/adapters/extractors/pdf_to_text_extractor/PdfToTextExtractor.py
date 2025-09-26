@@ -134,7 +134,7 @@ class PdfToTextExtractor(ToTextExtractor):
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
         for sample in extraction_data.samples:
-            if sample.pdf_data and sample.pdf_data.contains_text():
+            if sample.pdf_data and sample.pdf_data.contains_text() and sample.labeled_data.label_text:
                 return True
 
         return False

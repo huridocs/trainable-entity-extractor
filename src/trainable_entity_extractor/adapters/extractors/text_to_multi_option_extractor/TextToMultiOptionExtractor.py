@@ -122,7 +122,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
             return False
 
         for sample in extraction_data.samples:
-            if sample.labeled_data or sample.labeled_data.source_text:
+            if sample.labeled_data and sample.labeled_data.source_text:
                 return True
 
         return False
