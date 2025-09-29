@@ -108,7 +108,8 @@ class TrainableEntityExtractor:
         success = False
         message = "Unknown error during training"
 
-        for i in range(2):
+        success, message = training_orchestrator.process_job(distributed_jobs[0])
+        if distributed_jobs:
             success, message = training_orchestrator.process_job(distributed_jobs[0])
 
         return success, message
@@ -161,15 +162,12 @@ class TrainableEntityExtractor:
         ]
 
     def _process_prediction_jobs(self, prediction_orchestrator: OrchestratorUseCase, distributed_jobs: list) -> None:
-        while prediction_orchestrator.exists_jobs_to_be_done():
-            success, message = prediction_orchestrator.process_job(distributed_jobs[0])
+        success, message = prediction_orchestrator.process_job(distributed_jobs[0])
 
-            if success:
-                self.logger.log(self.extraction_identifier, f"Prediction completed: {message}")
-                break
-            elif "in progress" not in message.lower():
-                self.logger.log(self.extraction_identifier, f"Prediction failed: {message}", LogSeverity.error)
-                break
+        if success:
+            self.logger.log(self.extraction_identifier, f"Prediction completed: {message}")
+        elif "in progress" not in message.lower():
+            self.logger.log(self.extraction_identifier, f"Prediction failed: {message}", LogSeverity.error)
 
     def _log_prediction_success(self, suggestions: list[Suggestion], method_name: str):
         self.logger.log(self.extraction_identifier, f"Generated {len(suggestions)} suggestions using {method_name}")
