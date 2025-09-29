@@ -16,6 +16,9 @@ class OrchestratorUseCase:
         self.logger = logger
         self.distributed_jobs: List[DistributedJob] = distributed_jobs or []
 
+    def add_job(self, distributed_job: DistributedJob) -> None:
+        self.distributed_jobs.append(distributed_job)
+
     def process_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
         if self.job_executor.is_extractor_cancelled(distributed_job.extraction_identifier):
             self._cancel_and_remove_job(distributed_job)
