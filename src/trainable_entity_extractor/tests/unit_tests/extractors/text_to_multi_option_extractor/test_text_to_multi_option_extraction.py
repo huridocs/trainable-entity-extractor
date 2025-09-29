@@ -37,7 +37,7 @@ class TestTextToMultiOptionExtraction(TestCase):
         )
 
         self.assertFalse(multi_option_extraction.can_be_used(no_options))
-        self.assertTrue(multi_option_extraction.can_be_used(no_text))
+        self.assertFalse(multi_option_extraction.can_be_used(no_text))
         self.assertTrue(multi_option_extraction.can_be_used(valid_extraction_data))
 
     def test_single_value(self):
