@@ -4,6 +4,7 @@ from trainable_entity_extractor.domain.DistributedSubJob import DistributedSubJo
 from trainable_entity_extractor.domain.JobStatus import JobStatus
 from trainable_entity_extractor.domain.JobType import JobType
 from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
+from trainable_entity_extractor.domain.JobProcessingResult import JobProcessingResult
 from trainable_entity_extractor.ports.JobExecutor import JobExecutor
 from trainable_entity_extractor.ports.Logger import Logger
 from trainable_entity_extractor.use_cases.JobSelectorUseCase import JobSelectorUseCase
@@ -15,10 +16,14 @@ class OrchestratorUseCase:
         self.logger = logger
         self.distributed_jobs: List[DistributedJob] = distributed_jobs or []
 
-    def process_job(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
+    def process_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
         if self.job_executor.is_extractor_cancelled(distributed_job.extraction_identifier):
             self._cancel_and_remove_job(distributed_job)
-            return False, f"Job cancelled for extraction {distributed_job.extraction_identifier}"
+            return JobProcessingResult(
+                finished=True,
+                success=False,
+                error_message=f"Job cancelled for extraction {distributed_job.extraction_identifier}",
+            )
 
         if distributed_job.type == JobType.TRAIN:
             return self._process_training_job(distributed_job)
@@ -28,13 +33,15 @@ class OrchestratorUseCase:
             return self._process_performance_job(distributed_job)
         else:
             self.distributed_jobs.remove(distributed_job)
-            return False, f"Unknown job type: {distributed_job.type}"
+            return JobProcessingResult(
+                finished=True, success=False, error_message=f"Unknown job type: {distributed_job.type}"
+            )
 
     def _cancel_and_remove_job(self, distributed_job: DistributedJob) -> None:
         self.job_executor.cancel_jobs(distributed_job)
         self._remove_job_from_queue(distributed_job)
 
-    def _process_training_job(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
+    def _process_training_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
         extraction_identifier = distributed_job.extraction_identifier
         sub_job = distributed_job.sub_jobs[0]
 
@@ -44,16 +51,30 @@ class OrchestratorUseCase:
         if sub_job.status == JobStatus.SUCCESS:
             self.distributed_jobs.remove(distributed_job)
             if self.job_executor.upload_model(extraction_identifier, sub_job.extractor_job):
-                return True, f"Training completed successfully for method {sub_job.extractor_job.method_name}"
+                return JobProcessingResult(
+                    finished=True,
+                    success=True,
+                    error_message=f"Training completed successfully for method {sub_job.extractor_job.method_name}",
+                    gpu_needed=getattr(sub_job.extractor_job, "requires_gpu", False),
+                )
             else:
-                return False, "Training completed but model upload failed"
+                return JobProcessingResult(
+                    finished=True, success=False, error_message="Training completed but model upload failed"
+                )
         elif sub_job.status == JobStatus.FAILURE:
             self.distributed_jobs.remove(distributed_job)
-            return False, f"Training failed for method {sub_job.extractor_job.method_name}"
+            return JobProcessingResult(
+                finished=True, success=False, error_message=f"Training failed for method {sub_job.extractor_job.method_name}"
+            )
         else:
-            return False, "Training in progress"
+            return JobProcessingResult(
+                finished=False,
+                success=False,
+                error_message="Training in progress",
+                gpu_needed=getattr(sub_job.extractor_job, "requires_gpu", False),
+            )
 
-    def _process_prediction_job(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
+    def _process_prediction_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
         extraction_identifier = distributed_job.extraction_identifier
         sub_job = distributed_job.sub_jobs[0]
 
@@ -63,16 +84,32 @@ class OrchestratorUseCase:
         if sub_job.status == JobStatus.SUCCESS:
             self.distributed_jobs.remove(distributed_job)
             if sub_job.result:
-                return True, f"Prediction completed successfully for method {sub_job.extractor_job.method_name}"
+                return JobProcessingResult(
+                    finished=True,
+                    success=True,
+                    error_message=f"Prediction completed successfully for method {sub_job.extractor_job.method_name}",
+                    gpu_needed=getattr(sub_job.extractor_job, "requires_gpu", False),
+                )
             else:
-                return False, "Prediction completed but no results generated"
+                return JobProcessingResult(
+                    finished=True, success=False, error_message="Prediction completed but no results generated"
+                )
         elif sub_job.status == JobStatus.FAILURE:
             self.distributed_jobs.remove(distributed_job)
-            return False, f"Prediction failed for method {sub_job.extractor_job.method_name}"
+            return JobProcessingResult(
+                finished=True,
+                success=False,
+                error_message=f"Prediction failed for method {sub_job.extractor_job.method_name}",
+            )
         else:
-            return False, "Prediction in progress"
+            return JobProcessingResult(
+                finished=False,
+                success=False,
+                error_message="Prediction in progress",
+                gpu_needed=getattr(sub_job.extractor_job, "requires_gpu", False),
+            )
 
-    def _process_performance_job(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
+    def _process_performance_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
         self.job_executor.update_job_statuses(distributed_job)
 
         if len(distributed_job.sub_jobs) == [x for x in distributed_job.sub_jobs if x.status == JobStatus.WAITING]:
@@ -84,7 +121,12 @@ class OrchestratorUseCase:
             self.job_executor.cancel_jobs(distributed_job)
 
         if not self._are_all_jobs_complete(distributed_job):
-            return False, "Performance evaluation in progress"
+            return JobProcessingResult(
+                finished=False,
+                success=False,
+                error_message="Performance evaluation in progress",
+                gpu_needed=any(getattr(job.extractor_job, "requires_gpu", False) for job in distributed_job.sub_jobs),
+            )
 
         self._log_performance_summary(distributed_job)
         self._remove_job_from_queue(distributed_job)
@@ -129,28 +171,32 @@ class OrchestratorUseCase:
         if distributed_job in self.distributed_jobs:
             self.distributed_jobs.remove(distributed_job)
 
-    def _handle_performance_results(self, distributed_job: DistributedJob) -> Tuple[bool, str]:
+    def _handle_performance_results(self, distributed_job: DistributedJob) -> JobProcessingResult:
         best_job: DistributedSubJob = JobSelectorUseCase.select_best_job(distributed_job)
 
         if not best_job:
-            return False, "No valid performance results to select the best model"
+            return JobProcessingResult(
+                finished=True, success=False, error_message="No valid performance results to select the best model"
+            )
 
         if not best_job.extractor_job.should_be_retrained_with_more_data:
             return self._finalize_best_model(distributed_job, best_job)
         else:
             return self._schedule_retraining(distributed_job, best_job)
 
-    def _finalize_best_model(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> Tuple[bool, str]:
+    def _finalize_best_model(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> JobProcessingResult:
         if self.job_executor.upload_model(distributed_job.extraction_identifier, best_job.extractor_job):
             performance_score = self._extract_performance_score(best_job)
-            return (
-                True,
-                f"Best model selected: {best_job.extractor_job.method_name} with performance {performance_score}",
+            return JobProcessingResult(
+                finished=True,
+                success=True,
+                error_message=f"Best model selected: {best_job.extractor_job.method_name} with performance {performance_score}",
+                gpu_needed=getattr(best_job.extractor_job, "requires_gpu", False),
             )
         else:
-            return False, "Best model selected but upload failed"
+            return JobProcessingResult(finished=True, success=False, error_message="Best model selected but upload failed")
 
-    def _schedule_retraining(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> Tuple[bool, str]:
+    def _schedule_retraining(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> JobProcessingResult:
         training_job = DistributedJob(
             extraction_identifier=distributed_job.extraction_identifier,
             type=JobType.TRAIN,
@@ -161,7 +207,12 @@ class OrchestratorUseCase:
             ],
         )
         self.distributed_jobs.append(training_job)
-        return False, "Retraining model"
+        return JobProcessingResult(
+            finished=False,
+            success=False,
+            error_message="Retraining model",
+            gpu_needed=getattr(best_job.extractor_job, "requires_gpu", False),
+        )
 
     @staticmethod
     def _extract_performance_score(best_job: DistributedSubJob) -> str:
@@ -173,8 +224,9 @@ class OrchestratorUseCase:
     def exists_jobs_to_be_done(self) -> bool:
         return len(self.distributed_jobs) > 0
 
-    def execute_job_for_domain(self, domain: str) -> Tuple[bool, str]:
+    def execute_job_for_domain(self, domain: str) -> JobProcessingResult:
         for job in self.distributed_jobs:
-            if job.extraction_identifier.domain == domain:
+            if job.domain_name == domain:
                 return self.process_job(job)
-        return False, f"No job found for domain {domain}"
+
+        return JobProcessingResult(finished=False, success=False, error_message=f"No job found for domain {domain}")

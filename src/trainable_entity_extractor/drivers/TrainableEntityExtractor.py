@@ -105,14 +105,11 @@ class TrainableEntityExtractor:
 
     @staticmethod
     def _process_training_jobs(training_orchestrator: OrchestratorUseCase, distributed_jobs: list) -> tuple[bool, str]:
-        success = False
-        message = "Unknown error during training"
-
-        success, message = training_orchestrator.process_job(distributed_jobs[0])
+        result = training_orchestrator.process_job(distributed_jobs[0])
         if distributed_jobs:
-            success, message = training_orchestrator.process_job(distributed_jobs[0])
+            result = training_orchestrator.process_job(distributed_jobs[0])
 
-        return success, message
+        return result.success, result.error_message
 
     def _finalize_training(self, success: bool, message: str) -> tuple[bool, str]:
         if success:
@@ -162,12 +159,12 @@ class TrainableEntityExtractor:
         ]
 
     def _process_prediction_jobs(self, prediction_orchestrator: OrchestratorUseCase, distributed_jobs: list) -> None:
-        success, message = prediction_orchestrator.process_job(distributed_jobs[0])
+        result = prediction_orchestrator.process_job(distributed_jobs[0])
 
-        if success:
-            self.logger.log(self.extraction_identifier, f"Prediction completed: {message}")
-        elif "in progress" not in message.lower():
-            self.logger.log(self.extraction_identifier, f"Prediction failed: {message}", LogSeverity.error)
+        if result.success:
+            self.logger.log(self.extraction_identifier, f"Prediction completed: {result.error_message}")
+        elif "in progress" not in result.error_message.lower():
+            self.logger.log(self.extraction_identifier, f"Prediction failed: {result.error_message}", LogSeverity.error)
 
     def _log_prediction_success(self, suggestions: list[Suggestion], method_name: str):
         self.logger.log(self.extraction_identifier, f"Generated {len(suggestions)} suggestions using {method_name}")

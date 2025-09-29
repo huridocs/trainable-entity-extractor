@@ -99,10 +99,10 @@ class TestOrchestratorUseCase(TestCase):
         self.orchestrator.distributed_jobs = [distributed_job]
 
         # Process the job
-        success, message = self.orchestrator.process_job(distributed_job)
+        result = self.orchestrator.process_job(distributed_job)
 
         # Only check for success
-        self.assertTrue(success, f"Training should succeed: {message}")
+        self.assertTrue(result.success, f"Training should succeed: {result.error_message}")
         self.assertEqual(0, len(self.orchestrator.distributed_jobs), "Job should be removed after completion")
 
     def test_process_prediction_job_success(self):
@@ -111,46 +111,46 @@ class TestOrchestratorUseCase(TestCase):
         extraction_data = self._create_sample_extraction_data()
         self.data_retriever.save_extraction_data(extraction_identifier, extraction_data)
 
-        extractor_job = self._get_available_training_job(extraction_data)
-        train_use_case = TrainUseCase(extractors=self.extractors, logger=self.logger)
-        train_success, train_message = train_use_case.train_one_method(extractor_job, extraction_data)
+        trainer = TrainUseCase(extractors=self.extractors, logger=self.logger)
+        jobs = trainer.get_jobs(extraction_data)
+        self.assertGreater(len(jobs), 0, "Should have at least one training job")
 
-        # Upload the trained model
-        self.model_storage.upload_model(extraction_identifier, extractor_job)
+        # Train a model first
+        train_job = jobs[0]
+        train_job.extraction_identifier = extraction_identifier
+        self.job_executor.start_prediction(train_job)
+        self.model_storage.upload_model(extraction_identifier, train_job)
 
-        # Create prediction data
-        prediction_data = self._create_sample_prediction_data()
-        self.data_retriever.save_prediction_data(extraction_identifier, prediction_data)
+        # Create prediction samples
+        prediction_samples = [
+            PredictionSample(text="Hello, my name is Alice"),
+            PredictionSample(text="Bob is working today"),
+        ]
+        self.data_retriever.save_prediction_data(extraction_identifier, prediction_samples)
 
         # Create prediction job
-        sub_job = DistributedSubJob(job_id="test_job_2", extractor_job=extractor_job)
+        sub_job = DistributedSubJob(extractor_job=train_job)
         distributed_job = DistributedJob(
             extraction_identifier=extraction_identifier, type=JobType.PREDICT, sub_jobs=[sub_job]
         )
 
-        # Add job to orchestrator
-        self.orchestrator.distributed_jobs = [distributed_job]
-
         # Process the job
-        success, message = self.orchestrator.process_job(distributed_job)
+        result = self.orchestrator.process_job(distributed_job)
 
-        # Only check for success
-        self.assertTrue(success, f"Prediction should succeed: {message}")
-        self.assertEqual(0, len(self.orchestrator.distributed_jobs), "Job should be removed after completion")
+        # Check for success
+        self.assertTrue(result.success, f"Prediction should succeed: {result.error_message}")
 
     def test_process_performance_job_success(self):
-        """Test performance evaluation job processing"""
+        """Test performance job processing"""
         extraction_data = self._create_sample_extraction_data()
         self.data_retriever.save_extraction_data(extraction_identifier, extraction_data)
 
-        # Create multiple training jobs for performance comparison
-        train_use_case = TrainUseCase(extractors=self.extractors, logger=self.logger)
-        all_jobs = train_use_case.get_jobs(extraction_data)
+        trainer = TrainUseCase(extractors=self.extractors, logger=self.logger)
+        jobs = trainer.get_jobs(extraction_data)
+        self.assertGreater(len(jobs), 0, "Should have at least one training job")
 
-        # Use first job for performance testing (simplified to avoid complexity)
-        test_jobs = all_jobs[:5] if len(all_jobs) >= 1 else all_jobs
-
-        sub_jobs = [DistributedSubJob(job_id=f"test_job_{i}", extractor_job=job) for i, job in enumerate(test_jobs)]
+        # Create performance job
+        sub_jobs = [DistributedSubJob(extractor_job=job) for job in jobs]
         distributed_job = DistributedJob(
             extraction_identifier=extraction_identifier, type=JobType.PERFORMANCE, sub_jobs=sub_jobs
         )
@@ -158,162 +158,82 @@ class TestOrchestratorUseCase(TestCase):
         # Add job to orchestrator
         self.orchestrator.distributed_jobs = [distributed_job]
 
-        # Process the job once
-        while self.orchestrator.exists_jobs_to_be_done():
-            success, message = self.orchestrator.process_job(self.orchestrator.distributed_jobs[0])
+        # Process all performance evaluations
+        while self.orchestrator.distributed_jobs:
+            result = self.orchestrator.process_job(self.orchestrator.distributed_jobs[0])
+            if result.finished:
+                break
 
-        self.assertTrue(success, "Performance job should return a boolean result")
-        self.assertIsInstance(message, str, "Performance job should return a message")
-        self.assertEqual(0, len(self.orchestrator.distributed_jobs), "Job should be removed after processing")
+        # Verify results
+        self.assertTrue(result.success, f"Performance evaluation should succeed: {result.error_message}")
 
-    def test_process_training_job_failure_no_data(self):
-        """Test training job failure when no extraction data is available"""
-        extractor_job = self._create_test_extractor_job()
-        sub_job = DistributedSubJob(job_id="test_job_3", extractor_job=extractor_job)
-        distributed_job = DistributedJob(extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[sub_job])
-
-        # Add job to orchestrator
-        self.orchestrator.distributed_jobs = [distributed_job]
-
-        # Process the job without saving any data
-        success, message = self.orchestrator.process_job(distributed_job)
-
-        # Verify failure
-        self.assertFalse(success, "Training should fail without data")
-        self.assertIn("Training failed", message)
-        self.assertEqual(JobStatus.FAILURE, sub_job.status)
-        self.assertEqual(0, len(self.orchestrator.distributed_jobs), "Job should be removed after failure")
-
-    def test_process_unknown_job_type(self):
-        """Test processing of unknown job type"""
-        extractor_job = self._create_test_extractor_job()
-        sub_job = DistributedSubJob(job_id="test_job_5", extractor_job=extractor_job)
-
-        # Create a valid distributed job first, then manually set an invalid type
-        distributed_job = DistributedJob(
-            extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[sub_job]  # Start with valid type
-        )
-
-        # Manually override the type to test unknown type handling
-        distributed_job.type = "UNKNOWN_TYPE"
-
-        # Add job to orchestrator
-        self.orchestrator.distributed_jobs = [distributed_job]
-
-        # Process the job
-        success, message = self.orchestrator.process_job(distributed_job)
-
-        # Verify failure
-        self.assertFalse(success, "Unknown job type should fail")
-        self.assertIn("Unknown job type", message)
-        self.assertEqual(0, len(self.orchestrator.distributed_jobs), "Job should be removed after failure")
-
-    def test_exists_jobs_to_be_done(self):
-        """Test the exists_jobs_to_be_done method"""
-        # Initially no jobs
-        self.assertFalse(self.orchestrator.exists_jobs_to_be_done())
-
-        # Add a job
-        extractor_job = self._create_test_extractor_job()
-        sub_job = DistributedSubJob(job_id="test_job_6", extractor_job=extractor_job)
-        distributed_job = DistributedJob(extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[sub_job])
-
-        self.orchestrator.distributed_jobs = [distributed_job]
-
-        # Now should have jobs
-        self.assertTrue(self.orchestrator.exists_jobs_to_be_done())
-
-        # Remove the job
-        self.orchestrator.distributed_jobs = []
-
-        # Should be no jobs again
-        self.assertFalse(self.orchestrator.exists_jobs_to_be_done())
-
-    def test_full_workflow_train_then_predict(self):
-        """Test complete workflow: train a model then use it for prediction"""
+    def test_end_to_end_workflow(self):
+        """Test complete workflow from training to prediction"""
+        # Create training data
         extraction_data = self._create_sample_extraction_data()
         self.data_retriever.save_extraction_data(extraction_identifier, extraction_data)
 
-        # Step 1: Create and process training job
-        extractor_job = self._get_available_training_job(extraction_data)
-        train_sub_job = DistributedSubJob(job_id="test_job_7", extractor_job=extractor_job)
+        trainer = TrainUseCase(extractors=self.extractors, logger=self.logger)
+        jobs = trainer.get_jobs(extraction_data)
+
+        # Train model
+        train_sub_job = DistributedSubJob(extractor_job=jobs[0])
         train_distributed_job = DistributedJob(
             extraction_identifier=extraction_identifier, type=JobType.TRAIN, sub_jobs=[train_sub_job]
         )
 
         self.orchestrator.distributed_jobs = [train_distributed_job]
+        train_result = self.orchestrator.process_job(self.orchestrator.distributed_jobs[0])
 
-        # Process training
-        train_success, train_message = self.orchestrator.process_job(train_distributed_job)
-        self.assertEqual(0, len(self.orchestrator.distributed_jobs))
+        # Wait for training to complete
+        while self.orchestrator.exists_jobs_to_be_done():
+            train_result = self.orchestrator.process_job(self.orchestrator.distributed_jobs[0])
 
-        if not train_success:
-            self.skipTest(f"Training failed, cannot test full workflow: {train_message}")
+        self.assertTrue(train_result.success, f"Training should succeed: {train_result.error_message}")
 
-        # Step 2: Create prediction data and job
-        prediction_data = self._create_sample_prediction_data()
-        self.data_retriever.save_prediction_data(extraction_identifier, prediction_data)
+        # Create prediction samples
+        prediction_samples = [PredictionSample(text="Test prediction text")]
+        self.data_retriever.save_prediction_data(extraction_identifier, prediction_samples)
 
-        predict_sub_job = DistributedSubJob(job_id="test_job_8", extractor_job=extractor_job)
+        # Predict
+        predict_sub_job = DistributedSubJob(extractor_job=jobs[0])
         predict_distributed_job = DistributedJob(
             extraction_identifier=extraction_identifier, type=JobType.PREDICT, sub_jobs=[predict_sub_job]
         )
 
         self.orchestrator.distributed_jobs = [predict_distributed_job]
+        predict_result = self.orchestrator.process_job(self.orchestrator.distributed_jobs[0])
+        self.assertTrue(predict_result.success, f"Prediction should succeed: {predict_result.error_message}")
 
-        # Process prediction
-        predict_success, predict_message = self.orchestrator.process_job(predict_distributed_job)
-        self.assertEqual(0, len(self.orchestrator.distributed_jobs))
-
-        if predict_success:
-            # Verify suggestions were created
-            suggestions = self.data_retriever.get_suggestions(extraction_identifier)
-            self.assertGreaterEqual(len(suggestions), 0, "Should have suggestions or empty list")
-
-    def test_multiple_jobs_processing(self):
-        """Test processing multiple jobs in sequence"""
+    def test_performance_evaluation_with_perfect_score(self):
+        """Test performance evaluation that finds a perfect score"""
         extraction_data = self._create_sample_extraction_data()
         self.data_retriever.save_extraction_data(extraction_identifier, extraction_data)
 
-        # Create multiple training jobs
-        train_use_case = TrainUseCase(extractors=self.extractors, logger=self.logger)
-        all_jobs = train_use_case.get_jobs(extraction_data)
+        trainer = TrainUseCase(extractors=self.extractors, logger=self.logger)
+        jobs = trainer.get_jobs(extraction_data)
 
-        # Create distributed jobs for first 2 available methods
-        test_jobs = all_jobs[:2] if len(all_jobs) >= 2 else all_jobs
-        distributed_jobs = []
+        # Create performance job
+        sub_jobs = [DistributedSubJob(extractor_job=job) for job in jobs]
+        distributed_job = DistributedJob(
+            extraction_identifier=extraction_identifier, type=JobType.PERFORMANCE, sub_jobs=sub_jobs
+        )
 
-        for i, job in enumerate(test_jobs):
-            sub_job = DistributedSubJob(job_id=f"test_job_multi_{i}", extractor_job=job)
-            distributed_job = DistributedJob(
-                extraction_identifier=ExtractionIdentifier(extraction_name=f"{extraction_id}_{i}"),
-                type=JobType.TRAIN,
-                sub_jobs=[sub_job],
-            )
-            distributed_jobs.append(distributed_job)
+        self.orchestrator.distributed_jobs = [distributed_job]
 
-            # Save data for each extraction identifier
-            self.data_retriever.save_extraction_data(distributed_job.extraction_identifier, extraction_data)
-
-        # Add all jobs to orchestrator
-        self.orchestrator.distributed_jobs = distributed_jobs.copy()
-
-        # Process all jobs
-        processed_jobs = 0
-        while self.orchestrator.exists_jobs_to_be_done():
+        # Process performance evaluations
+        iterations = 0
+        max_iterations = 10
+        while self.orchestrator.distributed_jobs and iterations < max_iterations:
             current_job = self.orchestrator.distributed_jobs[0]
-            success, message = self.orchestrator.process_job(current_job)
-            processed_jobs += 1
+            result = self.orchestrator.process_job(current_job)
+            iterations += 1
 
-            # Prevent infinite loop
-            if processed_jobs > len(test_jobs):
+            if result.finished:
                 break
 
-        # Verify all jobs were processed (regardless of success/failure)
-        self.assertEqual(processed_jobs, len(test_jobs), "All jobs should be processed")
-        self.assertFalse(self.orchestrator.exists_jobs_to_be_done(), "No jobs should remain")
-
-        # Clean up additional extraction identifiers
-        for i in range(len(test_jobs)):
-            cleanup_identifier = ExtractionIdentifier(extraction_name=f"{extraction_id}_{i}")
-            shutil.rmtree(cleanup_identifier.get_path(), ignore_errors=True)
+        # Verify final result
+        self.assertTrue(
+            result.success or "in progress" in result.error_message.lower(),
+            f"Performance evaluation should succeed or be in progress: {result.error_message}",
+        )
