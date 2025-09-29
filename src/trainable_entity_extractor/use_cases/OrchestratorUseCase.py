@@ -172,3 +172,9 @@ class OrchestratorUseCase:
 
     def exists_jobs_to_be_done(self) -> bool:
         return len(self.distributed_jobs) > 0
+
+    def execute_job_for_domain(self, domain: str) -> Tuple[bool, str]:
+        for job in self.distributed_jobs:
+            if job.extraction_identifier.domain == domain:
+                return self.process_job(job)
+        return False, f"No job found for domain {domain}"
