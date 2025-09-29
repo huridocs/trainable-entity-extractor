@@ -1,0 +1,52 @@
+from abc import ABC, abstractmethod
+from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
+from trainable_entity_extractor.domain.Value import Value
+
+
+class MethodBase(ABC):
+    def __init__(self, extraction_identifier: ExtractionIdentifier):
+        if extraction_identifier is None:
+            return
+        self.extraction_identifier = extraction_identifier.set_extra_model_folder(self.get_model_folder_name())
+
+    def set_extraction_identifier(self, extraction_identifier: ExtractionIdentifier):
+        self.extraction_identifier = extraction_identifier.set_extra_model_folder(self.get_model_folder_name())
+        return self
+
+    @staticmethod
+    def get_model_folder_name():
+        return ""
+
+    @abstractmethod
+    def get_name(self) -> str:
+        pass
+
+    def get_samples_for_context(self, prediction_samples_data: PredictionSamplesData) -> list[PredictionSample]:
+        pass
+
+    def can_be_used(self, extraction_data: ExtractionData) -> bool:
+        return True
+
+    @abstractmethod
+    def get_performance(self, train_set: ExtractionData, test_set: ExtractionData) -> float:
+        pass
+
+    @abstractmethod
+    def train(self, extraction_data: ExtractionData) -> None:
+        pass
+
+    @abstractmethod
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str] | list[list[Value]]:
+        pass
+
+    def should_be_retrained_with_more_data(self) -> bool:
+        return True
+
+    def gpu_needed(self) -> bool:
+        return False
+
+    def remove_method_data(self) -> None:
+        pass

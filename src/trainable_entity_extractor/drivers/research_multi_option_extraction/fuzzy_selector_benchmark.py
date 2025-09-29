@@ -2,15 +2,17 @@ from pdf_token_type_labels.TaskMistakes import TaskMistakes
 from sklearn.metrics import f1_score
 
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
-from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
 )
-from trainable_entity_extractor.use_cases.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
     PdfToMultiOptionExtractor,
 )
-from trainable_entity_extractor.use_cases.extractors.segment_selector.evaluate_config import PDF_LABELED_DATA_PATH
+from trainable_entity_extractor.adapters.extractors.segment_selector.evaluate_config import PDF_LABELED_DATA_PATH
 
-from trainable_entity_extractor.drivers.pdf_multi_option_classification_benchmark import get_multi_option_benchmark_data
+from trainable_entity_extractor.drivers.performance.pdf_multi_option_classification_benchmark import (
+    get_multi_option_benchmark_data,
+)
 
 
 def show_mistakes(prediction_samples):
