@@ -24,7 +24,7 @@ class LocalModelStorage(ModelStorage):
                 os.makedirs(extractor_job_dir, exist_ok=True)
 
             job_file_path = os.path.join(model_path, EXTRACTOR_JOB_PATH)
-            job_data = self._serialize_job_to_dict(extractor_job)
+            job_data = self.serialize_job_to_dict(extractor_job)
 
             with open(job_file_path, "w", encoding="utf-8") as f:
                 json.dump(job_data, f, indent=2, ensure_ascii=False)
@@ -68,55 +68,8 @@ class LocalModelStorage(ModelStorage):
             if os.path.exists(job_file_path):
                 with open(job_file_path, "r", encoding="utf-8") as f:
                     job_data = json.load(f)
-                return self._deserialize_job_from_dict(job_data)
+                return self.deserialize_job_from_dict(job_data)
             return None
         except Exception as e:
             print(f"Error loading job: {e}")
             return None
-
-    @staticmethod
-    def _serialize_job_to_dict(job: TrainableEntityExtractorJob) -> dict:
-        return {
-            "version": "1.0",  # Version for future compatibility
-            "run_name": job.run_name,
-            "extraction_name": job.extraction_name,
-            "extractor_name": job.extractor_name,
-            "method_name": job.method_name,
-            "multi_value": job.multi_value,
-            "options": [option.model_dump() for option in job.options],
-            "gpu_needed": job.gpu_needed,
-            "timeout": job.timeout,
-            "should_be_retrained_with_more_data": job.should_be_retrained_with_more_data,
-            "metadata": {},
-        }
-
-    @staticmethod
-    def _deserialize_job_from_dict(job_data: dict) -> TrainableEntityExtractorJob:
-        version = job_data.get("version", "1.0")
-
-        run_name = job_data.get("run_name", "")
-        extraction_name = job_data.get("extraction_name", "")
-        extractor_name = job_data.get("extractor_name", "")
-        method_name = job_data.get("method_name", "")
-        multi_value = job_data.get("multi_value", False)
-        options_data = job_data.get("options", [])
-        options = [Option(**option_data) for option_data in options_data]
-        gpu_needed = job_data.get("gpu_needed", False)
-        timeout = job_data.get("timeout", 3600)
-        should_be_retrained = job_data.get("should_be_retrained_with_more_data", False)
-
-        additional_fields = {}
-        if version != "1.0":
-            pass
-
-        return TrainableEntityExtractorJob(
-            run_name=run_name,
-            extraction_name=extraction_name,
-            extractor_name=extractor_name,
-            method_name=method_name,
-            multi_value=multi_value,
-            options=options,
-            gpu_needed=gpu_needed,
-            timeout=timeout,
-            should_be_retrained_with_more_data=should_be_retrained,
-        )
