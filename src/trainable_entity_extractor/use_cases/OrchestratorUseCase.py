@@ -227,9 +227,9 @@ class OrchestratorUseCase:
     def exists_jobs_to_be_done(self) -> bool:
         return len(self.distributed_jobs) > 0
 
-    def execute_job_for_domain(self, domain: str) -> JobProcessingResult:
+    def execute_job_for_domain(self, domain: str) -> tuple[JobProcessingResult, DistributedJob | None]:
         for job in self.distributed_jobs:
             if job.domain_name == domain:
-                return self.process_job(job)
+                return self.process_job(job), job
 
-        return JobProcessingResult(finished=False, success=False, error_message=f"No job found for domain {domain}")
+        return JobProcessingResult(finished=False, success=False, error_message=f"No job found for domain {domain}"), None
