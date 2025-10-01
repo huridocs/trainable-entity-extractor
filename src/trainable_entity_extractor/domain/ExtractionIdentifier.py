@@ -10,12 +10,6 @@ from pydantic import BaseModel
 
 from trainable_entity_extractor.config import DATA_PATH
 
-OPTIONS_FILE_NAME = "options.json"
-MULTI_VALUE_FILE_NAME = "multi_value.json"
-METHOD_USED_FILE_NAME = "method_used.json"
-PROCESSING_FINISHED_FILE_NAME = "processing_finished.json"
-EXTRACTOR_USED_FILE_NAME = "extractor_used.json"
-
 
 class ExtractionIdentifier(BaseModel):
     run_name: str = "default"
@@ -54,9 +48,6 @@ class ExtractionIdentifier(BaseModel):
             path.write_text(json.dumps([x.model_dump() for x in content]))
         else:
             path.write_text(json.dumps(content))
-
-    def get_options_path(self):
-        return Path(self.get_path(), OPTIONS_FILE_NAME)
 
     def is_old(self):
         path = self.get_path()
