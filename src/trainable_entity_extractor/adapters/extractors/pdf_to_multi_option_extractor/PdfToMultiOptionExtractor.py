@@ -219,7 +219,7 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         return performance
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
-        if not extraction_data.options and not extraction_data.extraction_identifier.get_options():
+        if not extraction_data.options:
             return False
 
         for sample in extraction_data.samples:
