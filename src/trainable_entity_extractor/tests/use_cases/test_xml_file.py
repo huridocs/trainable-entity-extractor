@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from trainable_entity_extractor.config import APP_PATH, DATA_PATH
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
+from trainable_entity_extractor.domain.XmlFile import XmlFile
 
 
 class TestXmlFile(TestCase):
@@ -20,7 +20,7 @@ class TestXmlFile(TestCase):
 
         shutil.rmtree(join(DATA_PATH, tenant), ignore_errors=True)
         with open(self.test_file_path, "rb") as file:
-            xml_file = XmlFileUseCase(
+            xml_file = XmlFile(
                 extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id),
                 to_train=True,
                 xml_file_name="test.xml",
@@ -40,7 +40,7 @@ class TestXmlFile(TestCase):
 
         shutil.rmtree(join(DATA_PATH, tenant), ignore_errors=True)
         with open(self.test_file_path, "rb") as file:
-            xml_file = XmlFileUseCase(
+            xml_file = XmlFile(
                 extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id),
                 to_train=False,
                 xml_file_name="test.xml",

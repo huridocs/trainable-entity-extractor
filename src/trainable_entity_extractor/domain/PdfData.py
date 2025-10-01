@@ -9,7 +9,7 @@ from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from pdf_features.PdfFeatures import PdfFeatures
 
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
-from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
+from trainable_entity_extractor.domain.XmlFile import XmlFile
 from trainable_entity_extractor.use_cases.FilterValidSegmentsPagesUseCase import FilterValidSegmentsPagesUseCase
 
 
@@ -74,9 +74,7 @@ class PdfData(BaseModel):
         return PdfData()
 
     @staticmethod
-    def from_xml_file(
-        xml_file: XmlFileUseCase, segmentation_data: SegmentationData, pages_to_keep: list[int] = None
-    ) -> "PdfData":
+    def from_xml_file(xml_file: XmlFile, segmentation_data: SegmentationData, pages_to_keep: list[int] = None) -> "PdfData":
         try:
             file_content: str = open(xml_file.xml_file_path, encoding="utf-8").read()
         except FileNotFoundError:

@@ -11,7 +11,7 @@ from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from trainable_entity_extractor.domain.PdfData import PdfData
-from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
+from trainable_entity_extractor.domain.XmlFile import XmlFile
 from trainable_entity_extractor.adapters.extractors.segment_selector.SegmentSelector import SegmentSelector
 from pdf_token_type_labels.TokenType import TokenType
 
@@ -40,7 +40,7 @@ class TestSegmentSelector(TestCase):
         "label_segments_boxes": [json.loads(labels.model_dump_json())],
     }
 
-    XML_FILE = XmlFileUseCase(
+    XML_FILE = XmlFile(
         extraction_identifier=EXTRACTION_IDENTIFIER,
         to_train=True,
         xml_file_name=TEST_XML_NAME,

@@ -3,7 +3,7 @@ from unittest import TestCase
 from pdf_token_type_labels.TokenType import TokenType
 
 from multilingual_paragraph_extractor.domain.ParagraphFeatures import ParagraphFeatures
-from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
+from trainable_entity_extractor.domain.XmlFile import XmlFile
 from trainable_entity_extractor.config import APP_PATH
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PdfData import PdfData
@@ -17,7 +17,7 @@ class TestParagraphFeatures(TestCase):
 
     def test_extract_paragraphs(self):
         with open(self.xml_path, "rb") as file:
-            xml_file = XmlFileUseCase(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
+            xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
             xml_file.save(file_content=file.read())
 
         segmentation_data = SegmentationData(
@@ -65,7 +65,7 @@ class TestParagraphFeatures(TestCase):
 
     def test_extract_other_paragraphs(self):
         with open(self.xml_path, "rb") as file:
-            xml_file = XmlFileUseCase(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
+            xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
             xml_file.save(file_content=file.read())
 
         segmentation_data = SegmentationData(
@@ -103,7 +103,7 @@ class TestParagraphFeatures(TestCase):
 
     def test_super_index(self):
         with open(self.xml_path, "rb") as file:
-            xml_file = XmlFileUseCase(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
+            xml_file = XmlFile(extraction_identifier=self.identifier, to_train=True, xml_file_name="test.xml")
             xml_file.save(file_content=file.read())
 
         segmentation_data = SegmentationData(

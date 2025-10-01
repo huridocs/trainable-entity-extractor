@@ -80,9 +80,7 @@ class OrchestratorUseCase:
     def _process_prediction_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
         extraction_identifier = distributed_job.extraction_identifier
         sub_job = distributed_job.sub_jobs[0]
-
-        if sub_job.status == JobStatus.WAITING:
-            self.job_executor.start_prediction(extraction_identifier, sub_job)
+        self.job_executor.start_prediction(extraction_identifier, sub_job)
 
         if sub_job.status == JobStatus.SUCCESS:
             self.distributed_jobs.remove(distributed_job)

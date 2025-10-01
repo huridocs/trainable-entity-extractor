@@ -5,7 +5,7 @@ from pathlib import Path
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 
 
-class XmlFileUseCase:
+class XmlFile:
     def __init__(self, extraction_identifier: ExtractionIdentifier, to_train: bool, xml_file_name: str = ""):
         self.extraction_identifier = extraction_identifier
         self.to_train = to_train

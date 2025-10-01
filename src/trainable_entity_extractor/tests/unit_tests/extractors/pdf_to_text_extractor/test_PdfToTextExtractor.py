@@ -8,7 +8,7 @@ from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.PdfData import PdfData
-from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
+from trainable_entity_extractor.domain.XmlFile import XmlFile
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
@@ -49,7 +49,7 @@ class TestPdfToTextExtractor(TestCase):
                 label_segments_boxes=[SegmentBox(left=65, top=739, width=103, height=11, page_number=1)],
             )
 
-            xml_file_use_case = XmlFileUseCase(
+            xml_file_use_case = XmlFile(
                 extraction_identifier=self.extraction_identifier, to_train=True, xml_file_name="test.xml"
             )
             xml_file_use_case.xml_file_path = self.xml_file_path
@@ -64,7 +64,7 @@ class TestPdfToTextExtractor(TestCase):
         return training_samples
 
     def _create_prediction_sample(self):
-        prediction_xml_file_use_case = XmlFileUseCase(
+        prediction_xml_file_use_case = XmlFile(
             extraction_identifier=self.extraction_identifier,
             to_train=False,
             xml_file_name="test.xml",

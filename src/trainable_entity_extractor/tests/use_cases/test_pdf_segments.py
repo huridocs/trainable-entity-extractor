@@ -7,7 +7,7 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.SegmentBox import SegmentBox
 from trainable_entity_extractor.domain.SegmentationData import SegmentationData
 from trainable_entity_extractor.domain.PdfData import PdfData
-from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
+from trainable_entity_extractor.domain.XmlFile import XmlFile
 from pdf_token_type_labels.TokenType import TokenType
 
 
@@ -83,7 +83,7 @@ class TestPdfSegments(TestCase):
         )
 
         with open(self.test_file_path, "rb") as file:
-            xml_file = XmlFileUseCase(
+            xml_file = XmlFile(
                 extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id),
                 to_train=True,
                 xml_file_name="test.xml",
@@ -118,7 +118,7 @@ class TestPdfSegments(TestCase):
         )
 
         with open(self.no_pages_file_path, "rb") as file:
-            xml_file = XmlFileUseCase(
+            xml_file = XmlFile(
                 extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id),
                 to_train=True,
                 xml_file_name="no_pages.xml",
@@ -144,7 +144,7 @@ class TestPdfSegments(TestCase):
             label_segments_boxes=[],
         )
 
-        xml_file = XmlFileUseCase(
+        xml_file = XmlFile(
             extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id),
             to_train=True,
             xml_file_name="test.xml",
@@ -183,13 +183,13 @@ class TestPdfSegments(TestCase):
             ],
         )
         with open(self.test_file_path, "rb") as file:
-            XmlFileUseCase(
+            XmlFile(
                 extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name="different_extraction_id"),
                 to_train=False,
                 xml_file_name="test.xml",
             ).save(file_content=file.read())
 
-        xml_file = XmlFileUseCase(
+        xml_file = XmlFile(
             extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id),
             to_train=False,
             xml_file_name="test.xml",
@@ -221,7 +221,7 @@ class TestPdfSegments(TestCase):
         )
 
         with open(self.test_file_path, "rb") as file:
-            xml_file = XmlFileUseCase(
+            xml_file = XmlFile(
                 extraction_identifier=ExtractionIdentifier(run_name=tenant, extraction_name=extraction_id),
                 to_train=True,
                 xml_file_name="test.xml",

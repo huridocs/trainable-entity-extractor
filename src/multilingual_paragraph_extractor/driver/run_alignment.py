@@ -19,7 +19,7 @@ from multilingual_paragraph_extractor.use_cases.MultilingualParagraphAlignerUseC
 from trainable_entity_extractor.config import ROOT_PATH
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.PdfData import PdfData
-from trainable_entity_extractor.domain.XmlFile import XmlFileUseCase
+from trainable_entity_extractor.domain.XmlFile import XmlFile
 
 # FILE_FILTERS = ["plan3", "N2432440", "ba", "g2400657"]
 FILE_FILTERS = ["plan_2"]
@@ -114,9 +114,7 @@ def create_pdf_data():
             print("segmentation per PDF", round(time() - start, 2), "s")
 
             with open(xml_path, "rb") as file:
-                xml_file = XmlFileUseCase(
-                    extraction_identifier=EXTRACTION_IDENTIFIER, to_train=True, xml_file_name=xml_path.name
-                )
+                xml_file = XmlFile(extraction_identifier=EXTRACTION_IDENTIFIER, to_train=True, xml_file_name=xml_path.name)
                 xml_file.save(file_content=file.read())
             pdf_data = PdfData.from_xml_file(xml_file=xml_file, segmentation_data=segmentation_data)
 
