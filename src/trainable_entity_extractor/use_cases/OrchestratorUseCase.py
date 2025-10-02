@@ -201,11 +201,7 @@ class OrchestratorUseCase:
         training_job = DistributedJob(
             extraction_identifier=distributed_job.extraction_identifier,
             type=JobType.TRAIN,
-            sub_jobs=[
-                DistributedSubJob(
-                    job_id=f"retrain_{best_job.extractor_job.method_name}", extractor_job=best_job.extractor_job
-                )
-            ],
+            sub_jobs=[DistributedSubJob(extractor_job=best_job.extractor_job)],
         )
         self.distributed_jobs.append(training_job)
         return JobProcessingResult(
