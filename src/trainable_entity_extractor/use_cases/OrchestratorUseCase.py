@@ -202,6 +202,7 @@ class OrchestratorUseCase:
             extraction_identifier=distributed_job.extraction_identifier,
             type=JobType.TRAIN,
             sub_jobs=[DistributedSubJob(extractor_job=best_job.extractor_job)],
+            domain_name=distributed_job.domain_name,
         )
         self.distributed_jobs.append(training_job)
         return JobProcessingResult(
