@@ -20,6 +20,8 @@ class OrchestratorUseCase:
         self.distributed_jobs.append(distributed_job)
 
     def process_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
+        self.job_executor.update_job_statuses(distributed_job)
+
         if self.job_executor.is_extractor_cancelled(distributed_job.extraction_identifier):
             self._cancel_and_remove_job(distributed_job)
             return JobProcessingResult(
@@ -111,8 +113,6 @@ class OrchestratorUseCase:
             )
 
     def _process_performance_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
-        self.job_executor.update_job_statuses(distributed_job)
-
         if len(distributed_job.sub_jobs) == [x for x in distributed_job.sub_jobs if x.status == JobStatus.WAITING]:
             self.job_executor.recreate_model_folder(distributed_job.extraction_identifier)
 
