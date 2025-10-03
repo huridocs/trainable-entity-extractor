@@ -30,12 +30,12 @@ class OrchestratorUseCase:
                 error_message=f"Job cancelled for extraction {distributed_job.extraction_identifier}",
             )
 
-        if distributed_job.type == JobType.TRAIN:
+        if distributed_job.type == JobType.PERFORMANCE:
+            return self._process_performance_job(distributed_job)
+        elif distributed_job.type == JobType.TRAIN:
             return self._process_training_job(distributed_job)
         elif distributed_job.type == JobType.PREDICT:
             return self._process_prediction_job(distributed_job)
-        elif distributed_job.type == JobType.PERFORMANCE:
-            return self._process_performance_job(distributed_job)
         else:
             self.distributed_jobs.remove(distributed_job)
             return JobProcessingResult(
@@ -180,24 +180,6 @@ class OrchestratorUseCase:
                 finished=True, success=False, error_message="No valid performance results to select the best model"
             )
 
-        if not best_job.extractor_job.should_be_retrained_with_more_data:
-            return self._finalize_best_model(distributed_job, best_job)
-        else:
-            return self._schedule_retraining(distributed_job, best_job)
-
-    def _finalize_best_model(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> JobProcessingResult:
-        if self.job_executor.upload_model(distributed_job.extraction_identifier, best_job.extractor_job):
-            performance_score = self._extract_performance_score(best_job)
-            return JobProcessingResult(
-                finished=True,
-                success=True,
-                error_message=f"Best model selected: {best_job.extractor_job.method_name} with performance {performance_score}",
-                gpu_needed=getattr(best_job.extractor_job, "requires_gpu", False),
-            )
-        else:
-            return JobProcessingResult(finished=True, success=False, error_message="Best model selected but upload failed")
-
-    def _schedule_retraining(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> JobProcessingResult:
         training_job = DistributedJob(
             extraction_identifier=distributed_job.extraction_identifier,
             type=JobType.TRAIN,
@@ -211,6 +193,18 @@ class OrchestratorUseCase:
             error_message="Retraining model",
             gpu_needed=getattr(best_job.extractor_job, "requires_gpu", False),
         )
+
+    def _finalize_best_model(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> JobProcessingResult:
+        if self.job_executor.upload_model(distributed_job.extraction_identifier, best_job.extractor_job):
+            performance_score = self._extract_performance_score(best_job)
+            return JobProcessingResult(
+                finished=True,
+                success=True,
+                error_message=f"Best model selected: {best_job.extractor_job.method_name} with performance {performance_score}",
+                gpu_needed=getattr(best_job.extractor_job, "requires_gpu", False),
+            )
+        else:
+            return JobProcessingResult(finished=True, success=False, error_message="Best model selected but upload failed")
 
     @staticmethod
     def _extract_performance_score(best_job: DistributedSubJob) -> str:
