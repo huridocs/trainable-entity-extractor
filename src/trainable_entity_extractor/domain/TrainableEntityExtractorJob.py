@@ -13,3 +13,7 @@ class TrainableEntityExtractorJob(BaseModel):
     gpu_needed: bool
     timeout: int
     output_path: str = ""
+
+    def set_extractors_path(self, path: str) -> "TrainableEntityExtractorJob":
+        self.output_path = path
+        return self
