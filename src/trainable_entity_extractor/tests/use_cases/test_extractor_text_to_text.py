@@ -87,7 +87,6 @@ class TestExtractorTextToText(TestCase):
         # Create prediction samples
         texts = ["test 0"]
         predictions_samples = [PredictionSample.from_text(text, str(i)) for i, text in enumerate(texts)]
-        predictions_samples[0].segment_selector_texts = []
 
         # Save prediction data
         self.data_retriever.save_prediction_data(extraction_identifier, predictions_samples)

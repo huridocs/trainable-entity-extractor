@@ -14,8 +14,9 @@ class PredictUseCase:
         self.logger = logger
 
     def predict(self, extractor_job: TrainableEntityExtractorJob, samples: list[PredictionSample]) -> list[Suggestion]:
+        output_path = extractor_job.output_path if extractor_job.output_path else DATA_PATH
         extraction_identifier = ExtractionIdentifier(
-            run_name=extractor_job.run_name, output_path=DATA_PATH, extraction_name=extractor_job.extraction_name
+            run_name=extractor_job.run_name, output_path=output_path, extraction_name=extractor_job.extraction_name
         )
 
         extractor_name = extractor_job.extractor_name

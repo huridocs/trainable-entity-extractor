@@ -12,3 +12,4 @@ class TrainableEntityExtractorJob(BaseModel):
     options: list[Option] = []
     gpu_needed: bool
     timeout: int
+    output_path: str = ""

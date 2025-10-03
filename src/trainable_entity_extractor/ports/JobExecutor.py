@@ -58,27 +58,6 @@ class JobExecutor(ABC):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
         extraction_identifier.get_path().mkdir(parents=True, exist_ok=True)
 
-    def check_and_wait_for_model(self, extraction_identifier: ExtractionIdentifier) -> bool:
-        try:
-            completion_signal_exists = self.model_storage.check_model_completion_signal(extraction_identifier)
-
-            if not completion_signal_exists:
-                self.logger.log(extraction_identifier, "Model completion signal not found, model may still be uploading")
-                return False
-
-            self.logger.log(extraction_identifier, "Model completion signal found, model is ready")
-            model_downloaded = self.model_storage.download_model(extraction_identifier)
-            if model_downloaded:
-                self.logger.log(
-                    extraction_identifier, "Model download failed, checking completion signal", LogSeverity.warning
-                )
-                return True
-
-            return False
-        except Exception as e:
-            self.logger.log(extraction_identifier, f"Error checking model availability: {e}", LogSeverity.error)
-            return False
-
     def is_extractor_cancelled(self, extractor_identifier: ExtractionIdentifier) -> bool:
         try:
             return self.data_retriever.is_extractor_cancelled(extractor_identifier)
