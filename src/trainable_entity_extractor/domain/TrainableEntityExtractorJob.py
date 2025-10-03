@@ -12,4 +12,3 @@ class TrainableEntityExtractorJob(BaseModel):
     options: list[Option] = []
     gpu_needed: bool
     timeout: int
-    should_be_retrained_with_more_data: bool = False

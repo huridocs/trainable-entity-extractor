@@ -212,4 +212,3 @@ class TestTextToTextExtractorDistributedJobs(TestCase):
         for job in jobs:
             self.assertIsInstance(job.options, list)
             self.assertIsInstance(job.multi_value, bool)
-            self.assertIsInstance(job.should_be_retrained_with_more_data, bool)

@@ -20,7 +20,3 @@ class JobPerformance(BaseModel):
     @property
     def method_name(self) -> str:
         return self.extractor_job.method_name
-
-    @property
-    def should_be_retrained_with_more_data(self) -> bool:
-        return self.extractor_job.should_be_retrained_with_more_data

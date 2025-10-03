@@ -96,11 +96,6 @@ class ExtractorBase:
                 if not method_instance.can_be_used(extraction_data):
                     continue
 
-            if hasattr(method_instance, "should_be_retrained_with_more_data"):
-                should_be_retrained_with_more_data = method_instance.should_be_retrained_with_more_data()
-            else:
-                should_be_retrained_with_more_data = True
-
             if hasattr(method_instance, "gpu_needed"):
                 gpu_needed = method_instance.gpu_needed()
             else:
@@ -113,7 +108,6 @@ class ExtractorBase:
                 method_name=method_instance.get_name(),
                 gpu_needed=gpu_needed,
                 timeout=getattr(method_instance, "timeout", 3600),
-                should_be_retrained_with_more_data=should_be_retrained_with_more_data,
                 options=extraction_data.options if extraction_data.options else [],
                 multi_value=extraction_data.multi_value if extraction_data.multi_value else False,
             )
@@ -144,9 +138,6 @@ class ExtractorBase:
             performance_score = method_instance.get_performance(train_set, test_set)
             performance_score = float(performance_score) if performance_score is not None else 0.0
 
-            if hasattr(method_instance, "should_be_retrained_with_more_data"):
-                extractor_job.should_be_retrained_with_more_data = method_instance.should_be_retrained_with_more_data()
-
             execution_time = int(time.time() - start_time)
             is_perfect = performance_score >= 99.99
 
@@ -160,7 +151,6 @@ class ExtractorBase:
             )
 
         except Exception as e:
-            extractor_job.should_be_retrained_with_more_data = False
             self.logger.log(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             execution_time = int(time.time() - start_time)
 

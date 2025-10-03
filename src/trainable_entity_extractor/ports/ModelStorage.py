@@ -39,7 +39,6 @@ class ModelStorage(ABC):
             "options": [option.model_dump() for option in job.options],
             "gpu_needed": job.gpu_needed,
             "timeout": job.timeout,
-            "should_be_retrained_with_more_data": job.should_be_retrained_with_more_data,
             "metadata": {},
         }
 
@@ -56,7 +55,6 @@ class ModelStorage(ABC):
         options = [Option(**option_data) for option_data in options_data]
         gpu_needed = job_data.get("gpu_needed", False)
         timeout = job_data.get("timeout", 3600)
-        should_be_retrained = job_data.get("should_be_retrained_with_more_data", False)
 
         additional_fields = {}
         if version != "1.0":
@@ -71,5 +69,4 @@ class ModelStorage(ABC):
             options=options,
             gpu_needed=gpu_needed,
             timeout=timeout,
-            should_be_retrained_with_more_data=should_be_retrained,
         )
