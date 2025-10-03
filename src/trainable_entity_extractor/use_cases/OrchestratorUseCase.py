@@ -113,9 +113,6 @@ class OrchestratorUseCase:
             )
 
     def _process_performance_job(self, distributed_job: DistributedJob) -> JobProcessingResult:
-        if len(distributed_job.sub_jobs) == [x for x in distributed_job.sub_jobs if x.status == JobStatus.WAITING]:
-            self.job_executor.recreate_model_folder(distributed_job.extraction_identifier)
-
         self._start_pending_performance_evaluations(distributed_job)
 
         if self._has_perfect_score_job(distributed_job):
@@ -129,8 +126,8 @@ class OrchestratorUseCase:
                 gpu_needed=any(getattr(job.extractor_job, "requires_gpu", False) for job in distributed_job.sub_jobs),
             )
 
-        self._log_performance_summary(distributed_job)
         self._remove_job_from_queue(distributed_job)
+        self._log_performance_summary(distributed_job)
 
         return self._handle_performance_results(distributed_job)
 
@@ -193,18 +190,6 @@ class OrchestratorUseCase:
             error_message="Retraining model",
             gpu_needed=getattr(best_job.extractor_job, "requires_gpu", False),
         )
-
-    def _finalize_best_model(self, distributed_job: DistributedJob, best_job: DistributedSubJob) -> JobProcessingResult:
-        if self.job_executor.upload_model(distributed_job.extraction_identifier, best_job.extractor_job):
-            performance_score = self._extract_performance_score(best_job)
-            return JobProcessingResult(
-                finished=True,
-                success=True,
-                error_message=f"Best model selected: {best_job.extractor_job.method_name} with performance {performance_score}",
-                gpu_needed=getattr(best_job.extractor_job, "requires_gpu", False),
-            )
-        else:
-            return JobProcessingResult(finished=True, success=False, error_message="Best model selected but upload failed")
 
     @staticmethod
     def _extract_performance_score(best_job: DistributedSubJob) -> str:

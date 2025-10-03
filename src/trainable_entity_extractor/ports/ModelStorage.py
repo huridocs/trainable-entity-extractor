@@ -1,5 +1,9 @@
+import json
+import os
 from abc import ABC, abstractmethod
 from typing import Optional
+
+from trainable_entity_extractor.config import EXTRACTOR_JOB_PATH
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
@@ -16,16 +20,31 @@ class ModelStorage(ABC):
         pass
 
     @abstractmethod
-    def check_model_completion_signal(self, extraction_identifier: ExtractionIdentifier) -> bool:
-        pass
-
-    @abstractmethod
-    def create_model_completion_signal(self, extraction_identifier: ExtractionIdentifier) -> bool:
-        pass
-
-    @abstractmethod
     def get_extractor_job(self, extraction_identifier: ExtractionIdentifier) -> Optional[TrainableEntityExtractorJob]:
         pass
+
+    def save_extractor_job(
+        self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob
+    ) -> bool:
+        try:
+            model_path = extraction_identifier.get_path()
+            if not os.path.exists(model_path):
+                os.makedirs(model_path, exist_ok=True)
+
+            extractor_job_dir = os.path.join(model_path, EXTRACTOR_JOB_PATH.parent)
+            if not os.path.exists(extractor_job_dir):
+                os.makedirs(extractor_job_dir, exist_ok=True)
+
+            job_file_path = os.path.join(model_path, EXTRACTOR_JOB_PATH)
+            job_data = self.serialize_job_to_dict(extractor_job)
+
+            with open(job_file_path, "w", encoding="utf-8") as f:
+                json.dump(job_data, f, indent=2, ensure_ascii=False)
+
+            return True
+        except Exception as e:
+            print(f"Error saving job: {e}")
+            return False
 
     @staticmethod
     def serialize_job_to_dict(job: TrainableEntityExtractorJob) -> dict:
@@ -56,7 +75,6 @@ class ModelStorage(ABC):
         gpu_needed = job_data.get("gpu_needed", False)
         timeout = job_data.get("timeout", 3600)
 
-        additional_fields = {}
         if version != "1.0":
             pass
 

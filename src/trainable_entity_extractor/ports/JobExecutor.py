@@ -62,27 +62,7 @@ class JobExecutor(ABC):
         try:
             extraction_identifier.clean_extractor_folder(extractor_job.method_name)
             shutil.rmtree(CACHE_PATH / extraction_identifier.run_name, ignore_errors=True)
-            upload_success = self.model_storage.upload_model(extraction_identifier, extractor_job)
-            if upload_success:
-                signal_success = self.model_storage.create_model_completion_signal(extraction_identifier)
-                if signal_success:
-                    self.logger.log(
-                        extraction_identifier, f"Model and completion signal uploaded for method {extractor_job.method_name}"
-                    )
-                    return True
-                else:
-                    self.logger.log(
-                        extraction_identifier,
-                        f"Model uploaded but completion signal creation failed for method {extractor_job.method_name}",
-                        LogSeverity.error,
-                    )
-                    return False
-            else:
-                self.logger.log(
-                    extraction_identifier, f"Model upload failed for method {extractor_job.method_name}", LogSeverity.error
-                )
-                return False
-
+            return self.model_storage.upload_model(extraction_identifier, extractor_job)
         except Exception as e:
             self.logger.log(extraction_identifier, f"Model upload failed with exception: {e}", LogSeverity.error, e)
             return False
