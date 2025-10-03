@@ -55,17 +55,12 @@ class OrchestratorUseCase:
 
         if sub_job.status == JobStatus.SUCCESS:
             self.distributed_jobs.remove(distributed_job)
-            if self.job_executor.upload_model(extraction_identifier, sub_job.extractor_job):
-                return JobProcessingResult(
-                    finished=True,
-                    success=True,
-                    error_message=f"Training completed successfully for method {sub_job.extractor_job.method_name}",
-                    gpu_needed=getattr(sub_job.extractor_job, "requires_gpu", False),
-                )
-            else:
-                return JobProcessingResult(
-                    finished=True, success=False, error_message="Training completed but model upload failed"
-                )
+            return JobProcessingResult(
+                finished=True,
+                success=True,
+                error_message=f"Training completed successfully for method {sub_job.extractor_job.method_name}",
+                gpu_needed=getattr(sub_job.extractor_job, "requires_gpu", False),
+            )
         elif sub_job.status == JobStatus.FAILURE:
             self.distributed_jobs.remove(distributed_job)
             return JobProcessingResult(

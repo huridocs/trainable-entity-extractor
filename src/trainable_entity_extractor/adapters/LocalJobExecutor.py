@@ -70,6 +70,14 @@ class LocalJobExecutor(JobExecutor):
         distributed_sub_job.status = JobStatus.FAILURE
         return None
 
+    def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
+        try:
+            extraction_identifier.clean_extractor_folder(extractor_job.method_name)
+            return self.model_storage.upload_model(extraction_identifier, extractor_job)
+        except Exception as e:
+            self.logger.log(extraction_identifier, f"Model upload failed with exception: {e}", LogSeverity.error, e)
+            return False
+
     def start_training(
         self, extraction_identifier: ExtractionIdentifier, distributed_sub_job: DistributedSubJob
     ) -> Tuple[bool, str]:
@@ -81,9 +89,18 @@ class LocalJobExecutor(JobExecutor):
 
             train_use_case = TrainUseCase(extractors=self.EXTRACTORS, logger=self.logger)
             success, message = train_use_case.train_one_method(distributed_sub_job.extractor_job, extraction_data)
-            if success:
-                distributed_sub_job.status = JobStatus.SUCCESS
-                return True, "Training completed successfully"
+
+            if not success:
+                distributed_sub_job.status = JobStatus.FAILURE
+                return False, message
+
+            if not self.upload_model(extraction_identifier, distributed_sub_job.extractor_job):
+                distributed_sub_job.status = JobStatus.FAILURE
+                return False, "Model upload failed after training"
+
+            distributed_sub_job.status = JobStatus.SUCCESS
+            return True, "Training completed successfully"
+
         except Exception as e:
             distributed_sub_job.status = JobStatus.FAILURE
             return False, str(e)

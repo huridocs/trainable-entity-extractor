@@ -58,15 +58,6 @@ class JobExecutor(ABC):
         shutil.rmtree(extraction_identifier.get_path(), ignore_errors=True)
         extraction_identifier.get_path().mkdir(parents=True, exist_ok=True)
 
-    def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
-        try:
-            extraction_identifier.clean_extractor_folder(extractor_job.method_name)
-            shutil.rmtree(CACHE_PATH / extraction_identifier.run_name, ignore_errors=True)
-            return self.model_storage.upload_model(extraction_identifier, extractor_job)
-        except Exception as e:
-            self.logger.log(extraction_identifier, f"Model upload failed with exception: {e}", LogSeverity.error, e)
-            return False
-
     def check_and_wait_for_model(self, extraction_identifier: ExtractionIdentifier) -> bool:
         try:
             completion_signal_exists = self.model_storage.check_model_completion_signal(extraction_identifier)
