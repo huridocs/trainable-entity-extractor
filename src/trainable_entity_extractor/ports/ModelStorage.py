@@ -58,7 +58,7 @@ class ModelStorage(ABC):
             "options": [option.model_dump() for option in job.options],
             "gpu_needed": job.gpu_needed,
             "timeout": job.timeout,
-            "metadata": {},
+            "metadata": job.metadata,
         }
 
     @staticmethod
@@ -74,6 +74,7 @@ class ModelStorage(ABC):
         options = [Option(**option_data) for option_data in options_data]
         gpu_needed = job_data.get("gpu_needed", False)
         timeout = job_data.get("timeout", 3600)
+        metadata = job_data.get("metadata", {})
 
         if version != "1.0":
             pass
@@ -87,4 +88,5 @@ class ModelStorage(ABC):
             options=options,
             gpu_needed=gpu_needed,
             timeout=timeout,
+            metadata=metadata,
         )

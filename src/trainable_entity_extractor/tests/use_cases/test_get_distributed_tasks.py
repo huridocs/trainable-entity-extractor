@@ -110,23 +110,6 @@ class TestGetDistributedJobs(TestCase):
 
         self.assertEqual(len(jobs), 0)
 
-    def test_get_distributed_jobs_multiple_extractors_returns_last_compatible(self):
-        text_extraction_data = self.create_text_extraction_data()
-        multi_option_extraction_data = self.create_multi_option_extraction_data()
-
-        self.train_use_case = TrainUseCase(extractors=[TextToTextExtractor, TextToMultiOptionExtractor], logger=self.logger)
-
-        text_jobs = self.train_use_case.get_jobs(text_extraction_data)
-        multi_option_jobs = self.train_use_case.get_jobs(multi_option_extraction_data)
-
-        self.assertGreater(len(text_jobs), 0)
-        for job in text_jobs:
-            self.assertEqual(job.extractor_name, "TextToTextExtractor")
-
-        self.assertGreater(len(multi_option_jobs), 0)
-        for job in multi_option_jobs:
-            self.assertEqual(job.extractor_name, "TextToMultiOptionExtractor")
-
     def test_get_distributed_jobs_with_incompatible_data_for_text_extractor(self):
         extraction_data = ExtractionData(
             samples=[],

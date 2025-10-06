@@ -110,6 +110,9 @@ class ExtractorBase:
                 timeout=getattr(method_instance, "timeout", 3600),
                 options=extraction_data.options if extraction_data.options else [],
                 multi_value=extraction_data.multi_value if extraction_data.multi_value else False,
+                metadata=(
+                    extraction_data.extraction_identifier.metadata if extraction_data.extraction_identifier.metadata else {}
+                ),
             )
             jobs.append(job)
 
