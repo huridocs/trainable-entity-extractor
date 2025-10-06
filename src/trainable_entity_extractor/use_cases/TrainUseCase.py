@@ -37,13 +37,12 @@ class TrainUseCase:
         return None
 
     def get_jobs(self, extraction_data: ExtractionData) -> list[TrainableEntityExtractorJob]:
-        jobs = list()
         for extractor in self.extractors:
             extractor_instance = extractor(extraction_data.extraction_identifier, self.logger)
 
             if not extractor_instance.can_be_used(extraction_data):
                 continue
 
-            jobs = extractor_instance.get_distributed_jobs(extraction_data)
+            return extractor_instance.get_distributed_jobs(extraction_data)
 
-        return jobs
+        return []
