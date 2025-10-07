@@ -1,3 +1,6 @@
+from datetime import timedelta, datetime
+from pathlib import Path
+import shutil
 from typing import Tuple, List
 
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
@@ -29,10 +32,26 @@ class LocalJobExecutor(JobExecutor):
         TextToTextExtractor,
     ]
 
+    @staticmethod
+    def ensure_fresh_model_folder(extraction_identifier: ExtractionIdentifier, max_age_hours: int = 1) -> None:
+        path = Path(extraction_identifier.get_path())
+
+        if path.exists():
+            folder_modified_time = datetime.fromtimestamp(path.stat().st_mtime)
+            current_time = datetime.now()
+            age = current_time - folder_modified_time
+
+            if age > timedelta(hours=max_age_hours):
+                shutil.rmtree(path)
+                path.mkdir(parents=True, exist_ok=True)
+        else:
+            path.mkdir(parents=True, exist_ok=True)
+
     def start_performance_evaluation(
         self, extraction_identifier: ExtractionIdentifier, distributed_sub_job: DistributedSubJob
     ):
         try:
+            self.ensure_fresh_model_folder(extraction_identifier)
             extraction_data = self.data_retriever.get_extraction_data(extraction_identifier)
             if not extraction_data:
                 distributed_sub_job.status = JobStatus.FAILURE
@@ -66,9 +85,6 @@ class LocalJobExecutor(JobExecutor):
         except Exception as e:
             distributed_sub_job.status = JobStatus.FAILURE
             return None
-
-        distributed_sub_job.status = JobStatus.FAILURE
-        return None
 
     def upload_model(self, extraction_identifier: ExtractionIdentifier, extractor_job: TrainableEntityExtractorJob) -> bool:
         try:

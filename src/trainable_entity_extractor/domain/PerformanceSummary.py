@@ -91,6 +91,7 @@ class PerformanceSummary(BaseModel):
         testing_samples_count = 0
         training_samples_count = 0
         options_count = 0
+        extractor_name = "Unknown Extractor"
 
         for sub_job in distributed_job.sub_jobs:
             if not sub_job.result:
@@ -98,10 +99,11 @@ class PerformanceSummary(BaseModel):
             testing_samples_count = sub_job.result.testing_samples_count
             training_samples_count = sub_job.result.training_samples_count
             options_count = len(sub_job.extractor_job.options) if sub_job.extractor_job.options else 0
+            extractor_name = sub_job.extractor_job.extractor_name
 
         return PerformanceSummary(
             extraction_identifier=distributed_job.extraction_identifier,
-            extractor_name="Performance Evaluation",
+            extractor_name=extractor_name,
             samples_count=0,
             options_count=options_count,
             languages=[],

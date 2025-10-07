@@ -125,14 +125,14 @@ class ExtractorBase:
         method_instance = self.get_method_instance_by_name(method_name)
         if not method_instance:
             self.logger.log(extraction_data.extraction_identifier, f"Method {method_name} not found")
-            return Performance(failed=True)
+            return Performance(method_name=method_name, failed=True)
 
         if hasattr(method_instance, "can_be_used"):
             if not method_instance.can_be_used(extraction_data):
                 self.logger.log(
                     extraction_data.extraction_identifier, f"Method {method_name} cannot be used with current data"
                 )
-                return Performance(failed=True)
+                return Performance(method_name=method_name, failed=True)
 
         self.logger.log(extraction_data.extraction_identifier, f"\nChecking {method_name}")
 
@@ -145,6 +145,7 @@ class ExtractorBase:
             is_perfect = performance_score >= 99.99
 
             return Performance(
+                method_name=method_name,
                 performance=performance_score,
                 execution_seconds=execution_time,
                 is_perfect=is_perfect,
@@ -157,7 +158,7 @@ class ExtractorBase:
             self.logger.log(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
             execution_time = int(time.time() - start_time)
 
-            return Performance(execution_seconds=execution_time)
+            return Performance(method_name=method_name, execution_seconds=execution_time)
 
     def train_one_method(
         self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData

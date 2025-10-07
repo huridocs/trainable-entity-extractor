@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
@@ -13,6 +15,11 @@ class TrainUseCase:
     def train_one_method(
         self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData
     ) -> tuple[bool, str]:
+
+        method_path = Path(extraction_data.extraction_identifier.get_path()) / extractor_job.method_name
+        if method_path.exists() and any(method_path.iterdir()):
+            return True, ""
+
         extractor_name = extractor_job.extractor_name
         for extractor in self.extractors:
             extractor_instance = extractor(extraction_data.extraction_identifier, self.logger)
