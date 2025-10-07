@@ -5,6 +5,7 @@ class PerformanceLog(BaseModel):
     method_name: str
     performance: float
     execution_seconds: int = 0
+    failed: bool = False
 
     @staticmethod
     def get_execution_time_string(execution_seconds: int):

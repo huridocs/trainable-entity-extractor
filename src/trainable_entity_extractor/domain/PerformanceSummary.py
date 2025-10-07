@@ -19,10 +19,13 @@ class PerformanceSummary(BaseModel):
     previous_timestamp: int = Field(default_factory=lambda: int(time()))
     empty_pdf_count: int = 0
 
-    def add_performance(self, method_name: str, performance: float):
+    def add_performance(self, method_name: str, performance: float, failed: bool = False):
         current_time = int(time())
         performance = PerformanceLog(
-            method_name=method_name, performance=performance, execution_seconds=int(current_time - self.previous_timestamp)
+            method_name=method_name,
+            performance=performance,
+            execution_seconds=int(current_time - self.previous_timestamp),
+            failed=failed,
         )
         self.previous_timestamp = current_time
         self.performances.append(performance)
@@ -36,7 +39,9 @@ class PerformanceSummary(BaseModel):
         else:
             performance_score = 0.0
 
-        self.add_performance(sub_job.extractor_job.method_name, performance_score)
+        failed = sub_job.result is None or (hasattr(sub_job.result, "failed") and sub_job.result.failed)
+
+        self.add_performance(sub_job.extractor_job.method_name, performance_score, failed)
 
     def to_log(self) -> str:
         total_time = sum(performance.execution_seconds for performance in self.performances)

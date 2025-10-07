@@ -166,37 +166,6 @@ class PdfToMultiOptionExtractor(ExtractorBase):
 
         return method.get_samples_for_context(prediction_samples_data), prediction
 
-    def get_best_method(
-        self, multi_option_data: ExtractionData, training_set: ExtractionData, test_set: ExtractionData
-    ) -> Optional[PdfMultiOptionMethod]:
-        best_method_instance = self.METHODS[0]
-        best_performance = 0
-        performance_summary = PerformanceSummary.from_extraction_data(
-            extractor_name=self.get_name(),
-            training_samples_count=len(training_set.samples),
-            testing_samples_count=len(test_set.samples),
-            extraction_data=multi_option_data,
-        )
-        for method in self.METHODS:
-            if self.extraction_identifier.is_training_canceled():
-                self.logger.log(self.extraction_identifier, "Training canceled")
-                return None
-
-            performance = self.get_method_performance(method, training_set, test_set)
-            performance_summary.add_performance(method.get_name(), performance)
-            if performance == 100:
-                self.logger.log(self.extraction_identifier, performance_summary.to_log())
-                self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
-                return method
-
-            if round(performance, 2) > best_performance:
-                best_performance = round(performance, 2)
-                best_method_instance = method
-
-        self.logger.log(self.extraction_identifier, performance_summary.to_log())
-        self.extraction_identifier.save_content("performance_log.txt", performance_summary.to_log())
-        return best_method_instance
-
     def get_method_performance(
         self, method: PdfMultiOptionMethod, train_set: ExtractionData, test_set: ExtractionData
     ) -> float:

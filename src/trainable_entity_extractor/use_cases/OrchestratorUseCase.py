@@ -154,7 +154,7 @@ class OrchestratorUseCase:
         performance_summary = PerformanceSummary.from_distributed_job(distributed_job)
 
         for sub_job in distributed_job.sub_jobs:
-            if sub_job.status == JobStatus.SUCCESS and sub_job.result:
+            if sub_job.status in [JobStatus.SUCCESS, JobStatus.FAILURE] and sub_job.result:
                 performance_summary.add_performance_from_sub_job(sub_job)
 
         summary_log = performance_summary.to_log()
