@@ -68,33 +68,10 @@ class PerformanceSummary(BaseModel):
         return max(self.performances, key=lambda x: x.performance)
 
     @staticmethod
-    def from_extraction_data(
-        extractor_name: str, training_samples_count: int, testing_samples_count: int, extraction_data: ExtractionData
-    ) -> "PerformanceSummary":
-        languages = set()
-        empty_pdf_count = 0
-        for sample in extraction_data.samples:
-            if sample.labeled_data and sample.labeled_data.language_iso:
-                languages.add(sample.labeled_data.language_iso)
-
-            if sample.pdf_data and sample.pdf_data.pdf_features and not sample.pdf_data.get_text():
-                empty_pdf_count += 1
-
-        return PerformanceSummary(
-            extraction_identifier=extraction_data.extraction_identifier,
-            extractor_name=extractor_name,
-            samples_count=len(extraction_data.samples),
-            options_count=len(extraction_data.options) if extraction_data.options else 0,
-            languages=list(languages),
-            training_samples_count=training_samples_count,
-            testing_samples_count=testing_samples_count,
-            empty_pdf_count=empty_pdf_count,
-        )
-
-    @staticmethod
     def from_distributed_job(distributed_job: DistributedJob) -> "PerformanceSummary":
         testing_samples_count = 0
         training_samples_count = 0
+        samples_count = 0
         options_count = 0
         extractor_name = "Unknown Extractor"
 
@@ -103,13 +80,14 @@ class PerformanceSummary(BaseModel):
                 continue
             testing_samples_count = sub_job.result.testing_samples_count
             training_samples_count = sub_job.result.training_samples_count
+            samples_count = sub_job.result.samples_count
             options_count = len(sub_job.extractor_job.options) if sub_job.extractor_job.options else 0
             extractor_name = sub_job.extractor_job.extractor_name
 
         return PerformanceSummary(
             extraction_identifier=distributed_job.extraction_identifier,
             extractor_name=extractor_name,
-            samples_count=0,
+            samples_count=samples_count,
             options_count=options_count,
             languages=[],
             training_samples_count=training_samples_count,

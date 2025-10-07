@@ -1,21 +1,23 @@
-from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.DistributedJob import DistributedJob
+from trainable_entity_extractor.domain.DistributedSubJob import DistributedSubJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-from trainable_entity_extractor.domain.LabeledData import LabeledData
-from trainable_entity_extractor.domain.Option import Option
+from trainable_entity_extractor.domain.JobStatus import JobStatus
+from trainable_entity_extractor.domain.JobType import JobType
+from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
-from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 
 
 class TestPerformanceSummary:
 
-    def test_from_extraction_data_empty_samples(self):
-        """Test creating PerformanceSummary from ExtractionData with no samples"""
-        extraction_data = ExtractionData(samples=[])
-        result = PerformanceSummary.from_extraction_data(
+    def test_direct_instantiation_empty(self):
+        result = PerformanceSummary(
             extractor_name="Test Extractor",
+            samples_count=0,
+            options_count=0,
+            languages=[],
             training_samples_count=10,
             testing_samples_count=5,
-            extraction_data=extraction_data,
         )
 
         assert result.extractor_name == "Test Extractor"
@@ -26,20 +28,17 @@ class TestPerformanceSummary:
         assert result.testing_samples_count == 5
         assert result.performances == []
 
-    def test_from_extraction_data_with_samples_no_languages(self):
-        """Test creating PerformanceSummary from ExtractionData with samples but no language info"""
-        # Create samples without language_iso
-        sample1 = TrainingSample(labeled_data=LabeledData(source_text="Sample 1"))
-        sample2 = TrainingSample(labeled_data=LabeledData(source_text="Sample 2"))
-
+    def test_direct_instantiation_with_extraction_identifier(self):
         extraction_identifier = ExtractionIdentifier(run_name="test_run", extraction_name="test_extraction")
-        extraction_data = ExtractionData(samples=[sample1, sample2], extraction_identifier=extraction_identifier)
 
-        result = PerformanceSummary.from_extraction_data(
+        result = PerformanceSummary(
             extractor_name="Multi Sample Extractor",
+            samples_count=2,
+            options_count=0,
+            languages=[],
             training_samples_count=15,
             testing_samples_count=8,
-            extraction_data=extraction_data,
+            extraction_identifier=extraction_identifier,
         )
 
         assert result.extractor_name == "Multi Sample Extractor"
@@ -50,21 +49,14 @@ class TestPerformanceSummary:
         assert result.testing_samples_count == 8
         assert result.extraction_identifier == extraction_identifier
 
-    def test_from_extraction_data_with_languages(self):
-        """Test creating PerformanceSummary from ExtractionData with multiple languages"""
-        # Create samples with different languages
-        sample1 = TrainingSample(labeled_data=LabeledData(source_text="English text", language_iso="en"))
-        sample2 = TrainingSample(labeled_data=LabeledData(source_text="Texto español", language_iso="es"))
-        sample3 = TrainingSample(labeled_data=LabeledData(source_text="More English", language_iso="en"))
-        sample4 = TrainingSample(labeled_data=LabeledData(source_text="Texte français", language_iso="fr"))
-
-        extraction_data = ExtractionData(samples=[sample1, sample2, sample3, sample4])
-
-        result = PerformanceSummary.from_extraction_data(
+    def test_direct_instantiation_with_languages(self):
+        result = PerformanceSummary(
             extractor_name="Multilingual Extractor",
+            samples_count=4,
+            options_count=0,
+            languages=["en", "es", "fr"],
             training_samples_count=20,
             testing_samples_count=12,
-            extraction_data=extraction_data,
         )
 
         assert result.extractor_name == "Multilingual Extractor"
@@ -74,20 +66,14 @@ class TestPerformanceSummary:
         assert result.training_samples_count == 20
         assert result.testing_samples_count == 12
 
-    def test_from_extraction_data_with_options(self):
-        """Test creating PerformanceSummary from ExtractionData with options"""
-        option1 = Option(id="1", label="Option 1")
-        option2 = Option(id="2", label="Option 2")
-        option3 = Option(id="3", label="Option 3")
-
-        sample = TrainingSample(labeled_data=LabeledData(source_text="Sample", language_iso="en"))
-        extraction_data = ExtractionData(samples=[sample], options=[option1, option2, option3])
-
-        result = PerformanceSummary.from_extraction_data(
+    def test_direct_instantiation_with_options(self):
+        result = PerformanceSummary(
             extractor_name="Options Extractor",
+            samples_count=1,
+            options_count=3,
+            languages=["en"],
             training_samples_count=5,
             testing_samples_count=3,
-            extraction_data=extraction_data,
         )
 
         assert result.extractor_name == "Options Extractor"
@@ -97,16 +83,14 @@ class TestPerformanceSummary:
         assert result.training_samples_count == 5
         assert result.testing_samples_count == 3
 
-    def test_from_extraction_data_no_options_attribute(self):
-        """Test creating PerformanceSummary from ExtractionData when options is None"""
-        sample = TrainingSample(labeled_data=LabeledData(source_text="Sample", language_iso="de"))
-        extraction_data = ExtractionData(samples=[sample])  # Don't explicitly set options=None
-
-        result = PerformanceSummary.from_extraction_data(
+    def test_direct_instantiation_no_options(self):
+        result = PerformanceSummary(
             extractor_name="No Options Extractor",
+            samples_count=1,
+            options_count=0,
+            languages=["de"],
             training_samples_count=7,
             testing_samples_count=4,
-            extraction_data=extraction_data,
         )
 
         assert result.extractor_name == "No Options Extractor"
@@ -116,47 +100,39 @@ class TestPerformanceSummary:
         assert result.training_samples_count == 7
         assert result.testing_samples_count == 4
 
-    def test_from_extraction_data_samples_without_labeled_data(self):
-        """Test creating PerformanceSummary from ExtractionData with samples that have no labeled_data"""
-        sample1 = TrainingSample()  # No labeled_data
-        sample2 = TrainingSample(labeled_data=LabeledData(source_text="Valid sample", language_iso="pt"))
-
-        extraction_data = ExtractionData(samples=[sample1, sample2])
-
-        result = PerformanceSummary.from_extraction_data(
+    def test_direct_instantiation_mixed_data(self):
+        result = PerformanceSummary(
             extractor_name="Mixed Data Extractor",
+            samples_count=2,
+            options_count=0,
+            languages=["pt"],
             training_samples_count=10,
             testing_samples_count=6,
-            extraction_data=extraction_data,
         )
 
         assert result.extractor_name == "Mixed Data Extractor"
         assert result.samples_count == 2
         assert result.options_count == 0
-        assert result.languages == ["pt"]  # Only the valid sample with language is included
+        assert result.languages == ["pt"]
         assert result.training_samples_count == 10
         assert result.testing_samples_count == 6
 
-    def test_from_extraction_data_duplicate_languages(self):
-        """Test that duplicate languages are deduplicated"""
-        sample1 = TrainingSample(labeled_data=LabeledData(source_text="First", language_iso="en"))
-        sample2 = TrainingSample(labeled_data=LabeledData(source_text="Second", language_iso="en"))
-        sample3 = TrainingSample(labeled_data=LabeledData(source_text="Third", language_iso="es"))
-        sample4 = TrainingSample(labeled_data=LabeledData(source_text="Fourth", language_iso="en"))
-
-        extraction_data = ExtractionData(samples=[sample1, sample2, sample3, sample4])
-
-        result = PerformanceSummary.from_extraction_data(
-            extractor_name="Duplicate Lang Extractor",
+    def test_direct_instantiation_with_empty_pdf_count(self):
+        result = PerformanceSummary(
+            extractor_name="PDF Extractor",
+            samples_count=4,
+            options_count=0,
+            languages=["en", "es"],
             training_samples_count=25,
             testing_samples_count=15,
-            extraction_data=extraction_data,
+            empty_pdf_count=2,
         )
 
-        assert result.extractor_name == "Duplicate Lang Extractor"
+        assert result.extractor_name == "PDF Extractor"
         assert result.samples_count == 4
+        assert result.options_count == 0
         assert set(result.languages) == {"en", "es"}
-        assert len(result.languages) == 2  # Duplicates removed
+        assert result.empty_pdf_count == 2
 
     def test_to_log_basic_summary_no_methods(self):
         """Test to_log with basic summary but no performance methods"""
@@ -332,65 +308,125 @@ class TestPerformanceSummary:
         assert "Best method: Failed Method - 0s / 2 mistakes / 0.00%" in result
         assert "Failed Method - 0s / 2 mistakes / 0.00%" in result
 
-    def test_from_extraction_data_and_to_log(self):
-        """Test from_extraction_data and to_log integration"""
-        # Prepare extraction data with languages and options
-        from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-        from trainable_entity_extractor.domain.LabeledData import LabeledData
-        from trainable_entity_extractor.domain.Option import Option
-        from trainable_entity_extractor.domain.TrainingSample import TrainingSample
-
-        sample1 = TrainingSample(labeled_data=LabeledData(source_text="Text 1", language_iso="en"))
-        sample2 = TrainingSample(labeled_data=LabeledData(source_text="Text 2", language_iso="fr"))
-        option1 = Option(id="1", label="Option 1")
-        option2 = Option(id="2", label="Option 2")
+    def test_add_performance_and_to_log(self):
         extraction_identifier = ExtractionIdentifier(run_name="test_run", extraction_name="test_extraction")
-        extraction_data = ExtractionData(
-            samples=[sample1, sample2], options=[option1, option2], extraction_identifier=extraction_identifier
-        )
 
-        summary = PerformanceSummary.from_extraction_data(
+        summary = PerformanceSummary(
             extractor_name="Integration Extractor",
+            samples_count=2,
+            options_count=2,
+            languages=["en", "fr"],
             training_samples_count=8,
             testing_samples_count=2,
-            extraction_data=extraction_data,
+            extraction_identifier=extraction_identifier,
         )
-        summary.add_performance("test_method", 0.85)
+        summary.add_performance("test_method", 85.0)
         log = summary.to_log()
         assert "Integration Extractor" in log
         assert "2 language(s): en, fr" in log or "2 language(s): fr, en" in log
         assert "Options count: 2" in log
         assert "test_method" in log
-        assert "0.85" in log
+        assert "85.00%" in log
 
-    def test_from_extraction_data_and_to_log_with_extraction_identifier(self):
-        """Test from_extraction_data and to_log integration with ExtractionIdentifier"""
-        from trainable_entity_extractor.domain.ExtractionData import ExtractionData
-        from trainable_entity_extractor.domain.LabeledData import LabeledData
-        from trainable_entity_extractor.domain.Option import Option
-        from trainable_entity_extractor.domain.TrainingSample import TrainingSample
-        from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
-
+    def test_add_performance_and_to_log_with_extraction_identifier(self):
         extraction_identifier = ExtractionIdentifier(run_name="run42", extraction_name="extract99")
-        sample1 = TrainingSample(labeled_data=LabeledData(source_text="Text 1", language_iso="en"))
-        sample2 = TrainingSample(labeled_data=LabeledData(source_text="Text 2", language_iso="fr"))
-        option1 = Option(id="1", label="Option 1")
-        option2 = Option(id="2", label="Option 2")
-        extraction_data = ExtractionData(
-            samples=[sample1, sample2], options=[option1, option2], extraction_identifier=extraction_identifier
-        )
 
-        summary = PerformanceSummary.from_extraction_data(
+        summary = PerformanceSummary(
             extractor_name="Integration Extractor",
+            samples_count=2,
+            options_count=2,
+            languages=["en", "fr"],
             training_samples_count=8,
             testing_samples_count=2,
-            extraction_data=extraction_data,
+            extraction_identifier=extraction_identifier,
         )
-        summary.add_performance("test_method", 0.85)
+        summary.add_performance("test_method", 85.0)
         log = summary.to_log()
         assert "Integration Extractor" in log
         assert "2 language(s): en, fr" in log or "2 language(s): fr, en" in log
         assert "Options count: 2" in log
         assert "test_method" in log
-        assert "0.85" in log
-        assert "run42 / extract99" in log  # ExtractionIdentifier string representation
+        assert "85.00%" in log
+        assert "run42 / extract99" in log
+
+    def test_from_distributed_job(self):
+        extraction_identifier = ExtractionIdentifier(run_name="dist_run", extraction_name="dist_extraction")
+
+        extractor_job = TrainableEntityExtractorJob(
+            run_name="dist_run",
+            extraction_name="dist_extraction",
+            extractor_name="Test Extractor",
+            method_name="test_method",
+            options=[],
+            gpu_needed=False,
+            timeout=300,
+        )
+
+        performance_result = Performance(
+            performance=90.0,
+            testing_samples_count=10,
+            training_samples_count=40,
+            samples_count=50,
+        )
+
+        sub_job = DistributedSubJob(
+            extractor_job=extractor_job,
+            status=JobStatus.SUCCESS,
+            result=performance_result,
+        )
+
+        distributed_job = DistributedJob(
+            type=JobType.PERFORMANCE,
+            sub_jobs=[sub_job],
+            extraction_identifier=extraction_identifier,
+        )
+
+        summary = PerformanceSummary.from_distributed_job(distributed_job)
+
+        assert summary.extractor_name == "Test Extractor"
+        assert summary.samples_count == 50
+        assert summary.options_count == 0
+        assert summary.training_samples_count == 40
+        assert summary.testing_samples_count == 10
+        assert summary.extraction_identifier == extraction_identifier
+        assert summary.languages == []
+
+    def test_add_performance_from_sub_job(self):
+        summary = PerformanceSummary(
+            extractor_name="Test Extractor",
+            samples_count=10,
+            options_count=0,
+            languages=["en"],
+            training_samples_count=8,
+            testing_samples_count=2,
+        )
+
+        extractor_job = TrainableEntityExtractorJob(
+            run_name="test_run",
+            extraction_name="test_extraction",
+            extractor_name="Test Extractor",
+            method_name="method_a",
+            options=[],
+            gpu_needed=False,
+            timeout=300,
+        )
+
+        performance_result = Performance(
+            performance=85.5,
+            testing_samples_count=2,
+            training_samples_count=8,
+            samples_count=10,
+        )
+
+        sub_job = DistributedSubJob(
+            extractor_job=extractor_job,
+            status=JobStatus.SUCCESS,
+            result=performance_result,
+        )
+
+        summary.add_performance_from_sub_job(sub_job)
+
+        assert len(summary.performances) == 1
+        assert summary.performances[0].method_name == "method_a"
+        assert summary.performances[0].performance == 85.5
+        assert summary.performances[0].failed == False

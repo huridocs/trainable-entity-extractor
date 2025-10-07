@@ -152,6 +152,7 @@ class ExtractorBase:
                 failed=False,
                 testing_samples_count=len(test_set.samples),
                 training_samples_count=len(train_set.samples),
+                samples_count=len(extraction_data.samples),
             )
 
         except Exception as e:

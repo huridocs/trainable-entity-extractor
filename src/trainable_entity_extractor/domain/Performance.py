@@ -9,3 +9,4 @@ class Performance(BaseModel):
     failed: bool = False
     testing_samples_count: int = 0
     training_samples_count: int = 0
+    samples_count: int = 0
