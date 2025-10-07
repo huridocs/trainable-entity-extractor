@@ -36,6 +36,9 @@ class PerformanceLog(BaseModel):
         return execution_time_string
 
     def to_log(self, samples_count: int) -> str:
+        if self.failed:
+            return f"{self.method_name} - Failed"
+
         mistakes = round(samples_count * (100 - self.performance) / 100)
         mistakes_text = f"{mistakes} mistakes" if mistakes != 1 else "1 mistake"
         return f"{self.method_name} - {self.get_execution_time_string(self.execution_seconds)} / {mistakes_text} / {self.performance:.2f}%"
