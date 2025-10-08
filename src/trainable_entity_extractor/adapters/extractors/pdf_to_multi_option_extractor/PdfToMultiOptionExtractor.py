@@ -87,7 +87,6 @@ from trainable_entity_extractor.adapters.extractors.segment_selector.FastAndPosi
 )
 from trainable_entity_extractor.adapters.extractors.segment_selector.FastSegmentSelector import FastSegmentSelector
 from trainable_entity_extractor.adapters.extractors.segment_selector.SegmentSelector import SegmentSelector
-from trainable_entity_extractor.domain.PerformanceSummary import PerformanceSummary
 from trainable_entity_extractor.ports.Logger import Logger
 
 RETRAIN_SAMPLES_THRESHOLD = 250

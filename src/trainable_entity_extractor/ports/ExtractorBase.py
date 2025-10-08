@@ -156,10 +156,10 @@ class ExtractorBase:
             )
 
         except Exception as e:
-            self.logger.log(extraction_data.extraction_identifier, "ERROR", LogSeverity.info, e)
+            self.logger.log(extraction_data.extraction_identifier, "ERROR", LogSeverity.error, e)
             execution_time = int(time.time() - start_time)
 
-            return Performance(method_name=method_name, execution_seconds=execution_time)
+            return Performance(method_name=method_name, execution_seconds=execution_time, failed=True)
 
     def train_one_method(
         self, extractor_job: TrainableEntityExtractorJob, extraction_data: ExtractionData
