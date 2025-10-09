@@ -69,7 +69,7 @@ class SingleLabelSetFitEnglishMethod(MultiLabelMethod):
         for sample in extraction_data.samples:
             labels.append("no_label")
             if sample.labeled_data.values:
-                options = [option for option in self.options if option.id == sample.labeled_data.values[0].id]
+                options = [option for option in extraction_data.options if option.id == sample.labeled_data.values[0].id]
                 if options:
                     labels[-1] = options[0].label
 
@@ -90,7 +90,9 @@ class SingleLabelSetFitEnglishMethod(MultiLabelMethod):
         train_dataset = self.get_dataset_from_data(extraction_data)
         batch_size = get_batch_size(len(extraction_data.samples))
 
-        model = SetFitModel.from_pretrained(self.model_name, labels=[x.label for x in self.options], trust_remote_code=True)
+        model = SetFitModel.from_pretrained(
+            self.model_name, labels=[x.label for x in extraction_data.options], trust_remote_code=True
+        )
 
         args = TrainingArguments(
             output_dir=self.get_model_path(),
