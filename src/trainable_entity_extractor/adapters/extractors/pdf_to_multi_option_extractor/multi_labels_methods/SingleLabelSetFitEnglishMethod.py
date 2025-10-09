@@ -28,9 +28,6 @@ class SingleLabelSetFitEnglishMethod(MultiLabelMethod):
         return True
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
-        if not torch.cuda.is_available():
-            return False
-
         if extraction_data.multi_value:
             return False
 

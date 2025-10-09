@@ -11,6 +11,8 @@ from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIde
 from trainable_entity_extractor.domain.LabeledData import LabeledData
 from trainable_entity_extractor.domain.Option import Option
 from trainable_entity_extractor.domain.PdfData import PdfData
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_labels_methods.SetFitMultilingualMethod import (
     SetFitMultilingualMethod,
@@ -25,7 +27,7 @@ class TestSetFitMultilingualMethod(TestCase):
     def tearDown(self):
         shutil.rmtree(join(DATA_PATH, self.TENANT), ignore_errors=True)
 
-    @unittest.SkipTest
+    @unittest.skip("Skipping GPU test in CI/CD")
     def test_train_and_predict(self):
         if not torch.cuda.is_available():
             return
@@ -55,21 +57,19 @@ class TestSetFitMultilingualMethod(TestCase):
         extraction_data = ExtractionData(
             multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
-        setfit_multilingual_method = SetFitMultilingualMethod(extraction_identifier, options, True)
+        setfit_multilingual_method = SetFitMultilingualMethod(extraction_identifier)
 
         try:
             setfit_multilingual_method.train(extraction_data)
         except Exception as e:
             self.fail(f"train() raised {type(e).__name__}")
 
-        prediction_sample_1 = TrainingSample(pdf_data=pdf_data_1)
-        prediction_sample_2 = TrainingSample(pdf_data=pdf_data_2)
-        prediction_sample_4 = TrainingSample(pdf_data=pdf_data_4)
+        prediction_sample_1 = PredictionSample(pdf_data=pdf_data_1)
+        prediction_sample_2 = PredictionSample(pdf_data=pdf_data_2)
+        prediction_sample_4 = PredictionSample(pdf_data=pdf_data_4)
         prediction_samples = [prediction_sample_1, prediction_sample_2, prediction_sample_4]
 
-        prediction_data = ExtractionData(
-            multi_value=True, options=options, samples=prediction_samples, extraction_identifier=extraction_identifier
-        )
+        prediction_data = PredictionSamplesData(multi_value=True, options=options, prediction_samples=prediction_samples)
         predictions = setfit_multilingual_method.predict(prediction_data)
 
         self.assertEqual(3, len(predictions))

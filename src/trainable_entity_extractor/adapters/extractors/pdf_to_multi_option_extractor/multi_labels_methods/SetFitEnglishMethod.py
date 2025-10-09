@@ -75,7 +75,7 @@ class SetFitEnglishMethod(MultiLabelMethod):
 
         model = SetFitModel.from_pretrained(
             self.model_name,
-            labels=[x.label for x in self.options],
+            labels=[x.label for x in extraction_data.options],
             multi_target_strategy="one-vs-rest",
             trust_remote_code=True,
         )
@@ -118,6 +118,8 @@ class SetFitEnglishMethod(MultiLabelMethod):
         if prediction_samples_data.multi_value:
             predictions_proba = model.predict_proba(texts)
             threshold = 0.5
+            if hasattr(predictions_proba, "cpu"):
+                predictions_proba = predictions_proba.cpu().numpy()
             predictions = (predictions_proba > threshold).astype(int)
 
         predictions_values = list()
@@ -137,9 +139,6 @@ class SetFitEnglishMethod(MultiLabelMethod):
         return predictions_values
 
     def can_be_used(self, extraction_data: ExtractionData) -> bool:
-        if not torch.cuda.is_available():
-            return False
-
         if not extraction_data.multi_value:
             return False
 

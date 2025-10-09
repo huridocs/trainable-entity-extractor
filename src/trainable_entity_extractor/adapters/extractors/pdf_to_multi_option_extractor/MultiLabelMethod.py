@@ -55,28 +55,19 @@ class MultiLabelMethod(ABC):
     def remove_model(self):
         shutil.rmtree(join(self.get_path()), ignore_errors=True)
 
-    def get_texts_labels(self, multi_option_data: ExtractionData) -> (list[str], list[list[int]]):
+    def get_texts_labels(self, extraction_data: ExtractionData) -> (list[str], list[list[int]]):
         texts = list()
-        for sample in multi_option_data.samples:
+        for sample in extraction_data.samples:
             texts.append(" ".join([x.text_content.strip() for x in sample.pdf_data.pdf_data_segments]))
 
-        labels = self.get_one_hot_encoding(multi_option_data)
+        labels = self.get_one_hot_encoding(extraction_data)
         return texts, labels
 
-    def predictions_to_options_list(self, predictions) -> list[list[Value]]:
-        return [self.one_prediction_to_option_list(prediction) for prediction in predictions]
-
-    def one_prediction_to_option_list(self, prediction) -> list[Value]:
-        if not self.multi_value:
-            best_score_index = argmax(prediction)
-            return [self.options[best_score_index]] if prediction[best_score_index] > 0.5 else []
-
-        return [Value.from_option(self.options[i]) for i, value in enumerate(prediction) if value > 0.5]
-
-    def get_one_hot_encoding(self, multi_option_data: ExtractionData):
-        options_ids = [option.id for option in self.options]
+    @staticmethod
+    def get_one_hot_encoding(extraction_data: ExtractionData):
+        options_ids = [option.id for option in extraction_data.options]
         one_hot_encoding = list()
-        for sample in multi_option_data.samples:
+        for sample in extraction_data.samples:
             one_hot_encoding.append([0] * len(options_ids))
             for option in sample.labeled_data.values:
                 if option.id not in options_ids:
