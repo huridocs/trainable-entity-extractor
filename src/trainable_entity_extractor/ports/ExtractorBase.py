@@ -113,6 +113,13 @@ class ExtractorBase:
                 metadata=(
                     extraction_data.extraction_identifier.metadata if extraction_data.extraction_identifier.metadata else {}
                 ),
+                languages=list(
+                    set(
+                        sample.labeled_data.language_iso
+                        for sample in extraction_data.samples
+                        if sample.labeled_data and sample.labeled_data.language_iso
+                    )
+                ),
             )
             jobs.append(job)
 

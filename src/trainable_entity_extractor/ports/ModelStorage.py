@@ -59,6 +59,7 @@ class ModelStorage(ABC):
             "gpu_needed": job.gpu_needed,
             "timeout": job.timeout,
             "metadata": job.metadata,
+            "languages": job.languages,
         }
 
     @staticmethod
@@ -75,6 +76,7 @@ class ModelStorage(ABC):
         gpu_needed = job_data.get("gpu_needed", False)
         timeout = job_data.get("timeout", 3600)
         metadata = job_data.get("metadata", {})
+        languages = job_data.get("languages", [])
 
         if version != "1.0":
             pass
@@ -89,4 +91,5 @@ class ModelStorage(ABC):
             gpu_needed=gpu_needed,
             timeout=timeout,
             metadata=metadata,
+            languages=languages,
         )

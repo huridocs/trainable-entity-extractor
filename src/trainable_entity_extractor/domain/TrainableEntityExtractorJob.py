@@ -14,6 +14,7 @@ class TrainableEntityExtractorJob(BaseModel):
     timeout: int
     output_path: str = ""
     metadata: dict[str, str] = dict()
+    languages: list[str] = []
 
     def set_extractors_path(self, path: str) -> "TrainableEntityExtractorJob":
         self.output_path = path
