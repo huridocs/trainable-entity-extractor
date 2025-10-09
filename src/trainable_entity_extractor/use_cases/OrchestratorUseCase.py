@@ -50,7 +50,7 @@ class OrchestratorUseCase:
         extraction_identifier = distributed_job.extraction_identifier
         sub_job = distributed_job.sub_jobs[0]
 
-        if sub_job.status == JobStatus.WAITING:
+        if sub_job.status == JobStatus.PENDING:
             self.job_executor.start_training(extraction_identifier, sub_job)
 
         if sub_job.status == JobStatus.SUCCESS:
@@ -132,7 +132,7 @@ class OrchestratorUseCase:
                 self._cancel_and_remove_job(distributed_job)
                 return
 
-            if sub_job.status == JobStatus.WAITING:
+            if sub_job.status == JobStatus.PENDING:
                 self.job_executor.start_performance_evaluation(distributed_job.extraction_identifier, sub_job)
 
             if sub_job.result and hasattr(sub_job.result, "is_perfect") and sub_job.result.is_perfect:

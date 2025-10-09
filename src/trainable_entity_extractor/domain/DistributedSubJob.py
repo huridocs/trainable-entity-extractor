@@ -10,5 +10,5 @@ class DistributedSubJob(BaseModel):
     extractor_job: TrainableEntityExtractorJob
     retry_count: int = 0
     max_retries: int = 2
-    status: JobStatus = JobStatus.WAITING
+    status: JobStatus = JobStatus.PENDING
     result: Performance | bool | None = None
