@@ -1,5 +1,6 @@
 import json
 from dateparser.search import search_dates
+from gliner import GLiNER
 
 
 class GlinerDateExtractor:
@@ -53,3 +54,7 @@ class GlinerDateExtractor:
         entities = self.remove_overlapping_entities(entities)
         date_times = [d[1] for e in entities for d in search_dates(e["text"])]
         return date_times
+
+    @staticmethod
+    def get_model():
+        return GLiNER.from_pretrained("urchade/gliner_multi-v2.1")

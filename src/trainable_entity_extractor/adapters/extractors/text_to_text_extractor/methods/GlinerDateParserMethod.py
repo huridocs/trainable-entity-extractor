@@ -1,5 +1,3 @@
-from gliner import GLiNER
-
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
@@ -31,7 +29,7 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
         return None
 
     def train(self, extraction_data: ExtractionData):
-        gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
+        gliner_model = GlinerDateExtractor.get_model()
 
         gliner_date_extractor = GlinerDateExtractor(gliner_model)
 
@@ -46,7 +44,7 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
         self.save_json(self.IS_VALID_EXECUTION_FILE_NAME, "true")
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
-        gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
+        gliner_model = GlinerDateExtractor.get_model()
 
         if self.load_json(self.IS_VALID_EXECUTION_FILE_NAME) == "false":
             return [""] * len(prediction_samples_data.prediction_samples)

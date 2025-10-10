@@ -1,7 +1,5 @@
 import re
-
-from gliner import GLiNER
-
+from trainable_entity_extractor.adapters.extractors.GlinerDateExtractor import GlinerDateExtractor
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
@@ -17,7 +15,7 @@ class GlinerFirstDateMethod(ToTextExtractorMethod):
         self.save_json("languages.json", list(set(languages)))
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
-        gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
+        gliner_model = GlinerDateExtractor.get_model()
         predictions_samples = prediction_samples_data.prediction_samples
         predictions = [""] * len(predictions_samples)
         languages = self.load_json("languages.json")
