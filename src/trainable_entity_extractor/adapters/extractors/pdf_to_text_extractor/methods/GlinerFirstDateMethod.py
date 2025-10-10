@@ -1,26 +1,54 @@
 import re
 
+from gliner import GLiNER
+
+from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
+from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
-from trainable_entity_extractor.adapters.extractors.pdf_to_text_extractor.methods.FirstDateMethod import FirstDateMethod
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.GlinerDateParserMethod import (
     GlinerDateParserMethod,
 )
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 
 
-class GlinerFirstDateMethod(FirstDateMethod):
+class GlinerFirstDateMethod(ToTextExtractorMethod):
+    def train(self, extraction_data: ExtractionData):
+        languages = [x.labeled_data.language_iso for x in extraction_data.samples]
+        self.save_json("languages.json", list(set(languages)))
+
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
+        predictions_samples = prediction_samples_data.prediction_samples
+        predictions = [""] * len(predictions_samples)
+        languages = self.load_json("languages.json")
+        for index, prediction_sample in enumerate(predictions_samples):
+            segments = prediction_sample.pdf_data.pdf_data_segments
+
+            if predictions[index] or not prediction_sample.pdf_data or not segments:
+                continue
+
+            predictions[index] = self.get_date_from_segments(gliner_model, segments, languages)
+
+        return predictions
+
+    @staticmethod
+    def loop_segments(segments: list[PdfDataSegment]):
+        for segment in segments:
+            yield segment
+
     @staticmethod
     def contains_year(text: str):
         year_pattern = re.compile(r"([0-9]{2})")
         return bool(year_pattern.search(text.replace(" ", "")))
 
-    def get_date_from_segments(self, segments: list[PdfDataSegment], languages):
+    def get_date_from_segments(self, model, segments: list[PdfDataSegment], languages):
         merge_segments: list[list[PdfDataSegment]] = self.merge_segments_for_dates(segments)
         for segments in merge_segments:
             segment_merged = PdfDataSegment.from_list_to_merge(segments)
             if not self.contains_year(segment_merged.text_content):
                 continue
 
-            date = GlinerDateParserMethod.get_date([segment_merged.text_content])
+            date = GlinerDateParserMethod.get_date(model, [segment_merged.text_content])
             if date:
                 for segment in segments:
                     segment.ml_label = 1

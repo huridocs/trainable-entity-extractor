@@ -1,3 +1,5 @@
+from gliner import GLiNER
+
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.adapters.extractors.ToTextExtractorMethod import ToTextExtractorMethod
@@ -15,12 +17,12 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
         return "".join([letter for letter in text if letter.isalnum() or letter.isspace()])
 
     @staticmethod
-    def get_date(tags_texts: list[str]):
+    def get_date(model, tags_texts: list[str]):
         if not tags_texts:
             return ""
         text = GlinerDateParserMethod.get_alphanumeric_text_with_spaces(" ".join(tags_texts))
         try:
-            gliner_date_extractor = GlinerDateExtractor()
+            gliner_date_extractor = GlinerDateExtractor(model)
             dates = gliner_date_extractor.extract_dates(text)
             return dates[0]
         except:
@@ -29,7 +31,9 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
         return None
 
     def train(self, extraction_data: ExtractionData):
-        gliner_date_extractor = GlinerDateExtractor()
+        gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
+
+        gliner_date_extractor = GlinerDateExtractor(gliner_model)
 
         for sample in extraction_data.samples[:15]:
             if not sample.labeled_data.label_text.strip():
@@ -42,11 +46,13 @@ class GlinerDateParserMethod(ToTextExtractorMethod):
         self.save_json(self.IS_VALID_EXECUTION_FILE_NAME, "true")
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
+        gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
+
         if self.load_json(self.IS_VALID_EXECUTION_FILE_NAME) == "false":
             return [""] * len(prediction_samples_data.prediction_samples)
 
         predictions_dates = [
-            self.get_date(prediction_sample.get_input_text_by_lines())
+            self.get_date(gliner_model, prediction_sample.get_input_text_by_lines())
             for prediction_sample in prediction_samples_data.prediction_samples
         ]
         predictions = [date.strftime("%Y-%m-%d") if date else "" for date in predictions_dates]

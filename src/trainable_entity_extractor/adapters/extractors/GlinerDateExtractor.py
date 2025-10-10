@@ -1,10 +1,12 @@
 import json
-
 from dateparser.search import search_dates
-from gliner import GLiNER
 
 
 class GlinerDateExtractor:
+
+    def __init__(self, model):
+        self.model = model
+
     @staticmethod
     def find_unique_entity_dicts(entities: list[dict]) -> list[dict]:
         dicts_without_score = [{k: v for k, v in d.items() if k != "score"} for d in entities]
@@ -25,8 +27,6 @@ class GlinerDateExtractor:
         return result
 
     def extract_dates(self, text: str):
-        gliner_model = GLiNER.from_pretrained("urchade/gliner_multi-v2.1")
-
         words = text.split()
 
         entities = []
@@ -37,7 +37,7 @@ class GlinerDateExtractor:
         for i in range(0, len(words), slide_size):
             window_words = words[i : i + window_size]
             window_text = " ".join(window_words)
-            window_entities = gliner_model.predict_entities(window_text, ["date"])
+            window_entities = self.model.predict_entities(window_text, ["date"])
 
             for entity in window_entities:
                 entity["start"] += last_slide_end_index
