@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.ExtractionDataSummary import ExtractionDataSummary
 from trainable_entity_extractor.domain.Performance import Performance
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
@@ -44,6 +45,9 @@ class TrainUseCase:
         return None
 
     def get_jobs(self, extraction_data: ExtractionData) -> list[TrainableEntityExtractorJob]:
+        summary = ExtractionDataSummary.from_extraction_data(extraction_data)
+        self.logger.log(extraction_data.extraction_identifier, summary.to_report_string())
+
         for extractor in self.extractors:
             extractor_instance = extractor(extraction_data.extraction_identifier, self.logger)
 

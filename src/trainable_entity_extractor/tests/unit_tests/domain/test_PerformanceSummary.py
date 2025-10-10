@@ -125,14 +125,12 @@ class TestPerformanceSummary:
             languages=["en", "es"],
             training_samples_count=25,
             testing_samples_count=15,
-            empty_pdf_count=2,
         )
 
         assert result.extractor_name == "PDF Extractor"
         assert result.samples_count == 4
         assert result.options_count == 0
         assert set(result.languages) == {"en", "es"}
-        assert result.empty_pdf_count == 2
 
     def test_to_log_basic_summary_no_methods(self):
         """Test to_log with basic summary but no performance methods"""

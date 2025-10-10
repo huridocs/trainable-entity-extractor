@@ -30,7 +30,7 @@ class LightgbmFrequentWords:
 
     def create_model(self, training_pdfs_segments: list[PdfData], model_path):
         start = time()
-        self.set_segments(pdfs_segments=training_pdfs_segments)
+        self.set_segments(pdfs_data=training_pdfs_segments)
 
         config_logger.info(f"Set segments {int(time() - start)} seconds")
 
@@ -81,13 +81,13 @@ class LightgbmFrequentWords:
 
         return X, y
 
-    def set_segments(self, pdfs_segments: list[PdfData]):
+    def set_segments(self, pdfs_data: list[PdfData]):
         self.segments = list()
-        for pdf_features in pdfs_segments:
-            self.segments.extend(SegmentLightgbmFrequentWords.from_pdf_features(pdf_features))
+        for pdf_data in pdfs_data:
+            self.segments.extend(SegmentLightgbmFrequentWords.from_pdf_data(pdf_data))
 
-    def predict(self, model, testing_pdfs_segments: list[PdfData], model_path):
-        self.set_segments(testing_pdfs_segments)
+    def predict(self, model, pdfs_data: list[PdfData], model_path):
+        self.set_segments(pdfs_data)
         self.set_most_frequent_words_to_segments(model_path)
         x, y = self.get_training_data()
         x = x[:, : model.num_feature()]

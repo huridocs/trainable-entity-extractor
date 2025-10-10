@@ -32,8 +32,10 @@ class PredictionSample(BaseModel):
         return [""]
 
     @staticmethod
-    def from_pdf_data(pdf_data: PdfData):
-        return PredictionSample(pdf_data=pdf_data)
+    def from_pdf_data(pdf_data: PdfData, entity_name: str = ""):
+        prediction_sample = PredictionSample.from_text(pdf_data.get_text(), entity_name)
+        prediction_sample.pdf_data = pdf_data
+        return prediction_sample
 
     @staticmethod
     def from_text(text: str, entity_name: str = ""):

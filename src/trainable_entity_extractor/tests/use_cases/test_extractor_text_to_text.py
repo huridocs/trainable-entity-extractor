@@ -96,3 +96,6 @@ class TestExtractorTextToText(TestCase):
 
         self.assertEqual(1, len(suggestions))
         self.assertEqual("0", suggestions[0].text)
+        self.assertEqual(
+            '<p class="ix_matching_paragraph">test <span class="ix_match">0</span></p>', suggestions[0].segment_text
+        )

@@ -235,11 +235,11 @@ class SegmentLightgbmFrequentWords:
         return False
 
     @staticmethod
-    def from_pdf_features(pdf_features: PdfData) -> list["SegmentLightgbmFrequentWords"]:
-        modes = Modes(pdf_features)
+    def from_pdf_data(pdf_data: PdfData) -> list["SegmentLightgbmFrequentWords"]:
+        modes = Modes(pdf_data)
         segments: list["SegmentLightgbmFrequentWords"] = list()
-        for index, pdf_segment in enumerate(pdf_features.pdf_data_segments):
-            segment_landmarks = SegmentLightgbmFrequentWords(index, pdf_segment, pdf_features, modes)
+        for index, pdf_segment in enumerate(pdf_data.pdf_data_segments):
+            segment_landmarks = SegmentLightgbmFrequentWords(index, pdf_segment, pdf_data, modes)
             segments.append(segment_landmarks)
 
         sorted_pdf_segments = sorted(segments, key=lambda x: (x.page_index, x.top))

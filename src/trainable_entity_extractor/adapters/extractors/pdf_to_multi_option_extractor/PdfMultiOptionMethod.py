@@ -57,7 +57,7 @@ class PdfMultiOptionMethod(MethodBase):
 
         self.train(train_set)
         prediction_samples_data = PredictionSamplesData(
-            prediction_samples=[PredictionSample.from_text(x.pdf_data.get_text()) for x in test_set.samples],
+            prediction_samples=[PredictionSample.from_pdf_data(x.pdf_data) for x in test_set.samples],
             options=self.options,
             multi_value=self.multi_value,
         )

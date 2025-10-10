@@ -17,7 +17,7 @@ class Value(BaseModel):
         if not isinstance(other, Value):
             return False
 
-        if other.segment_text and self.segment_text != other.segment_text:
+        if self.segment_text and other.segment_text and self.segment_text != other.segment_text:
             return False
 
         return self.id == other.id and self.label == other.label

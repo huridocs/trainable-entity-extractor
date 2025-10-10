@@ -108,8 +108,18 @@ class Suggestion(BaseModel):
     def from_prediction_multi_option(extraction_identifier: ExtractionIdentifier, entity_name: str, values: list[Value]):
         suggestion = Suggestion.get_empty(extraction_identifier, entity_name)
         suggestion.values = values
-        if values:
-            suggestion.segment_text = values[0].segment_text
+        for value in values:
+            if value.segment_text:
+                suggestion._raw_context = [values[0].segment_text]
+                suggestion.segment_text = FormatSegmentText([values[0].segment_text], value.label).get_text()
+                break
+
+        for value in values:
+            if value.segment_text:
+                value.segment_text = FormatSegmentText([value.segment_text], value.label).get_text()
+            else:
+                value.segment_text = FormatSegmentText(suggestion._raw_context, value.label).get_text()
+
         return suggestion
 
     def set_segment_text_from_sample(self, prediction_sample: PredictionSample):

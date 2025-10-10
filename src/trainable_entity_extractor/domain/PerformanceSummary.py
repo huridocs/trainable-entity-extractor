@@ -17,7 +17,6 @@ class PerformanceSummary(BaseModel):
     performances: list[PerformanceLog] = []
     extraction_identifier: ExtractionIdentifier | None = None
     previous_timestamp: int = Field(default_factory=lambda: int(time()))
-    empty_pdf_count: int = 0
 
     def add_performance(self, method_name: str, performance: float, failed: bool = False):
         current_time = int(time())
@@ -53,7 +52,6 @@ class PerformanceSummary(BaseModel):
         text += f"Samples: {self.samples_count}\n"
         text += f"Train/test: {self.training_samples_count}/{self.testing_samples_count}\n"
         text += f"{len(self.languages)} language(s): {', '.join(self.languages) if self.languages else 'None'}\n"
-        text += f"Empty PDFs: {self.empty_pdf_count}\n" if self.empty_pdf_count else ""
         text += f"Options count: {self.options_count}\n" if self.options_count > 0 else ""
         text += "Methods by performance:\n"
         for performance in sorted(self.performances, key=lambda x: x.performance, reverse=True):
@@ -94,5 +92,4 @@ class PerformanceSummary(BaseModel):
             languages=languages,
             training_samples_count=training_samples_count,
             testing_samples_count=testing_samples_count,
-            empty_pdf_count=0,
         )

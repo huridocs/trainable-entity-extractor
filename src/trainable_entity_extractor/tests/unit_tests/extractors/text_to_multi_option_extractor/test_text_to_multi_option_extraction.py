@@ -76,9 +76,27 @@ class TestTextToMultiOptionExtraction(TestCase):
         suggestions = multi_option_extraction.get_suggestions(method, prediction_samples_data)
 
         self.assertEqual(2, len(suggestions))
-        self.assertEqual([Value(id="1", label="1", segment_text="point 1")], suggestions[0].values)
+        self.assertEqual(
+            [
+                Value(
+                    id="1",
+                    label="1",
+                    segment_text='<p class="ix_matching_paragraph">point <span class="ix_match">1</span></p>',
+                )
+            ],
+            suggestions[0].values,
+        )
         self.assertEqual("entity_name_1", suggestions[0].entity_name)
-        self.assertEqual([Value(id="3", label="3", segment_text="point 3 point 2")], suggestions[1].values)
+        self.assertEqual(
+            [
+                Value(
+                    id="3",
+                    label="3",
+                    segment_text='<p class="ix_matching_paragraph">point <span class="ix_match">3</span> point 2</p>',
+                )
+            ],
+            suggestions[1].values,
+        )
         self.assertEqual("entity_name_3", suggestions[1].entity_name)
 
     def test_first_word_regex(self):
@@ -205,12 +223,8 @@ report (Australia);"""
         suggestions = multi_option_extraction.get_suggestions(method, prediction_samples_data)
 
         self.assertEqual(2, len(suggestions))
-        self.assertEqual(
-            [Value(id=options[0].id, label=options[0].label, segment_text=source_text_1)], suggestions[0].values
-        )
-        self.assertEqual(
-            [Value(id=options[1].id, label=options[1].label, segment_text=source_text_2)], suggestions[1].values
-        )
+        self.assertEqual([Value(id=options[0].id, label=options[0].label)], suggestions[0].values)
+        self.assertEqual([Value(id=options[1].id, label=options[1].label)], suggestions[1].values)
 
     def test_multi_value(self):
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
@@ -250,14 +264,42 @@ report (Australia);"""
         suggestions = multi_option_extraction.get_suggestions(method, prediction_samples_data)
 
         self.assertEqual(2, len(suggestions))
-        self.assertTrue(Value(id="0", label="0", segment_text="point 0 point 1") in suggestions[0].values)
-        self.assertTrue(Value(id="1", label="1", segment_text="point 0 point 1") in suggestions[0].values)
-        self.assertTrue(Value(id="2", label="2", segment_text="point 0 point 1") not in suggestions[0].values)
+        self.assertTrue(
+            Value(
+                id="0",
+                label="0",
+                segment_text='<p class="ix_matching_paragraph">point <span class="ix_match">0</span> point 1</p>',
+            )
+            in suggestions[0].values
+        )
+        self.assertTrue(
+            Value(
+                id="1",
+                label="1",
+                segment_text='<p class="ix_matching_paragraph">point 0 point <span class="ix_match">1</span></p>',
+            )
+            in suggestions[0].values
+        )
+        self.assertTrue(Value(id="2", label="2") not in suggestions[0].values)
         self.assertEqual("entity_name_1", suggestions[0].entity_name)
 
-        self.assertTrue(Value(id="0", label="0", segment_text="point 2 point 0") in suggestions[1].values)
-        self.assertTrue(Value(id="1", label="1", segment_text="point 2 point 0") not in suggestions[1].values)
-        self.assertTrue(Value(id="2", label="2", segment_text="point 2 point 0") in suggestions[1].values)
+        self.assertTrue(
+            Value(
+                id="0",
+                label="0",
+                segment_text='<p class="ix_matching_paragraph">point 2 point <span class="ix_match">0</span></p>',
+            )
+            in suggestions[1].values
+        )
+        self.assertTrue(Value(id="1", label="1") not in suggestions[1].values)
+        self.assertTrue(
+            Value(
+                id="2",
+                label="2",
+                segment_text='<p class="ix_matching_paragraph">point <span class="ix_match">2</span> point 0</p>',
+            )
+            in suggestions[1].values
+        )
         self.assertEqual("entity_name_3", suggestions[1].entity_name)
 
     def test_no_prediction_data(self):

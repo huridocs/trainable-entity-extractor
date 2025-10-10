@@ -85,8 +85,16 @@ class TestExtractorTextToMultiOption(TestCase):
         self.assertEqual(extraction_id, suggestions[0].id)
         self.assertEqual(
             [
-                Value(id="2", label="dfg", segment_text="foo var dfg hij foo var"),
-                Value(id="3", label="hij", segment_text="foo var dfg hij foo var"),
+                Value(
+                    id="2",
+                    label="dfg",
+                    segment_text='<p class="ix_matching_paragraph">foo var <span class="ix_match">dfg</span> hij foo var</p>',
+                ),
+                Value(
+                    id="3",
+                    label="hij",
+                    segment_text='<p class="ix_matching_paragraph">foo var dfg <span class="ix_match">hij</span> foo var</p>',
+                ),
             ],
             suggestions[0].values,
         )
