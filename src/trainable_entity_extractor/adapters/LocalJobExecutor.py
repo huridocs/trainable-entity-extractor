@@ -15,8 +15,6 @@ from trainable_entity_extractor.domain.DistributedJob import DistributedJob
 from trainable_entity_extractor.domain.DistributedSubJob import DistributedSubJob
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.TrainableEntityExtractorJob import TrainableEntityExtractorJob
-from trainable_entity_extractor.domain.PredictionSample import PredictionSample
-from trainable_entity_extractor.domain.Suggestion import Suggestion
 from trainable_entity_extractor.domain.JobStatus import JobStatus
 from trainable_entity_extractor.ports.JobExecutor import JobExecutor
 from trainable_entity_extractor.ports.ExtractorBase import ExtractorBase
@@ -57,14 +55,12 @@ class LocalJobExecutor(JobExecutor):
                 distributed_sub_job.status = JobStatus.FAILURE
                 return None
 
-            # Quick validation - if no samples, fail fast
             if not extraction_data.samples or len(extraction_data.samples) == 0:
                 distributed_sub_job.status = JobStatus.FAILURE
                 return None
 
             train_use_case = TrainUseCase(extractors=self.EXTRACTORS, logger=self.logger)
 
-            # Try to get performance, but handle any issues gracefully
             try:
                 performance = train_use_case.get_performance(distributed_sub_job.extractor_job, extraction_data)
                 if performance:
@@ -75,7 +71,6 @@ class LocalJobExecutor(JobExecutor):
                     distributed_sub_job.status = JobStatus.FAILURE
                     return None
             except Exception as perf_exception:
-                # Performance evaluation failed - this is acceptable for testing
                 self.logger.log(
                     extraction_identifier, f"Performance evaluation failed: {str(perf_exception)}", severity="warning"
                 )
@@ -121,9 +116,6 @@ class LocalJobExecutor(JobExecutor):
             distributed_sub_job.status = JobStatus.FAILURE
             return False, str(e)
 
-        distributed_sub_job.status = JobStatus.FAILURE
-        return False, "Training failed"
-
     def start_prediction(self, extraction_identifier: ExtractionIdentifier, distributed_sub_job: DistributedSubJob) -> None:
         try:
             prediction_data = self.data_retriever.get_prediction_data(extraction_identifier)
@@ -144,29 +136,6 @@ class LocalJobExecutor(JobExecutor):
         except Exception as e:
             distributed_sub_job.status = JobStatus.FAILURE
             distributed_sub_job.result = False
-
-    def execute_prediction_with_samples(
-        self, extractor_job: TrainableEntityExtractorJob, prediction_samples: List[PredictionSample]
-    ) -> Tuple[bool, str, List[Suggestion]]:
-        job_id = f"predict_samples_{extractor_job.method_name}"
-        extractor_job.status = JobStatus.RUNNING
-
-        try:
-            extractor_instance = self._get_extractor_instance(extractor_job.extractor_name)
-            if not extractor_instance:
-                extractor_job.status = JobStatus.FAILURE
-                return False, f"Extractor {extractor_job.extractor_name} not found", []
-
-            suggestions = extractor_instance.get_suggestions(prediction_samples)
-            suggestions = [suggestion.mark_suggestion_if_empty() for suggestion in suggestions]
-
-            extractor_job.status = JobStatus.SUCCESS
-            self.prediction_results[job_id] = suggestions
-            return True, "Prediction with samples completed successfully", suggestions
-
-        except Exception as e:
-            extractor_job.status = JobStatus.FAILURE
-            return False, str(e), []
 
     def update_job_statuses(self, job: DistributedJob):
         pass

@@ -151,7 +151,6 @@ class ExtractionDataSummary(BaseModel):
                 lines.append(f"  - {lang_dist.language_iso}: {lang_dist.count} samples ({lang_dist.percentage}%)")
 
         if self.has_pdf_data:
-            lines.append(f"\nPDF Data: Present")
             if self.empty_pdfs_count > 0:
                 lines.append(f"Empty PDFs: {self.empty_pdfs_count}")
 
