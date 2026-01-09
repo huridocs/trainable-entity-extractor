@@ -2,6 +2,9 @@ from collections import Counter
 from os.path import join
 from typing import Optional
 
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.filter_segments_methods.CleanBeginning600End600 import (
+    CleanBeginning600End600,
+)
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LogSeverity import LogSeverity
 from trainable_entity_extractor.domain.Option import Option
@@ -111,10 +114,15 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         PdfMultiOptionMethod().set_methods(CleanEndDotDigits1000, FastTextMethod),
         PdfMultiOptionMethod().set_methods(CleanEndDotDigits1000, PDFGeminiMultiLabelMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, PDFGeminiMultiLabelMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginning600End600, PDFGeminiMultiLabelMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SetFitEnglishMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginning600End600, SetFitEnglishMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SetFitMultilingualMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginning600End600, SetFitMultilingualMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SingleLabelSetFitEnglishMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginning600End600, SingleLabelSetFitEnglishMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SingleLabelSetFitMultilingualMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginning600End600, SingleLabelSetFitMultilingualMethod),
     ]
 
     def __init__(self, extraction_identifier: ExtractionIdentifier, logger: Logger):
