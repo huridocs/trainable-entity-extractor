@@ -104,7 +104,7 @@ class PdfData(BaseModel):
         return pdf_data
 
     def get_text(self):
-        return " ".join([segment.text_content for segment in self.pdf_data_segments if segment.text_content])
+        return "\n".join([segment.text_content for segment in self.pdf_data_segments if segment.text_content])
 
     def contains_text(self):
         return "" != self.get_text()
