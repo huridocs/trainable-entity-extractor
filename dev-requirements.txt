@@ -1,5 +1,5 @@
 -r requirements.txt
 pytest==8.2.0
-black==24.4.2
+black==25.1.0
 pdf-annotate==0.12.0
 toml==0.10.2
