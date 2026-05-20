@@ -1,5 +1,8 @@
 import shutil
 
+from langcodes import Language
+from dateparser.languages.loader import default_loader
+
 from trainable_entity_extractor.adapters.ExtractorLogger import ExtractorLogger
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfToMultiOptionExtractor import (
     PdfToMultiOptionExtractor,
@@ -46,6 +49,8 @@ class TrainableEntityExtractor:
         if not self._is_training_valid(extraction_data):
             return False, "Training validation failed"
 
+        self._sanitize_languages(extraction_data)
+
         self.data_retriever.save_extraction_data(self.extraction_identifier, extraction_data)
 
         jobs = self._get_training_jobs(extraction_data)
@@ -65,6 +70,26 @@ class TrainableEntityExtractor:
 
         self._execute_prediction(extractor_job)
         return self.data_retriever.get_suggestions(self.extraction_identifier)
+
+    @staticmethod
+    def _sanitize_languages(extraction_data: ExtractionData) -> None:
+        valid_codes = {loc.shortname for loc in default_loader.get_locales()}
+
+        for sample in extraction_data.samples:
+            raw = sample.labeled_data.language_iso
+            if not raw:
+                sample.labeled_data.language_iso = "en"
+                continue
+            if raw in valid_codes:
+                continue
+            try:
+                normalized = Language.get(raw).language
+                if normalized in valid_codes:
+                    sample.labeled_data.language_iso = normalized
+                else:
+                    sample.labeled_data.language_iso = "en"
+            except Exception:
+                sample.labeled_data.language_iso = "en"
 
     @staticmethod
     def _is_training_valid(extraction_data: ExtractionData) -> bool:

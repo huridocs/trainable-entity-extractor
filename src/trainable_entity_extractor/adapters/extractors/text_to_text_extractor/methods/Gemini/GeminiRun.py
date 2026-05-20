@@ -16,7 +16,7 @@ PROMPT_FILE_NAME = "prompt.txt"
 
 
 class GeminiRun(BaseModel):
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.1-flash-lite"
     max_training_size: int = 0
     prompt: str = ""
     code: str = ""
