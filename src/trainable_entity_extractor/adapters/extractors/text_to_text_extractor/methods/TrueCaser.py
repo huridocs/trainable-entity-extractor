@@ -10,7 +10,7 @@ from nltk.tokenize.treebank import TreebankWordDetokenizer
 
 class TrueCaser(object):
     def __init__(self, dist_file_path):
-        nltk.download("punkt")
+        nltk.download("punkt_tab")
         with open(dist_file_path, "rb") as distributions_file:
             pickle_dict = pickle.load(distributions_file)
             self.uni_dist = pickle_dict["uni_dist"]

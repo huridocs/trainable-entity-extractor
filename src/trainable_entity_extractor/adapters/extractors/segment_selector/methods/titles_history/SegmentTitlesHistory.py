@@ -9,7 +9,7 @@ from trainable_entity_extractor.domain.PdfDataSegment import PdfDataSegment
 from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.adapters.extractors.segment_selector.methods.Modes import Modes
 
-nltk.download("punkt")
+nltk.download("punkt_tab")
 
 
 class SegmentTitlesHistory:
