@@ -33,10 +33,10 @@ install_venv:
 	. .venv/bin/activate; python -m pip install -r dev-requirements.txt
 
 formatter:
-	. .venv/bin/activate; command black --line-length 125 .
+	. .venv/bin/activate; command black --line-length 125 --target-version py311 .
 
 check_format:
-	. .venv/bin/activate; command black --line-length 125 . --check
+	. .venv/bin/activate; command black --line-length 125 --target-version py311 . --check
 
 test:
 	. .venv/bin/activate; command cd src; command python -m pytest
