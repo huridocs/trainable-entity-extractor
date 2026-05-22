@@ -170,7 +170,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
 
     @staticmethod
     def get_train_test_sets_using_labels(
-        samples_by_labels: dict[str, list[TrainingSample]]
+        samples_by_labels: dict[str, list[TrainingSample]],
     ) -> tuple[list[TrainingSample], list[TrainingSample]]:
         test_set = set()
         all_samples = {sample for samples in samples_by_labels.values() for sample in samples}

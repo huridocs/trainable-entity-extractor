@@ -18,7 +18,6 @@ from trainable_entity_extractor.adapters.extractors.segment_selector.methods.lig
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
-
 nltk.download("stopwords")
 
 

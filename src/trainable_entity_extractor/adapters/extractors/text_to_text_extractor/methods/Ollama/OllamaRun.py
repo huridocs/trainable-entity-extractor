@@ -10,7 +10,6 @@ from trainable_entity_extractor.config import OLLAMA_API_KEY
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.Ollama.OllamaSample import OllamaSample
 
-
 CODE_FILE_NAME = "ollama_code.py"
 PROMPT_FILE_NAME = "prompt.txt"
 

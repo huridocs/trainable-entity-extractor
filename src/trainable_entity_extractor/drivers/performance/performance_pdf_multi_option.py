@@ -53,9 +53,7 @@ def run():
     pdf_data_2 = PdfData.from_texts(["2"])
     pdf_data_3 = PdfData.from_texts(["3, 1"])
     pdf_data_4 = PdfData.from_texts(["2, 3"])
-    pdf_data_5 = PdfData.from_texts(
-        [
-            """86.
+    pdf_data_5 = PdfData.from_texts(["""86.
 Antigua-et-Barbuda a pris en compte les recommandations relatives à la création
 d’une institution nationale des droits de l’homme conforme aux Principes concernant le statut
 des institutions nationales pour la promotion et la protection des droits de l’homme (Principes
@@ -64,10 +62,7 @@ violations des droits de l’homme ou d’un système centralisé de collecte de
 avait conscience de l’importance de se doter d’une telle institution afin d’être en mesure
 d’adresser des signalements aux organismes internationaux et de diffuser un enseignement et
 des informations sur la promotion et la protection des droits de l’homme à Antigua-et-
-Barbuda."""
-            for _ in range(3000 // 10)
-        ]
-    )
+Barbuda.""" for _ in range(3000 // 10)])
 
     samples = [
         TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0], options[1]])),
