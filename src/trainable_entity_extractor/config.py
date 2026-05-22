@@ -12,6 +12,7 @@ CACHE_PATH = Path(DATA_PATH, "cache", "extraction_data")
 EXTRACTOR_JOB_PATH = Path("extractor_job", "extractor_job.json")
 GRAYLOG_IP = os.environ.get("GRAYLOG_IP")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+OLLAMA_API_KEY = os.environ.get("OLLAMA_API_KEY")
 HUGGINGFACE_PATH = join(ROOT_PATH, "huggingface")
 
 IS_TRAINING_CANCELED_FILE_NAME = "is_training_canceled.txt"
