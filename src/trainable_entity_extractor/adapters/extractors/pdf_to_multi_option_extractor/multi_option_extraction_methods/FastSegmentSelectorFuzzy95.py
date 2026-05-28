@@ -15,10 +15,6 @@ from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.domain.Value import Value
-from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.FilterSegmentsMethod import (
-    FilterSegmentsMethod,
-)
-from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.PdfMultiOptionMethod import (
     PdfMultiOptionMethod,
 )

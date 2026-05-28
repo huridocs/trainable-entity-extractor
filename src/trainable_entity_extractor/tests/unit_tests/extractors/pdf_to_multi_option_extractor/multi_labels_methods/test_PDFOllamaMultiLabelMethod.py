@@ -1,11 +1,6 @@
-import shutil
 import unittest
-from os.path import join
 from unittest import TestCase
 
-import torch
-
-from trainable_entity_extractor.config import DATA_PATH
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.ExtractionIdentifier import ExtractionIdentifier
 from trainable_entity_extractor.domain.LabeledData import LabeledData
@@ -14,23 +9,18 @@ from trainable_entity_extractor.domain.PdfData import PdfData
 from trainable_entity_extractor.domain.PredictionSample import PredictionSample
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.TrainingSample import TrainingSample
-from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_labels_methods.SetFitEnglishMethod import (
-    SetFitEnglishMethod,
-)
 from trainable_entity_extractor.domain.Value import Value
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_labels_methods.PDFOllamaMultiLabelMethod import (
+    PDFOllamaMultiLabelMethod,
+)
 
 
-class TestSetFitEnglishMethod(TestCase):
+class TestPDFOllamaMultiLabelMethod(TestCase):
     TENANT = "unit_test"
-    extraction_id = "multi_option_extraction_test"
-
-    def tearDown(self):
-        shutil.rmtree(join(DATA_PATH, self.TENANT), ignore_errors=True)
+    extraction_id = "pdf_ollama_multi_label_method"
 
     @unittest.SkipTest
     def test_train_and_predict(self):
-        if not torch.cuda.is_available():
-            return
         extraction_identifier = ExtractionIdentifier(run_name=self.TENANT, extraction_name=self.extraction_id)
         options = [
             Option(id="1", label="1"),
@@ -41,38 +31,34 @@ class TestSetFitEnglishMethod(TestCase):
         ]
 
         pdf_data_1 = PdfData.from_texts(["point 1"])
-        pdf_data_2 = PdfData.from_texts(["point 2 point 3"])
-        pdf_data_3 = PdfData.from_texts(["point 3"])
-        pdf_data_4 = PdfData.from_texts(["point 4 point 1"])
-        pdf_data_5 = PdfData.from_texts(["point 5"])
+        pdf_data_2 = PdfData.from_texts(["point 2"])
+        pdf_data_4 = PdfData.from_texts(["point 4"])
 
         samples = [
             TrainingSample(pdf_data=pdf_data_1, labeled_data=LabeledData(values=[options[0]])),
             TrainingSample(pdf_data=pdf_data_2, labeled_data=LabeledData(values=[options[1], options[2]])),
-            TrainingSample(pdf_data=pdf_data_3, labeled_data=LabeledData(values=[options[2]])),
             TrainingSample(pdf_data=pdf_data_4, labeled_data=LabeledData(values=[options[3], options[0]])),
-            TrainingSample(pdf_data=pdf_data_5, labeled_data=LabeledData(values=[options[4]])),
         ]
-
-        samples = samples * 2
 
         extraction_data = ExtractionData(
             multi_value=True, options=options, samples=samples, extraction_identifier=extraction_identifier
         )
-        setfit_english_method = SetFitEnglishMethod(extraction_identifier)
+        pdf_ollama_multi_label = PDFOllamaMultiLabelMethod(extraction_identifier)
 
-        try:
-            setfit_english_method.train(extraction_data)
-        except Exception as e:
-            self.fail(f"train() raised {type(e).__name__}")
+        pdf_ollama_multi_label.train(extraction_data)
 
-        prediction_sample_1 = PredictionSample(pdf_data=pdf_data_1)
-        prediction_sample_2 = PredictionSample(pdf_data=pdf_data_2)
-        prediction_sample_4 = PredictionSample(pdf_data=pdf_data_4)
-        prediction_samples = [prediction_sample_1, prediction_sample_2, prediction_sample_4]
+        prediction_samples = [
+            PredictionSample.from_pdf_data(pdf_data_1),
+            PredictionSample.from_pdf_data(pdf_data_2),
+            PredictionSample.from_pdf_data(pdf_data_4),
+        ]
 
-        prediction_data = PredictionSamplesData(multi_value=True, options=options, prediction_samples=prediction_samples)
-        predictions = setfit_english_method.predict(prediction_data)
+        prediction_samples_data = PredictionSamplesData(
+            prediction_samples=prediction_samples,
+            options=options,
+            multi_value=True,
+        )
+        predictions = pdf_ollama_multi_label.predict(prediction_samples_data)
 
         self.assertEqual(3, len(predictions))
         self.assertIn(Value(id="1", label="1"), predictions[0])

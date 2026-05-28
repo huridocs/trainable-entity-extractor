@@ -1,0 +1,51 @@
+from trainable_entity_extractor.domain.ExtractionData import ExtractionData
+from trainable_entity_extractor.domain.PredictionSample import PredictionSample
+from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
+from trainable_entity_extractor.domain.TrainingSample import TrainingSample
+from trainable_entity_extractor.domain.Value import Value
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.MultiLabelMethod import MultiLabelMethod
+from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.methods.ollama_multi_option.TextOllamaMultiOption import (
+    TextOllamaMultiOption,
+)
+
+
+class PDFOllamaMultiLabelMethod(MultiLabelMethod):
+    def __init__(self, extraction_identifier):
+        super().__init__(extraction_identifier)
+        self._text_ollama = TextOllamaMultiOption(extraction_identifier)
+
+    def can_be_used(self, extraction_data):
+        return self._text_ollama.can_be_used(extraction_data)
+
+    @staticmethod
+    def should_be_retrained_with_more_data():
+        return False
+
+    def train(self, multi_option_data: ExtractionData):
+        training_samples: list[TrainingSample] = list()
+        for sample in multi_option_data.samples:
+            if not sample.pdf_data or not sample.labeled_data or not sample.labeled_data.values:
+                continue
+            text = sample.pdf_data.get_text().replace("\n", " ")
+            training_samples.append(TrainingSample.from_values(text, sample.labeled_data.values))
+
+        training_multi_option_data = ExtractionData(
+            samples=training_samples,
+            extraction_identifier=self.extraction_identifier,
+            options=multi_option_data.options,
+        )
+        return self._text_ollama.train(training_multi_option_data)
+
+    def predict(self, prediction_samples_data: PredictionSamplesData) -> list[list[Value]]:
+        texts = [sample.pdf_data.get_text() for sample in prediction_samples_data.prediction_samples]
+        texts = [text.replace("\n", " ") for text in texts]
+
+        prediction_samples = [PredictionSample.from_text(text) for text in texts]
+        options_list = self._text_ollama.predict(
+            PredictionSamplesData(
+                prediction_samples=prediction_samples,
+                options=prediction_samples_data.options,
+                multi_value=prediction_samples_data.multi_value,
+            )
+        )
+        return [[Value.from_option(option) for option in options] if options else [] for options in options_list]
