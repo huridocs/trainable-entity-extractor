@@ -31,5 +31,5 @@ Unidecode==1.3.8
 country_named_entity_recognition==0.4
 protobuf==6.33.5
 google-genai==1.19.0
-git+https://github.com/huridocs/pdf-features@2025.8.4.3
+git+https://github.com/huridocs/pdf-features@2026.4.27.1
 
