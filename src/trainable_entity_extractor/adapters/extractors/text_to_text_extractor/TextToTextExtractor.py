@@ -5,6 +5,9 @@ from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.metho
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.DateParserWithBreaksMethod import (
     DateParserWithBreaksMethod,
 )
+from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.Ollama.OllamaTextMethod import (
+    OllamaTextMethod,
+)
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.Gemini.GeminiTextMethod import (
     GeminiTextMethod,
 )
@@ -48,6 +51,7 @@ class TextToTextExtractor(ToTextExtractor):
         NerFirstAppearanceMethod,
         NerLastAppearanceMethod,
         GeminiTextMethod,
+        OllamaTextMethod,
         MT5TrueCaseEnglishSpanishMethod,
     ]
 

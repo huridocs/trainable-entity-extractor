@@ -85,6 +85,7 @@ class PdfToTextExtractor(ToTextExtractor):
     METHODS += near_4_fast_segment_selector_methods
     METHODS += segment_selector_methods
     METHODS += [pdf_to_text_method_builder(PdfToTextSegmentSelector, OllamaTextMethod)]
+    METHODS += [pdf_to_text_method_builder(PdfToTextSegmentSelector, GeminiTextMethod)]
     METHODS += t5_methods
 
     def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:

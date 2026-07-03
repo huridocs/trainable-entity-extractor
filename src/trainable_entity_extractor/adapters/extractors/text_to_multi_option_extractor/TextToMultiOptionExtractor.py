@@ -45,6 +45,9 @@ from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extract
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.methods.TextFuzzyLastCleanLabels import (
     TextFuzzyLastCleanLabels,
 )
+from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.methods.ollama_multi_option.TextOllamaMultiOption import (
+    TextOllamaMultiOption,
+)
 from trainable_entity_extractor.adapters.extractors.text_to_multi_option_extractor.methods.TextSetFitMultilingual import (
     TextSetFitMultilingual,
 )
@@ -78,6 +81,7 @@ class TextToMultiOptionExtractor(ExtractorBase):
         TextFuzzyAll88,
         TextFuzzyAll75,
         TextGeminiMultiOption,
+        TextOllamaMultiOption,
         TextBalancedSetFit,
         TextSetFitMultilingual,
         TextSingleLabelSetFit,

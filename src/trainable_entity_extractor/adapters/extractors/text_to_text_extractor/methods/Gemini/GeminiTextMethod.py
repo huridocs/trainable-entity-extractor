@@ -11,6 +11,11 @@ class GeminiTextMethod(ToTextExtractorMethod):
     def get_model_folder_name(self):
         return "GeminiTextMethod"
 
+    def can_be_used(self, extraction_data: ExtractionData) -> bool:
+        if GEMINI_API_KEY:
+            return True
+        return False
+
     def should_be_retrained_with_more_data(self):
         return False
 

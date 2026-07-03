@@ -32,7 +32,7 @@ class PDFGeminiMultiLabelMethod(MultiLabelMethod):
         training_multi_option_data = ExtractionData(
             samples=training_samples,
             extraction_identifier=self.extraction_identifier,
-            options=self.options,
+            options=multi_option_data.options,
         )
         return self._text_gemini.train(training_multi_option_data)
 
@@ -41,5 +41,11 @@ class PDFGeminiMultiLabelMethod(MultiLabelMethod):
         texts = [text.replace("\n", " ") for text in texts]
 
         prediction_samples = [PredictionSample.from_text(text) for text in texts]
-        options_list = self._text_gemini.predict(prediction_samples)
+        options_list = self._text_gemini.predict(
+            PredictionSamplesData(
+                prediction_samples=prediction_samples,
+                options=prediction_samples_data.options,
+                multi_value=prediction_samples_data.multi_value,
+            )
+        )
         return [[Value.from_option(option) for option in options] if options else [] for options in options_list]

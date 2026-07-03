@@ -33,6 +33,9 @@ from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extracto
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_labels_methods.PDFOllamaMultiLabelMethod import (
     PDFOllamaMultiLabelMethod,
 )
+from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_labels_methods.PDFGeminiMultiLabelMethod import (
+    PDFGeminiMultiLabelMethod,
+)
 from trainable_entity_extractor.adapters.extractors.pdf_to_multi_option_extractor.multi_labels_methods.SetFitEnglishMethod import (
     SetFitEnglishMethod,
 )
@@ -115,6 +118,9 @@ class PdfToMultiOptionExtractor(ExtractorBase):
         PdfMultiOptionMethod().set_methods(CleanEndDotDigits1000, PDFOllamaMultiLabelMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, PDFOllamaMultiLabelMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginning600End600, PDFOllamaMultiLabelMethod),
+        PdfMultiOptionMethod().set_methods(CleanEndDotDigits1000, PDFGeminiMultiLabelMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, PDFGeminiMultiLabelMethod),
+        PdfMultiOptionMethod().set_methods(CleanBeginning600End600, PDFGeminiMultiLabelMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SetFitEnglishMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginning600End600, SetFitEnglishMethod),
         PdfMultiOptionMethod().set_methods(CleanBeginningDotDigits1000, SetFitMultilingualMethod),
