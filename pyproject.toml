@@ -43,7 +43,7 @@ dependencies = [
     "country_named_entity_recognition==0.4",
     "protobuf==6.33.5",
     "google-genai==1.19.0",
-    "pdf-features @ git+https://github.com/huridocs/pdf-features@2026.4.27.1"
+    "pdf-features @ git+https://github.com/huridocs/pdf-features@2026.7.3.1"
 ]
 
 [tool.setuptools_scm]
