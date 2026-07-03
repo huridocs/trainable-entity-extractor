@@ -1,3 +1,6 @@
+from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.Ollama.OllamaTextMethod import (
+    OllamaTextMethod,
+)
 from trainable_entity_extractor.domain.ExtractionData import ExtractionData
 from trainable_entity_extractor.domain.PredictionSamplesData import PredictionSamplesData
 from trainable_entity_extractor.domain.Suggestion import Suggestion
@@ -81,7 +84,7 @@ class PdfToTextExtractor(ToTextExtractor):
     METHODS += near_1_fast_segment_selector_methods
     METHODS += near_4_fast_segment_selector_methods
     METHODS += segment_selector_methods
-    METHODS += [pdf_to_text_method_builder(PdfToTextSegmentSelector, GeminiTextMethod)]
+    METHODS += [pdf_to_text_method_builder(PdfToTextSegmentSelector, OllamaTextMethod)]
     METHODS += t5_methods
 
     def prepare_for_training(self, extraction_data: ExtractionData) -> tuple[ExtractionData, ExtractionData]:

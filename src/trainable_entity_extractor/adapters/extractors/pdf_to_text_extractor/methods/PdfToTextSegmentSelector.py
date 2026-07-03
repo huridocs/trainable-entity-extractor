@@ -30,17 +30,31 @@ class PdfToTextSegmentSelector(SegmentSelector):
 
     def predict(self, prediction_samples_data: PredictionSamplesData) -> list[str]:
         predictions_samples = prediction_samples_data.prediction_samples
-        segment_selector = SegmentSelector(self.extraction_identifier)
-        if not segment_selector.model or not predictions_samples:
+        if not predictions_samples:
             return [""] * len(predictions_samples)
 
-        segment_selector.set_extraction_segments([x.pdf_data for x in predictions_samples])
+        self._select_segments([x.pdf_data for x in predictions_samples])
 
         for sample in predictions_samples:
             sample.segment_selector_texts = self.get_predicted_texts(sample.pdf_data)
 
         semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier)
         return semantic_metadata_extraction.predict(prediction_samples_data)
+
+    def get_performance(self, train_set: ExtractionData, test_set: ExtractionData) -> float:
+        self.create_segment_selector_model(train_set)
+        self._select_segments([sample.pdf_data for sample in train_set.samples])
+        self._select_segments([sample.pdf_data for sample in test_set.samples])
+
+        semantic_metadata_extraction = self.SEMANTIC_METHOD(self.extraction_identifier)
+        return semantic_metadata_extraction.get_performance(train_set, test_set)
+
+    def _select_segments(self, pdfs_data: list[PdfData]):
+        segment_selector = SegmentSelector(self.extraction_identifier)
+        if not segment_selector.model:
+            return
+
+        segment_selector.set_extraction_segments(pdfs_data)
 
     def create_segment_selector_model(self, extraction_data: ExtractionData):
         segment_selector = SegmentSelector(self.extraction_identifier)
