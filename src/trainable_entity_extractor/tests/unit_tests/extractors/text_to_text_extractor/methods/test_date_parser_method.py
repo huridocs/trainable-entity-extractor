@@ -68,3 +68,76 @@ class TestDateParserMethod(TestCase):
 
         self.assertIsNotNone(date_parser_method)
         self.assertEqual(date_parser_method.extraction_identifier, self.extraction_identifier)
+
+    def test_predict_dd_mm_yyyy_in_paragraph(self):
+        paragraph = (
+            "Das Treffen am 12.04.2026 wurde von Richter Dr. Meyer geleitet. " "Der Angeklagte erschien pünktlich um 9 Uhr."
+        )
+        sample = TrainingSample(labeled_data=LabeledData(label_text="2026-12-04", language_iso="de", source_text=paragraph))
+
+        extraction_data = ExtractionData(
+            samples=[sample for _ in range(6)], extraction_identifier=self.extraction_identifier
+        )
+        date_parser_method = DateParserMethod(self.extraction_identifier)
+
+        date_parser_method.train(extraction_data)
+
+        prediction_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text=paragraph)], options=[], multi_value=False
+        )
+        predictions = date_parser_method.predict(prediction_data)
+        self.assertEqual(["2026-12-04"], predictions)
+
+    def test_predict_dotted_dd_mm_yyyy_eastern_european(self):
+        """ru/uk and other Eastern European locales mis-parse dotted DD.MM.YYYY as a bare year (today).
+        The regex gate + de/DMY fallback must recover the correct day.month.year ordering."""
+        paragraph = "Заседание состоялось 12.04.2026 в помещении суда."
+        sample = TrainingSample(labeled_data=LabeledData(label_text="2026-04-12", language_iso="ru", source_text=paragraph))
+
+        extraction_data = ExtractionData(
+            samples=[sample for _ in range(6)], extraction_identifier=self.extraction_identifier
+        )
+        date_parser_method = DateParserMethod(self.extraction_identifier)
+
+        date_parser_method.train(extraction_data)
+
+        prediction_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text=paragraph)], options=[], multi_value=False
+        )
+        predictions = date_parser_method.predict(prediction_data)
+        self.assertEqual(["2026-04-12"], predictions)
+
+    def test_predict_dotted_dd_mm_yyyy_ukrainian(self):
+        paragraph = "Засідання відбулося 05.06.2026 у приміщенні суду."
+        sample = TrainingSample(labeled_data=LabeledData(label_text="2026-06-05", language_iso="uk", source_text=paragraph))
+
+        extraction_data = ExtractionData(
+            samples=[sample for _ in range(6)], extraction_identifier=self.extraction_identifier
+        )
+        date_parser_method = DateParserMethod(self.extraction_identifier)
+
+        date_parser_method.train(extraction_data)
+
+        prediction_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text=paragraph)], options=[], multi_value=False
+        )
+        predictions = date_parser_method.predict(prediction_data)
+        self.assertEqual(["2026-06-05"], predictions)
+
+    def test_predict_cyrillic_month_name_not_regressed(self):
+        """Cyrillic month-name dates must still parse under ru — the de fallback only fires on dotted numeric."""
+        paragraph = "Документ від 12 квітня 2026 року"
+        sample = TrainingSample(labeled_data=LabeledData(label_text="2026-04-12", language_iso="uk", source_text=paragraph))
+
+        extraction_data = ExtractionData(
+            samples=[sample for _ in range(6)], extraction_identifier=self.extraction_identifier
+        )
+        date_parser_method = DateParserMethod(self.extraction_identifier)
+
+        date_parser_method.train(extraction_data)
+
+        prediction_data = PredictionSamplesData(
+            prediction_samples=[PredictionSample(source_text=paragraph)], options=[], multi_value=False
+        )
+        predictions = date_parser_method.predict(prediction_data)
+        self.assertEqual(["2026-04-12"], predictions)

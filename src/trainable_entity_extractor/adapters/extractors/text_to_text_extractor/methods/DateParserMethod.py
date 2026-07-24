@@ -9,6 +9,9 @@ from dateparser.search import search_dates
 class DateParserMethod(ToTextExtractorMethod):
     IS_VALID_EXECUTION_FILE_NAME = "date_parser_is_valid.json"
 
+    DOTTED_DATE_PATTERN = re.compile(r"\b\d{1,2}\.\d{1,2}\.\d{4}\b")
+    DOTTED_DMY_LANGUAGES = {"ru", "uk", "pl", "sk", "bg", "be", "kk", "sr", "hr", "sl", "ro", "lt", "lv", "et", "cs", "fi"}
+
     @staticmethod
     def get_best_date(dates):
         if not dates:
@@ -21,12 +24,27 @@ class DateParserMethod(ToTextExtractorMethod):
         return dates[0][1]
 
     @staticmethod
+    def has_dotted_date(text: str, languages) -> bool:
+        if not languages or not any(lang in DateParserMethod.DOTTED_DMY_LANGUAGES for lang in languages):
+            return False
+        return bool(DateParserMethod.DOTTED_DATE_PATTERN.search(text))
+
+    @staticmethod
     def get_date(tags_texts: list[str], languages):
         if not tags_texts:
             return ""
         text = " ".join(tags_texts)
         try:
             dates = search_dates(text, languages=languages)
+
+            if DateParserMethod.has_dotted_date(text, languages):
+                de_dates = list()
+                for match in DateParserMethod.DOTTED_DATE_PATTERN.findall(text):
+                    match_dates = search_dates(match, languages=["de"], settings={"DATE_ORDER": "DMY"})
+                    if match_dates:
+                        de_dates.extend(match_dates)
+                if de_dates:
+                    dates = de_dates + (dates or [])
 
             if not dates:
                 dates = search_dates(text)

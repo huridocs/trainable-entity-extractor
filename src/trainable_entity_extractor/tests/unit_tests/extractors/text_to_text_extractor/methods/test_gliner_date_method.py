@@ -9,7 +9,6 @@ from trainable_entity_extractor.domain.TrainingSample import TrainingSample
 from trainable_entity_extractor.adapters.extractors.text_to_text_extractor.methods.GlinerDateParserMethod import (
     GlinerDateParserMethod,
 )
-from trainable_entity_extractor.adapters.ExtractorLogger import ExtractorLogger
 
 
 class TestGlinerDateMethod(TestCase):
